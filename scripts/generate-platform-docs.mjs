@@ -94,7 +94,7 @@ signature cipher as a technical protection measure — see \`RESEARCH.md\`.
 * **unsupported** — no working engine path (DRM, defunct, no extractor, or engine not installed)
 
 Live per-platform success rates (last 24 h, aggregate counts only) are served by \`GET /api/v1/status\`
-and shown on the in-app Platforms page.
+and shown on the in-app Sites page.
 `;
 
 for (const c of [1, 2, 3, 4, 5]) {

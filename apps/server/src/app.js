@@ -338,10 +338,11 @@ export function createApp({ config, logger, services }) {
     res.on('finish', () => {
       metrics.inc('ferry_bytes_served_total', {}, Number(res.getHeader('content-length') ?? 0));
       // Privacy option: once the main file has been delivered in full, delete the job's files
-      // (after a grace period so an interrupted transfer can still resume). A gallery's
-      // "main file" is its only image; larger galleries count as delivered with the ZIP.
-      const main = file.kind === 'media' || (file.kind === 'image' && job.output.files.length === 1);
-      if (res.statusCode === 200 && main && job.request.privacy?.deleteAfterDownload) jobs.scheduleRemoval(job.id, 2 * 60_000);
+      // (after a grace period so an interrupted transfer can still resume). A gallery is
+      // delivered when every image (or its ZIP) has been.
+      if (res.statusCode !== 200 || !job.request.privacy?.deleteAfterDownload) return;
+      if (file.kind === 'media') jobs.scheduleRemoval(job.id, 2 * 60_000);
+      else if (file.kind === 'image') jobs.markDelivered(job.id, file.id, 2 * 60_000);
     });
     await new Promise((resolve, reject) => {
       res.sendFile(abs, { etag: false, lastModified: true, acceptRanges: true, cacheControl: false, dotfiles: 'deny' }, (err) => {

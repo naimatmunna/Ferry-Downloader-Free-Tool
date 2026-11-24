@@ -177,6 +177,36 @@ test('video without audio, and audio only', async () => {
   assert.equal(aj.output.files[0].mime, 'audio/mpeg');
 });
 
+test('without FFmpeg/ffprobe the server refuses links up front with a clear reason', async () => {
+  // Seen live: a dev server started from a shell without FFmpeg on PATH probed fine, downloaded,
+  // then failed every job with a bare "server error" ("ffprobe: executable not found").
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'ferry-noff-'));
+  const other = await createFerry(
+    loadConfig({ NODE_ENV: 'test', DATA_DIR: dir, PORT: '0', SSRF_ALLOW_HOSTS: fx.authority, FFPROBE_PATH: path.join(dir, 'missing', 'ffprobe.exe'), PATH: process.env.PATH }),
+    { logger: createLogger({ level: 'silent' }), catalog: CATALOG, catalogVersion: 'test' },
+  );
+  try {
+    const at = `http://127.0.0.1:${(await other.listen(0, '127.0.0.1')).port}`;
+    const r = await fetch(`${at}/api/v1/probe`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ url: fx.url('/clip-h264-aac.mp4') }) });
+    const body = await r.json();
+    assert.equal(r.status, 503);
+    assert.equal(body.error.code, 'ENGINE_UNAVAILABLE');
+    assert.equal((await fetch(`${at}/readyz`)).status, 503);
+  } finally {
+    await other.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('a web page whose address ends like a media file is still read as a page', async () => {
+  // e.g. https://commons.wikimedia.org/wiki/File:Something.webm is an HTML page, not the file.
+  const p = await probe(fx.url('/wiki/File:Fixture_clip.webm'));
+  assert.equal(p.status, 200, JSON.stringify(p.body));
+  assert.equal(p.body.source.platform.id, 'fixture', 'the platform (and its policy) stay the same');
+  assert.equal(p.body.media.kind, 'video');
+  assert.equal(p.body.media.title, 'Fixture clip on a file page (1)', 'the page itself was read (first video on it)');
+});
+
 test('yt-dlp generic extractor through the egress proxy (embedded page + HLS)', async () => {
   const page = await probe(fx.url('/page.html'));
   assert.equal(page.status, 200, JSON.stringify(page.body));

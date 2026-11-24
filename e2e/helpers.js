@@ -15,13 +15,13 @@ export async function freshApp(page) {
 }
 
 export async function analyze(page, url) {
-  const field = page.getByLabel('Link to a video, song or podcast');
+  const field = page.getByLabel('Link to a video, song or post');
   await field.fill(url);
   await page.getByRole('button', { name: 'Find media' }).click();
 }
 
 export async function confirmRights(page) {
-  const box = page.getByRole('checkbox', { name: /I have the right to download|I own this content/ });
+  const box = page.getByRole('checkbox', { name: /I have the right to download|my content, or I have permission/ });
   if (await box.isVisible()) await box.check();
 }
 

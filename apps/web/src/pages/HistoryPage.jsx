@@ -6,6 +6,7 @@ import { bytes, dayLabel, duration } from '../lib/format.js';
 import { useAnalysis } from '../state/analysis.js';
 import { useHistory } from '../state/history.js';
 import { useSettings } from '../state/settings.js';
+import { SiteIcon } from '../components/SiteIcon.jsx';
 import { Button, EmptyState, IconButton, Segmented, Select, Sheet } from '../components/ui.jsx';
 import { requestLabel } from './DownloadsPage.jsx';
 
@@ -48,9 +49,9 @@ export default function HistoryPage() {
   }, [visible, locale]);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-extrabold tracking-tight">{t('history.title')}</h1>
+    <div className="mx-auto max-w-[960px] px-4 pt-6 sm:px-8 sm:pt-9">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <h1 className="display text-[2.15rem] sm:text-[2.75rem]">{t('history.title')}</h1>
         {entries.length > 0 && (
           <Button variant="danger" size="sm" icon={Trash2} onClick={() => setConfirmClear(true)}>
             {t('history.clear')}
@@ -60,39 +61,33 @@ export default function HistoryPage() {
       {!saveHistory && (
         <p className="mt-3 text-ink-2">
           {t('history.off')}{' '}
-          <Link to="/settings" className="font-semibold text-hull underline underline-offset-4 dark:text-signal">
+          <Link to="/settings" className="font-semibold text-ink underline decoration-[1.5px] underline-offset-[3px]">
             {t('nav.settings')}
           </Link>
         </p>
       )}
 
       {entries.length === 0 ? (
-        <EmptyState icon={HistoryIcon} title={t('history.empty.title')} body={t('history.empty.body')} />
+        <div className="mt-6">
+          <EmptyState icon={HistoryIcon} title={t('history.empty.title')} body={t('history.empty.body')} />
+        </div>
       ) : (
         <>
-          <div className="mt-6 grid gap-4 sm:grid-cols-[minmax(0,1fr)_14rem]">
-            <div className="relative">
-              <label htmlFor="history-search" className="sr-only">
-                {t('history.search')}
-              </label>
-              <Search className="pointer-events-none absolute start-3 top-3 size-5 text-ink-2" aria-hidden="true" />
-              <input
-                id="history-search"
-                type="search"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder={t('history.search')}
-                className="h-11 w-full rounded-[var(--radius-control)] border border-line bg-surface ps-10 pe-3"
-              />
-            </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_14rem]">
+            <label className="flex h-12 items-center gap-2.5 rounded-[var(--radius-control)] bg-paper px-4 text-ink-3 shadow-[inset_0_0_0_1.5px_var(--line)] focus-within:shadow-[inset_0_0_0_2px_var(--ink)]">
+              <Search className="size-5 shrink-0" aria-hidden="true" />
+              <span className="sr-only">{t('history.search')}</span>
+              <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('history.search')} className="min-w-0 flex-1 bg-transparent text-ink placeholder:text-ink-3 focus:outline-none" />
+            </label>
             <Select label={t('history.allPlatforms')} value={platform} onChange={setPlatform} options={[{ value: '', label: t('history.allPlatforms') }, ...platforms.map(([id, name]) => ({ value: id, label: name }))]} className="[&_label]:sr-only" />
           </div>
           <Segmented
             legend={t('history.title')}
+            legendClassName="sr-only"
             name="history-filter"
             value={filter}
             onChange={setFilter}
-            className="mt-4 max-w-md [&_legend]:sr-only"
+            className="mt-3 max-w-md"
             options={[
               { value: 'all', label: t('history.filters.all') },
               { value: 'ready', label: t('history.filters.ready') },
@@ -102,18 +97,19 @@ export default function HistoryPage() {
 
           {visible.length === 0 && <p className="mt-8 text-ink-2">{t('history.noMatch', { q })}</p>}
           {groups.map(([day, list]) => (
-            <section key={day} className="mt-8">
-              <h2 className="text-sm font-semibold text-ink-2">{day}</h2>
-              <ul className="mt-2 divide-y divide-line border-t border-line">
+            <section key={day} className="mt-7">
+              <h2 className="mb-2 text-sm font-bold text-ink-2">{day}</h2>
+              <ul className="grid gap-2">
                 {list.map((e) => (
-                  <li key={e.id} className="flex items-center gap-3 py-3">
+                  <li key={e.id} className="flex items-center gap-3 rounded-2xl bg-paper p-2.5 pe-2">
+                    <SiteIcon id={e.platformId} name={e.platformName} size={42} />
                     <button type="button" className="min-w-0 flex-1 text-start" onClick={() => setDetails(e)}>
-                      <span className="block truncate font-semibold">{e.title}</span>
+                      <span className="block truncate font-bold">{e.title}</span>
                       <span className="mt-0.5 flex flex-wrap gap-x-3 text-sm text-ink-2">
                         <span>{e.platformName}</span>
                         <span>{requestLabel(e.request, t)}</span>
                         {e.output?.[0]?.sizeBytes ? <span className="tabular-nums">{bytes(e.output[0].sizeBytes, { locale })}</span> : null}
-                        {!FINISHED.includes(e.status) && <span className="text-buoy">{t(`downloads.status.${e.status}`)}</span>}
+                        {!FINISHED.includes(e.status) && <span className="font-semibold text-bad">{t(`downloads.status.${e.status}`)}</span>}
                       </span>
                     </button>
                     {e.sourceUrl && (
@@ -137,14 +133,17 @@ export default function HistoryPage() {
 
       <Sheet open={Boolean(details)} onClose={() => setDetails(null)} title={details?.title ?? ''} closeLabel={t('actions.close')}>
         {details && (
-          <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-2 text-sm">
+          <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-2.5 text-sm">
             <dt className="text-ink-2">{t('history.fields.platform')}</dt>
-            <dd>{details.platformName}</dd>
+            <dd className="flex items-center gap-2">
+              <SiteIcon id={details.platformId} name={details.platformName} size={22} />
+              {details.platformName}
+            </dd>
             <dt className="text-ink-2">{t('history.fields.format')}</dt>
             <dd>{requestLabel(details.request, t)}</dd>
             {details.durationSec != null && (
               <>
-                <dt className="text-ink-2">{t('picker.trim.end')}</dt>
+                <dt className="text-ink-2">{t('preview.length')}</dt>
                 <dd className="tabular-nums">{duration(details.durationSec)}</dd>
               </>
             )}
@@ -157,7 +156,7 @@ export default function HistoryPage() {
             <dt className="text-ink-2">{t('history.fields.source')}</dt>
             <dd className="break-all">
               {details.sourceUrl ? (
-                <a href={details.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-hull underline underline-offset-4 dark:text-signal">
+                <a href={details.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-ink underline decoration-[1.5px] underline-offset-[3px]">
                   {details.sourceUrl}
                 </a>
               ) : (
@@ -171,7 +170,9 @@ export default function HistoryPage() {
       <Sheet open={confirmClear} onClose={() => setConfirmClear(false)} title={t('history.clear')} closeLabel={t('actions.close')}>
         <p className="text-ink-2">{t('history.clearConfirm')}</p>
         <div className="mt-6 flex justify-end gap-2">
-          <Button onClick={() => setConfirmClear(false)}>{t('actions.cancel')}</Button>
+          <Button variant="line" onClick={() => setConfirmClear(false)}>
+            {t('actions.cancel')}
+          </Button>
           <Button
             variant="primary"
             onClick={() => {

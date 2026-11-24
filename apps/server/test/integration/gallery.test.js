@@ -186,6 +186,27 @@ test('chosen images are fetched through the egress proxy, re-encoded without met
   assert.equal(fx.hits.get('/clip-h264-aac.mp4'), undefined, 'videos in a post are never fetched');
 });
 
+test('"delete after download" counts a gallery as delivered once every image, or the ZIP, has been saved', async () => {
+  const minutesLeft = async (id, token) => (Date.parse((await json(await api(`/api/v1/jobs/${id}`, { headers: { authorization: `Bearer ${token}` } }))).body.job.expiresAt) - Date.now()) / 60_000;
+  const privateJob = async () => {
+    const p = await post('/api/v1/probe', { url: postUrl(111111111) });
+    const c = await post('/api/v1/jobs', { probeId: p.body.probe.id, mode: 'gallery', gallery: { items: [1, 3] }, attest: true, privacy: { deleteAfterDownload: true } });
+    const job = await waitFor(c.body.job.id, c.body.token);
+    assert.equal(job.status, 'ready', JSON.stringify(job.error));
+    return { job, token: c.body.token };
+  };
+
+  const one = await privateJob();
+  await fetchBytes(`${one.job.output.files[0].url}?token=${encodeURIComponent(one.token)}`);
+  assert.ok((await minutesLeft(one.job.id, one.token)) > 30, 'one image of two is not the whole gallery');
+  await fetchBytes(`${one.job.output.files[1].url}?token=${encodeURIComponent(one.token)}`);
+  assert.ok((await minutesLeft(one.job.id, one.token)) <= 2.5, 'every image saved: removed after the grace period');
+
+  const two = await privateJob();
+  await fetchBytes(`${two.job.output.archiveUrl}?token=${encodeURIComponent(two.token)}`);
+  assert.ok((await minutesLeft(two.job.id, two.token)) <= 2.5, 'the ZIP is the whole gallery');
+});
+
 test('a file that is not really an image is dropped; the real picture is still delivered', async () => {
   const p = await post('/api/v1/probe', { url: postUrl(222222222) });
   assert.deepEqual(p.body.media.gallery.items.map((i) => i.index), [1, 2]);

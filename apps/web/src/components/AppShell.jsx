@@ -1,27 +1,22 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
-import { Download, History, Inbox, Layers, Settings, WifiOff, X } from 'lucide-react';
+import { Clock, Download, LayoutGrid, Link2, Moon, SlidersHorizontal, Sun, WifiOff, X } from 'lucide-react';
 import { useI18n } from '../lib/i18n/index.jsx';
 import { useDownloads } from '../state/downloads.js';
+import { useSettings } from '../state/settings.js';
 import { useToasts } from '../state/toasts.js';
 import { Wordmark } from './Logo.jsx';
 import { cx } from './ui.jsx';
 
 const NAV = [
-  { to: '/', key: 'download', icon: Download, end: true },
-  { to: '/downloads', key: 'downloads', icon: Inbox },
-  { to: '/history', key: 'history', icon: History },
-  { to: '/platforms', key: 'platforms', icon: Layers, desktopOnly: true },
-  { to: '/settings', key: 'settings', icon: Settings },
+  { to: '/', key: 'download', icon: Link2, end: true },
+  { to: '/downloads', key: 'downloads', icon: Download },
+  { to: '/history', key: 'history', icon: Clock },
+  { to: '/sites', key: 'sites', icon: LayoutGrid },
 ];
 
 function useActiveCount() {
   return useDownloads((s) => Object.values(s.jobs).filter((j) => ['queued', 'downloading', 'processing'].includes(j.status)).length + s.queue.length);
-}
-
-function Badge({ n }) {
-  if (!n) return null;
-  return <span className="min-w-5 rounded-full bg-signal px-1.5 text-center text-xs font-bold leading-5 text-signal-ink tabular-nums">{n}</span>;
 }
 
 function useOnline() {
@@ -39,29 +34,44 @@ function useOnline() {
   return online;
 }
 
+/** Light/dark switch: flips whatever is showing now (the device setting included). */
+function ThemeButton() {
+  const { t } = useI18n();
+  const update = useSettings((s) => s.update);
+  const theme = useSettings((s) => s.theme);
+  const dark = theme === 'dark' || (theme === 'system' && window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+  const Icon = dark ? Sun : Moon;
+  const label = dark ? t('nav.toLight') : t('nav.toDark');
+  return (
+    <button type="button" aria-label={label} title={label} onClick={() => update({ theme: dark ? 'light' : 'dark' })} className="grid size-10 place-items-center rounded-xl bg-hero-chip text-hero-ink transition-colors hover:bg-hero-chip-hover">
+      <Icon aria-hidden="true" className="size-5" />
+    </button>
+  );
+}
+
 function Toaster() {
   const { t } = useI18n();
   const toasts = useToasts((s) => s.toasts);
   const dismiss = useToasts((s) => s.dismiss);
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-center gap-2 px-4 md:inset-x-auto md:end-6 md:bottom-6 md:w-[26rem] md:items-end md:px-0" aria-live="polite" aria-atomic="false">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 flex flex-col items-center gap-2 px-4 md:inset-x-auto md:end-6 md:bottom-6 md:w-[26rem] md:items-end md:px-0" aria-live="polite" aria-atomic="false">
       {toasts.map((toast) => (
         <div
           key={toast.id}
           role={toast.tone === 'error' ? 'alert' : 'status'}
           className={cx(
-            'animate-rise pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-[var(--radius-panel)] px-4 py-3 shadow-lift',
-            toast.tone === 'error' ? 'bg-buoy text-white' : 'bg-ink text-canvas',
+            'animate-rise pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-2xl px-4 py-3 shadow-card',
+            toast.tone === 'error' ? 'bg-bad text-white dark:text-[#1b0b0b]' : 'bg-ink text-canvas',
           )}
         >
           <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold">{toast.title}</p>
+            <p className="truncate font-bold">{toast.title}</p>
             {toast.body && <p className="text-sm opacity-85">{toast.body}</p>}
           </div>
           {toast.action && (
             <button
               type="button"
-              className="shrink-0 rounded-[var(--radius-control)] px-3 py-1.5 text-sm font-bold text-signal hover:bg-white/10"
+              className="shrink-0 rounded-[11px] bg-sun px-3 py-1.5 text-sm font-bold text-sun-ink hover:brightness-105"
               onClick={() => {
                 toast.action.onClick();
                 dismiss(toast.id);
@@ -70,7 +80,7 @@ function Toaster() {
               {toast.action.label}
             </button>
           )}
-          <button type="button" aria-label={t('actions.dismiss')} className="shrink-0 rounded p-1 opacity-70 hover:opacity-100" onClick={() => dismiss(toast.id)}>
+          <button type="button" aria-label={t('actions.dismiss')} className="shrink-0 rounded-lg p-1 opacity-70 hover:opacity-100" onClick={() => dismiss(toast.id)}>
             <X className="size-4" aria-hidden="true" />
           </button>
         </div>
@@ -84,76 +94,88 @@ export function AppShell() {
   const active = useActiveCount();
   const online = useOnline();
   const location = useLocation();
-  const home = location.pathname === '/';
 
   // Tab title shows work in progress, even when the tab is in the background.
   useEffect(() => {
     document.title = active ? `(${active}) Ferry` : 'Ferry';
   }, [active]);
 
+  // Each screen starts at the top.
+  useEffect(() => {
+    window.scrollTo?.(0, 0);
+  }, [location.pathname]);
+
   return (
     <div className="flex min-h-dvh flex-col">
-      <a href="#main" className="sr-only z-50 rounded bg-signal px-4 py-2 font-bold text-signal-ink focus:not-sr-only focus:fixed focus:start-3 focus:top-3">
+      <a href="#main" className="sr-only z-50 rounded-xl bg-sun px-4 py-2 font-bold text-sun-ink focus:not-sr-only focus:fixed focus:start-3 focus:top-3">
         {t('app.skip')}
       </a>
-      <header className="on-hull bg-hull text-hull-ink">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <NavLink to="/" className="rounded-md" aria-label="Ferry">
+      <header className="bg-hero text-hero-ink">
+        <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-7 px-4 sm:h-[68px] sm:px-8">
+          <NavLink to="/" className="rounded-lg" aria-label="Ferry">
             <Wordmark />
           </NavLink>
           <nav aria-label={t('nav.main')} className="hidden md:block">
-            <ul className="flex items-center gap-1">
+            <ul className="flex items-center gap-0.5">
               {NAV.map(({ to, key, end }) => (
                 <li key={to}>
                   <NavLink
                     to={to}
                     end={end}
-                    className={({ isActive }) =>
-                      cx('flex h-10 items-center gap-2 rounded-[var(--radius-control)] px-3 font-semibold transition-colors', isActive ? 'bg-white/14 text-hull-ink' : 'text-hull-ink-2 hover:text-hull-ink')
-                    }
+                    className={({ isActive }) => cx('flex h-10 items-center gap-2 rounded-full px-4 text-[15px] font-semibold transition-colors', isActive ? 'bg-primary text-primary-ink' : 'text-hero-ink hover:bg-hero-chip')}
                   >
-                    {t(`nav.${key}`)}
-                    {key === 'downloads' && <Badge n={active} />}
+                    {({ isActive }) => (
+                      <>
+                        {t(`nav.${key}`)}
+                        {key === 'downloads' && active > 0 && (
+                          <span className={cx('grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-xs font-bold tabular-nums', isActive ? 'bg-primary-ink text-primary' : 'bg-hero-ink text-hero')}>{active}</span>
+                        )}
+                      </>
+                    )}
                   </NavLink>
                 </li>
               ))}
             </ul>
           </nav>
+          <div className="ms-auto flex items-center gap-2">
+            <ThemeButton />
+            <NavLink
+              to="/settings"
+              aria-label={t('nav.settings')}
+              title={t('nav.settings')}
+              className={({ isActive }) => cx('grid size-10 place-items-center rounded-xl transition-colors', isActive ? 'bg-primary text-primary-ink' : 'bg-hero-chip text-hero-ink hover:bg-hero-chip-hover')}
+            >
+              <SlidersHorizontal aria-hidden="true" className="size-5" />
+            </NavLink>
+          </div>
         </div>
       </header>
 
       {!online && (
-        <div role="status" className="bg-amber-soft text-amber">
-          <p className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2 text-sm font-semibold sm:px-6">
+        <div role="status" className="bg-off-soft text-off">
+          <p className="mx-auto flex max-w-[1280px] items-center gap-2 px-4 py-2 text-sm font-semibold sm:px-8">
             <WifiOff className="size-4" aria-hidden="true" />
             {t('app.offline')}
           </p>
         </div>
       )}
 
-      <main id="main" tabIndex={-1} className={cx('flex-1 pb-24 outline-none md:pb-12', !home && 'pt-6 sm:pt-10')}>
+      <main id="main" tabIndex={-1} className="flex-1 pb-28 outline-none md:pb-14">
         <Outlet />
       </main>
 
       {/* Phone navigation: thumb-reachable, four destinations. */}
-      <nav aria-label={t('nav.main')} className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur md:hidden">
+      <nav aria-label={t('nav.main')} className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-paper/95 backdrop-blur md:hidden">
         <ul className="grid grid-cols-4">
-          {NAV.filter((n) => !n.desktopOnly).map(({ to, key, icon: Icon, end }) => (
+          {NAV.map(({ to, key, icon: Icon, end }) => (
             <li key={to}>
-              <NavLink
-                to={to}
-                end={end}
-                className={({ isActive }) => cx('relative flex h-16 flex-col items-center justify-center gap-1 text-xs font-semibold', isActive ? 'text-hull dark:text-signal' : 'text-ink-2')}
-              >
+              <NavLink to={to} end={end} className={({ isActive }) => cx('flex h-[66px] flex-col items-center justify-center gap-1 text-[11.5px] font-semibold', isActive ? 'text-ink' : 'text-ink-3')}>
                 {({ isActive }) => (
                   <>
-                    <span className={cx('absolute top-0 h-1 w-10 rounded-b-full', isActive ? 'bg-signal' : 'bg-transparent')} aria-hidden="true" />
-                    <span className="relative">
-                      <Icon className="size-6" aria-hidden="true" />
+                    <span className={cx('relative grid h-[30px] w-14 place-items-center rounded-full transition-colors', isActive && 'bg-sun text-sun-ink')}>
+                      <Icon className="size-[22px]" aria-hidden="true" />
                       {key === 'downloads' && active > 0 && (
-                        <span className="absolute -end-2.5 -top-1.5">
-                          <Badge n={active} />
-                        </span>
+                        <span className="absolute -top-1 start-[34px] grid h-[18px] min-w-[18px] place-items-center rounded-full bg-ink px-1 text-[11px] font-bold text-paper tabular-nums">{active}</span>
                       )}
                     </span>
                     {t(`nav.${key}`)}

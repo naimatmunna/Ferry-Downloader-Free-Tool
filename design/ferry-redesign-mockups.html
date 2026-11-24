@@ -1,0 +1,1626 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Ferry redesign mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   Ferry redesign — mockups v1 (design only, not the app)
+   One loud colour (sun yellow) marks "start here"; site logos bring the
+   rest of the colour; everything else stays calm.
+   ===================================================================== */
+:root {
+  --sun: #FFD43B; --sun-ink: #1B1600;
+  --ink: #14161A; --ink-2: #4D5360; --ink-3: #6A7180;
+  --paper: #FFFFFF; --canvas: #F3F4F6; --field: #ECEEF1; --line: #E1E4E8; --line-2: #C9CED6;
+  --primary: #14161A; --primary-ink: #FFFFFF; --primary-hover: #2B2F36;
+  --ok: #0E7536; --ok-soft: #E2F4E8; --ok-dot: #22B35E;
+  --perm: #2356D8; --perm-soft: #E7EEFD;
+  --off: #985700; --off-soft: #FFF0D2;
+  --lock: #5D6470; --lock-soft: #ECEEF1;
+  --warn: #B03E06; --warn-soft: #FFE9DC; --warn-dot: #F76707;
+  --bad: #C9302C; --bad-soft: #FDE8E7;
+  --hero: #FFD43B; --hero-head: #14161A; --hero-ink: #14161A; --hero-ink-2: #433F2C;
+  --hero-chip: rgb(20 22 26 / .08); --hero-chip-hover: rgb(20 22 26 / .15); --hero-pill: #FFFFFF;
+  --edge: #14161A; --edge-shadow: #14161A; --edge-sel: #14161A;
+  --focus: #2356D8;
+  --switch-off: #C9CED6;
+  --mark-bg: #14161A; --mark-arrow: #FFD43B; --mark-wave: #FFFFFF;
+  --shadow-1: 0 1px 2px rgb(20 22 26 / .06), 0 12px 32px -16px rgb(20 22 26 / .25);
+  --board: #E4E5E8; --board-2: #F5F5F7; --board-ink: #14161A; --board-ink-2: #555B66; --chrome: #F6F6F7;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --ink: #F1F2F4; --ink-2: #B2B8C3; --ink-3: #878F9C;
+  --paper: #17191E; --canvas: #0E0F12; --field: #23262C; --line: #2B2F37; --line-2: #3B404A;
+  --primary: #FFD43B; --primary-ink: #14161A; --primary-hover: #FFDE66;
+  --ok: #46D488; --ok-soft: #10301E; --ok-dot: #46D488;
+  --perm: #8AABFF; --perm-soft: #172241;
+  --off: #F2B550; --off-soft: #35270B;
+  --lock: #A3AAB5; --lock-soft: #24272D;
+  --warn: #FF925C; --warn-soft: #3A2013; --warn-dot: #FF8A3D;
+  --bad: #FF7B76; --bad-soft: #3C1817;
+  --hero: #16171B; --hero-head: #FFD43B; --hero-ink: #F1F2F4; --hero-ink-2: #C3C7CF;
+  --hero-chip: rgb(255 255 255 / .07); --hero-chip-hover: rgb(255 255 255 / .13); --hero-pill: #262930;
+  --edge: #3B404A; --edge-shadow: #000000; --edge-sel: #FFD43B;
+  --focus: #FFD43B;
+  --switch-off: #4A505B;
+  --mark-bg: #FFD43B; --mark-arrow: #14161A; --mark-wave: #14161A;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .5), 0 14px 34px -16px rgb(0 0 0 / .8);
+  --board: #060708; --board-2: #121317; --board-ink: #F1F2F4; --board-ink-2: #A3A9B4; --chrome: #1B1D22;
+  color-scheme: dark;
+}
+
+/* ---------- base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--board); color: var(--board-ink);
+  font-family: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; color: inherit; letter-spacing: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.i { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.i--xs { width: 13px; height: 13px; }
+.i--sm { width: 16px; height: 16px; }
+.i--lg { width: 24px; height: 24px; }
+.num { font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.mark { width: 32px; height: 32px; flex: none; }
+.display { font-weight: 820; font-stretch: 122%; letter-spacing: -.025em; line-height: .92; color: var(--hero-head); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
+
+/* ---------- board (the page around the mockups) ---------- */
+.board-head { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--board) 90%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid color-mix(in srgb, var(--board-ink) 10%, transparent); }
+.board-head-in { max-width: 1360px; margin: 0 auto; padding: 10px 24px; display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; }
+.board-title { margin: 0; display: flex; align-items: center; gap: 10px; font-weight: 800; font-stretch: 115%; font-size: 16px; }
+.board-title .mark { width: 28px; height: 28px; }
+.tag { font-weight: 600; font-stretch: 100%; font-size: 12px; padding: 3px 8px; border-radius: 999px; background: color-mix(in srgb, var(--board-ink) 9%, transparent); color: var(--board-ink-2); }
+.board-nav { display: flex; gap: 2px; flex-wrap: wrap; }
+.board-nav a { padding: 6px 10px; border-radius: 8px; font-size: 13.5px; font-weight: 550; color: var(--board-ink-2); text-decoration: none; }
+.board-nav a:hover { background: color-mix(in srgb, var(--board-ink) 8%, transparent); color: var(--board-ink); }
+.seg { display: inline-flex; padding: 3px; border-radius: 10px; background: color-mix(in srgb, var(--board-ink) 8%, transparent); margin-left: auto; }
+.seg button { border: 0; background: none; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--board-ink-2); display: inline-flex; gap: 6px; align-items: center; }
+.seg button[aria-pressed="true"] { background: var(--board-2); color: var(--board-ink); box-shadow: 0 1px 2px rgb(0 0 0 / .14); }
+.board { max-width: 1360px; margin: 0 auto; padding: 28px 24px 96px; }
+.intro { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 16px; }
+.note { background: var(--board-2); border-radius: 18px; padding: 20px 22px; }
+.note h2 { margin: 0 0 10px; font-size: 15px; font-weight: 700; }
+.note ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; color: var(--board-ink-2); font-size: 14px; }
+.note li b { color: var(--board-ink); font-weight: 650; }
+.note--lead { background: var(--sun); color: var(--sun-ink); display: flex; flex-direction: column; justify-content: space-between; gap: 18px; }
+.note--lead h1 { margin: 0; font-size: 30px; font-weight: 820; font-stretch: 118%; letter-spacing: -.02em; line-height: 1.02; }
+.note--lead p { margin: 0; font-size: 14.5px; font-weight: 550; }
+.narrow-note { display: none; }
+@media (max-width: 700px) { .narrow-note { display: block; padding-top: 12px; border-top: 1px solid rgb(27 22 0 / .2); } }
+.sec { margin-top: 76px; scroll-margin-top: 70px; }
+.sec-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 10px 40px; align-items: end; margin-bottom: 22px; }
+.sec-head h2 { margin: 0; font-size: 34px; font-weight: 820; font-stretch: 118%; letter-spacing: -.02em; line-height: 1.02; }
+.sec-head ul { margin: 0; padding-left: 18px; color: var(--board-ink-2); font-size: 14px; display: grid; gap: 5px; }
+.fit { width: 100%; }
+.frame { width: 1280px; background: var(--canvas); color: var(--ink); border-radius: 14px; overflow: hidden; box-shadow: 0 40px 80px -40px rgb(0 0 0 / .45), 0 0 0 1px rgb(0 0 0 / .07); }
+:root[data-theme="dark"] .frame { box-shadow: 0 40px 80px -40px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .09); }
+.chrome { height: 38px; display: flex; align-items: center; gap: 7px; padding: 0 14px; background: var(--chrome); border-bottom: 1px solid var(--line); }
+.chrome > i { width: 11px; height: 11px; border-radius: 50%; background: #FF5F57; }
+.chrome > i:nth-child(2) { background: #FEBC2E; }
+.chrome > i:nth-child(3) { background: #28C840; }
+.chrome-url { margin: 0 auto; transform: translateX(-30px); width: 420px; height: 24px; border-radius: 7px; background: var(--field); display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--ink-2); }
+.credits { margin-top: 64px; padding-top: 20px; border-top: 1px solid color-mix(in srgb, var(--board-ink) 12%, transparent); font-size: 13px; color: var(--board-ink-2); display: grid; gap: 6px; max-width: 90ch; }
+.credits p { margin: 0; }
+@media (max-width: 900px) { .intro, .sec-head { grid-template-columns: 1fr; } .sec-head h2 { font-size: 28px; } .board-head { position: static; } .seg { margin-left: 0; } }
+@media (max-width: 560px) { .board { padding: 20px 16px 72px; } .board-head-in { padding: 10px 16px; } .note--lead h1 { font-size: 26px; } .phones { gap: 32px; } }
+
+/* ---------- app: top bar ---------- */
+.topbar { display: flex; align-items: center; gap: 28px; height: 68px; padding: 0 32px; background: var(--hero); color: var(--hero-ink); }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 820; font-stretch: 125%; font-size: 21px; letter-spacing: -.015em; color: var(--hero-head); text-decoration: none; }
+.nav { display: flex; gap: 2px; }
+.nav a { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 15px; border-radius: 999px; font-weight: 600; font-size: 15px; color: var(--hero-ink); text-decoration: none; }
+.nav a:hover { background: var(--hero-chip); }
+.nav a[aria-current="page"] { background: var(--primary); color: var(--primary-ink); }
+.count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--hero-ink); color: var(--hero); font-size: 12px; font-weight: 750; display: inline-grid; place-items: center; line-height: 1; }
+.nav a[aria-current="page"] .count { background: var(--primary-ink); color: var(--primary); }
+.top-actions { margin-left: auto; display: flex; gap: 8px; }
+.icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 0; background: var(--hero-chip); color: var(--hero-ink); display: grid; place-items: center; flex: none; }
+.icon-btn:hover { background: var(--hero-chip-hover); }
+.icon-btn--field { background: var(--field); color: var(--ink); }
+.icon-btn--field:hover { background: var(--line); }
+.icon-btn--plain { background: none; color: var(--ink-2); }
+
+/* ---------- app: hero + dock (the link box) ---------- */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) 590px; gap: 52px; padding: 18px 32px 48px; background: var(--hero); color: var(--hero-ink); }
+.hero h1 { margin: 44px 0 18px; font-size: 68px; }
+.lede { font-size: 18px; line-height: 1.45; color: var(--hero-ink-2); max-width: 34ch; margin: 0 0 28px; }
+.dock { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 8px; background: var(--paper); border: 2px solid var(--edge); border-radius: 22px; box-shadow: 0 4px 0 var(--edge-shadow); }
+.dock:focus-within { outline: 3px solid var(--focus); outline-offset: 3px; }
+.dock-slot { width: 56px; height: 56px; border-radius: 16px; background: var(--field); color: var(--ink-2); display: grid; place-items: center; flex: none; }
+.dock-slot .app { animation: dock-in .45s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes dock-in { from { transform: scale(.35) rotate(-14deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.dock-input { flex: 1; min-width: 0; height: 56px; border: 0; background: none; outline: 0; font-size: 17px; color: var(--ink); text-overflow: ellipsis; }
+.dock-input::placeholder { color: var(--ink-3); }
+.detect { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; min-height: 34px; margin-top: 18px; font-size: 14.5px; }
+.detect > b { font-weight: 750; font-size: 15.5px; }
+.detect-hint { color: var(--hero-ink-2); }
+.caps { list-style: none; margin: 26px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: 14.5px; font-weight: 650; }
+.caps li { display: inline-flex; align-items: center; gap: 8px; }
+.demo-only { margin-top: 26px; padding: 10px 12px; border-radius: 14px; border: 1.5px dashed color-mix(in srgb, var(--hero-ink) 35%, transparent); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.demo-only > span { font-size: 12.5px; font-weight: 600; color: var(--hero-ink-2); margin-right: 2px; }
+.ex { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px 0 5px; border-radius: 999px; border: 0; background: var(--hero-chip); font-size: 13.5px; font-weight: 650; color: var(--hero-ink); }
+.ex:hover { background: var(--hero-chip-hover); }
+.ex .app { --s: 22px; }
+.ex .app > svg { width: 62%; height: 62%; }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 48px; padding: 0 20px; border-radius: 14px; border: 0; font-weight: 700; font-size: 15.5px; white-space: nowrap; text-decoration: none; }
+.btn--primary { background: var(--primary); color: var(--primary-ink); }
+.btn--primary:hover { background: var(--primary-hover); }
+.btn--soft { background: var(--field); color: var(--ink); }
+.btn--soft:hover { background: var(--line); }
+.btn--line { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line-2); }
+.btn--tall { height: 56px; padding: 0 24px; border-radius: 16px; font-size: 16px; }
+.btn--sm { height: 38px; padding: 0 14px; border-radius: 11px; font-size: 14px; gap: 7px; }
+.btn--block { width: 100%; }
+.btn[disabled] { opacity: .4; cursor: not-allowed; }
+.btn--cta { height: auto; min-height: 62px; padding: 10px 22px; border-radius: 18px; gap: 12px; }
+.btn--cta > span { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+.btn--cta b { font-size: 17px; font-weight: 750; }
+.btn--cta small { font-size: 13px; font-weight: 550; opacity: .78; }
+.link { font-weight: 650; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+.link-btn { border: 0; background: none; padding: 0; font-weight: 650; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; font-size: inherit; }
+
+/* ---------- status pills ---------- */
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px 0 8px; border-radius: 999px; font-size: 13px; font-weight: 650; white-space: nowrap; }
+.pill .i { width: 15px; height: 15px; stroke-width: 2.5; }
+.pill--free { background: var(--ok-soft); color: var(--ok); }
+.pill--perm { background: var(--perm-soft); color: var(--perm); }
+.pill--off { background: var(--off-soft); color: var(--off); }
+.pill--lock { background: var(--lock-soft); color: var(--lock); }
+.pill--any { background: var(--field); color: var(--ink-2); }
+.pill--mini { height: 22px; padding: 0 8px 0 6px; font-size: 11.5px; gap: 4px; }
+.pill--mini .i { width: 12px; height: 12px; }
+.livepill { background: var(--hero-pill); color: var(--ink); }
+.on-hero .pill { background: var(--hero-pill); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok-dot); flex: none; display: inline-block; }
+.dot--warn { background: var(--warn-dot); }
+.dot--pulse { animation: pulse 2.4s ease-out infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok-dot) 60%, transparent); } 70%, 100% { box-shadow: 0 0 0 7px transparent; } }
+
+/* ---------- site logo tiles ---------- */
+.app { --s: 52px; position: relative; display: grid; place-items: center; flex: none; width: var(--s); height: var(--s); border-radius: calc(var(--s) * .26); background: var(--b, #14161A); color: var(--g, #fff); }
+.app > svg { width: 58%; height: 58%; fill: currentColor; overflow: visible; }
+.app--light { box-shadow: inset 0 0 0 1px rgb(20 22 26 / .13); }
+:root[data-theme="dark"] .app { box-shadow: inset 0 0 0 1px rgb(255 255 255 / .16); }
+.ldot { position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--ok-dot); border: 2.5px solid var(--paper); }
+.ldot--warn { background: var(--warn-dot); }
+.b-tiktok, .b-x, .b-threads, .b-tidal, .b-9gag, .b-patreon, .b-hbomax, .b-giphy { --b: #000; --g: #fff; }
+.b-instagram { --b: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); --g: #fff; }
+.b-vimeo { --b: #1AB7EA; --g: #fff; }
+.b-twitch { --b: #9146FF; --g: #fff; }
+.b-reddit { --b: #FF4500; --g: #fff; }
+.b-pinterest { --b: #fff; --g: #E60023; }
+.b-dailymotion { --b: #fff; --g: #0A0A0A; }
+.b-tumblr { --b: #001935; --g: #fff; }
+.b-bluesky { --b: #1185FE; --g: #fff; }
+.b-imgur { --b: #1BB76E; --g: #fff; }
+.b-flickr { --b: #fff; --g: #0063DC; }
+.b-internetarchive { --b: #fff; --g: #000; }
+.b-peertube { --b: #F1680D; --g: #fff; }
+.b-kick { --b: #53FC19; --g: #000; }
+.b-rumble { --b: #85C742; --g: #fff; }
+.b-bilibili { --b: #00A1D6; --g: #fff; }
+.b-mastodon { --b: #6364FF; --g: #fff; }
+.b-ted { --b: #E62B1E; --g: #fff; }
+.b-nasa { --b: #fff; --g: #E03C31; }
+.b-wikimediacommons { --b: #006699; --g: #fff; }
+.b-loom { --b: #625DF5; --g: #fff; }
+.b-mixcloud { --b: #5000FF; --g: #fff; }
+.b-audiomack { --b: #FFA200; --g: #fff; }
+.b-odysee { --b: #EF1970; --g: #fff; }
+.b-niconico { --b: #fff; --g: #231815; }
+.b-sinaweibo { --b: #fff; --g: #E6162D; }
+.b-youtube { --b: #fff; --g: #FF0000; }
+.b-facebook { --b: #fff; --g: #0866FF; }
+.b-soundcloud { --b: #FF5500; --g: #fff; }
+.b-bandcamp { --b: #408294; --g: #fff; }
+.b-snapchat { --b: #FFFC00; --g: #fff; }
+.b-snapchat > svg { stroke: #000; stroke-width: 1.6; paint-order: stroke; }
+.b-vk { --b: #0077FF; --g: #fff; }
+.b-netflix { --b: #000; --g: #E50914; }
+.b-spotify { --b: #000; --g: #1ED760; }
+.b-applemusic { --b: linear-gradient(180deg, #FB5C74, #FA233B); --g: #fff; }
+.b-deezer { --b: #A238FF; --g: #fff; }
+.b-any { --b: var(--field); --g: var(--ink-2); }
+.b-any > svg { fill: none; stroke: currentColor; stroke-width: 2; }
+
+/* ---------- "Where Ferry works" panel ---------- */
+.where { align-self: start; background: var(--paper); color: var(--ink); border-radius: 28px; padding: 20px 22px 16px; box-shadow: var(--shadow-1); }
+.where-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+.where-head h2 { margin: 0; font-size: 19px; font-weight: 760; font-stretch: 112%; letter-spacing: -.01em; }
+.where-live { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 550; color: var(--ink-2); }
+.shelf { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 12px; }
+.shelf--first { border-top: 0; padding-top: 10px; margin-top: 2px; }
+.shelf-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.shelf-ico { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; flex: none; }
+.shelf-ico .i { width: 16px; height: 16px; stroke-width: 2.5; }
+.shelf-ico--go { background: var(--ok-soft); color: var(--ok); }
+.shelf-ico--off { background: var(--off-soft); color: var(--off); }
+.shelf-ico--lock { background: var(--lock-soft); color: var(--lock); }
+.shelf-title { font-weight: 720; font-size: 15px; line-height: 1.2; }
+.shelf-sub { font-size: 12.5px; color: var(--ink-2); }
+.shelf-n { margin-left: auto; font-size: 13px; font-weight: 650; color: var(--ink-2); white-space: nowrap; }
+.tiles { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 2px 6px; border-radius: 16px; border: 0; background: none; color: var(--ink-2); transition: opacity .3s, background .2s; min-width: 0; }
+.tile:hover { background: var(--field); }
+.tile .app { transition: transform .4s cubic-bezier(.2, 1.3, .4, 1), box-shadow .2s; }
+.tile-name { font-size: 11.5px; font-weight: 600; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tiles--muted .app { filter: grayscale(1); opacity: .5; }
+.tile--more .app { --b: var(--field); --g: var(--ink-2); font-weight: 760; font-size: 15px; }
+.shelf-foot { margin: 6px 2px 0; font-size: 12.5px; color: var(--ink-2); }
+.where-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; }
+.legend { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-2); }
+.legend .dot + span { margin-right: 10px; }
+.where.matching .tile { opacity: .3; }
+.where.matching .tile.is-match { opacity: 1; background: var(--field); }
+.tile.is-match .app { transform: translateY(-4px) scale(1.08); box-shadow: 0 0 0 3px var(--paper), 0 0 0 5.5px var(--ink); }
+
+/* ---------- home: how it works + footer ---------- */
+.how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 28px 32px 6px; margin: 0; list-style: none; }
+.how li { display: flex; gap: 14px; align-items: flex-start; background: var(--paper); border-radius: 20px; padding: 18px 20px; }
+.how-n { width: 32px; height: 32px; border-radius: 50%; background: var(--sun); color: var(--sun-ink); display: grid; place-items: center; font-weight: 820; flex: none; }
+.how b { display: block; font-size: 16px; margin-bottom: 2px; }
+.how p { margin: 0; font-size: 14px; color: var(--ink-2); }
+.appfoot { margin: 0; padding: 18px 32px 26px; font-size: 13px; color: var(--ink-2); display: flex; gap: 18px; flex-wrap: wrap; }
+
+/* ---------- link band (after a link is pasted) ---------- */
+.band { background: var(--hero); color: var(--hero-ink); padding: 10px 32px 24px; }
+.band .dock { max-width: 900px; }
+
+/* ---------- choose-a-file screen ---------- */
+.work { display: grid; grid-template-columns: 372px minmax(0, 1fr); gap: 24px; padding: 28px 32px 36px; align-items: start; }
+.card { background: var(--paper); border-radius: 24px; box-shadow: var(--shadow-1); }
+.media { overflow: hidden; }
+.media-thumb { position: relative; height: 430px; display: grid; place-items: center; overflow: hidden; background: #111; }
+.media-thumb > .blur { position: absolute; inset: -30px; width: calc(100% + 60px); height: calc(100% + 60px); filter: blur(26px) saturate(1.2); opacity: .9; }
+.media-thumb > .portrait { position: relative; height: 100%; aspect-ratio: 9 / 16; display: block; }
+.duration { position: absolute; right: 12px; bottom: 12px; padding: 3px 8px; border-radius: 8px; background: rgb(0 0 0 / .72); color: #fff; font-size: 12.5px; font-weight: 650; }
+.media-body { padding: 18px 20px 20px; }
+.media-body h3 { margin: 0 0 4px; font-size: 19px; font-weight: 720; line-height: 1.25; }
+.media-by { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-2); }
+.facts { margin: 14px 0 0; padding: 14px 0 0; border-top: 1px solid var(--line); list-style: none; display: grid; gap: 9px; font-size: 14px; }
+.facts li { display: flex; gap: 10px; align-items: center; color: var(--ink-2); }
+.facts b { color: var(--ink); font-weight: 620; }
+
+.picker { padding: 22px 24px 24px; }
+.picker-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.picker-head h2 { margin: 0; font-size: 22px; font-weight: 760; font-stretch: 112%; letter-spacing: -.01em; }
+.grp { margin-top: 18px; }
+.grp-label { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 10px; font-size: 15px; font-weight: 720; }
+.grp-hint { font-size: 13px; font-weight: 500; color: var(--ink-2); }
+.grp.is-off .qlist { opacity: .45; }
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.mode { position: relative; display: flex; flex-direction: column; gap: 5px; padding: 14px 14px 13px; border-radius: 18px; background: var(--field); cursor: pointer; border: 2px solid transparent; transition: background .15s; }
+.mode input { position: absolute; opacity: 0; pointer-events: none; }
+.mode b { font-size: 15.5px; font-weight: 720; }
+.mode > span { font-size: 12.5px; color: var(--ink-2); }
+.mode:hover { background: var(--line); }
+.mode:has(input:checked) { background: var(--sun); color: var(--sun-ink); border-color: var(--edge-sel); box-shadow: 0 3px 0 var(--edge-shadow); }
+.mode:has(input:checked) > span { color: color-mix(in srgb, var(--sun-ink) 72%, transparent); }
+.mode:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.tick { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; background: var(--sun-ink); color: var(--sun); display: none; place-items: center; }
+.tick .i { width: 13px; height: 13px; stroke-width: 3; }
+.mode:has(input:checked) .tick { display: grid; }
+.qlist { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.q { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 16px; border-radius: 14px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); cursor: pointer; }
+.q input { appearance: none; width: 20px; height: 20px; border-radius: 50%; margin: 0; box-shadow: inset 0 0 0 2px var(--line-2); flex: none; }
+.q input:checked { box-shadow: inset 0 0 0 6px var(--ink); }
+.q:has(input:checked) { box-shadow: inset 0 0 0 2px var(--ink); }
+.q:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.q-main { font-weight: 720; font-size: 15px; }
+.q-tag { font-size: 11.5px; font-weight: 650; padding: 2px 7px; border-radius: 6px; background: var(--field); color: var(--ink-2); }
+.q-size { margin-left: auto; font-size: 14px; color: var(--ink-2); }
+.fchips { display: flex; flex-wrap: wrap; gap: 8px; }
+.fchip { position: relative; display: flex; flex-direction: column; gap: 1px; padding: 9px 14px 8px; border-radius: 14px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); cursor: pointer; min-width: 92px; }
+.fchip input { position: absolute; opacity: 0; pointer-events: none; }
+.fchip b { font-size: 15px; font-weight: 760; }
+.fchip > span { font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.fchip:has(input:checked) { background: var(--primary); color: var(--primary-ink); box-shadow: none; }
+.fchip:has(input:checked) > span { color: color-mix(in srgb, var(--primary-ink) 75%, transparent); }
+.fchip:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.more { display: flex; gap: 8px; flex-wrap: wrap; }
+.opt { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 12px; background: var(--field); font-size: 14px; font-weight: 620; border: 0; color: var(--ink); }
+.opt small { font-size: 13px; font-weight: 500; color: var(--ink-2); }
+.consent { display: flex; gap: 12px; align-items: flex-start; margin-top: 20px; padding: 14px 16px; border-radius: 16px; background: var(--perm-soft); cursor: pointer; }
+.consent input { appearance: none; width: 22px; height: 22px; border-radius: 7px; margin: 1px 0 0; flex: none; background: var(--paper); box-shadow: inset 0 0 0 2px var(--perm); display: grid; place-items: center; }
+.consent input:checked { background: var(--perm); box-shadow: none; }
+.consent input:checked::after { content: ''; width: 10px; height: 5px; border: solid var(--paper); border-width: 0 0 2.5px 2.5px; transform: translateY(-1px) rotate(-45deg); }
+.consent b { display: block; font-size: 14.5px; font-weight: 680; color: var(--ink); }
+.consent span span { font-size: 13px; color: var(--ink-2); }
+.cta { margin-top: 18px; display: grid; gap: 10px; }
+.cta-note { margin: 0; font-size: 12.5px; color: var(--ink-2); text-align: center; }
+
+/* ---------- link states ---------- */
+.states { display: grid; grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); gap: 16px; }
+.scase { display: flex; flex-direction: column; background: var(--canvas); color: var(--ink); border-radius: 22px; overflow: hidden; box-shadow: 0 0 0 1px rgb(0 0 0 / .05), 0 20px 40px -28px rgb(0 0 0 / .5); }
+.scase-top { background: var(--hero); padding: 14px; }
+.dock--sm { border-radius: 16px; padding: 5px; gap: 10px; box-shadow: 0 3px 0 var(--edge-shadow); }
+.dock--sm .dock-slot { width: 40px; height: 40px; border-radius: 12px; }
+.dock-url { font-size: 13.5px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.scase-body { flex: 1; padding: 16px 16px 18px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.scase-body h3 { margin: 2px 0 0; font-size: 17px; font-weight: 740; line-height: 1.2; }
+.scase-body p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+.scase-body .btn, .scase-body .routes { margin-top: auto; }
+.consent--sm { margin-top: 0; padding: 10px 12px; gap: 10px; border-radius: 12px; width: 100%; }
+.consent--sm b { font-size: 13.5px; }
+.routes { display: grid; gap: 8px; width: 100%; }
+.route { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 14px; background: var(--field); text-decoration: none; color: var(--ink); }
+.route:hover { background: var(--line); }
+.route b { display: block; font-size: 14px; font-weight: 680; }
+.route span { font-size: 12.5px; color: var(--ink-2); }
+.route > .i { margin-left: auto; color: var(--ink-2); }
+
+/* ---------- downloads (tickets) ---------- */
+.page { padding: 30px 32px 40px; }
+.page-head { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 22px; }
+.page-head h1 { margin: 0; font-size: 44px; font-weight: 820; font-stretch: 122%; letter-spacing: -.025em; line-height: 1; }
+.page-sub { margin: 8px 0 0; font-size: 15px; color: var(--ink-2); }
+.page-actions { margin-left: auto; display: flex; gap: 8px; }
+.dl-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+.tickets { display: grid; gap: 14px; }
+.ticket { position: relative; display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; align-items: center; background: var(--paper); border-radius: 20px; box-shadow: var(--shadow-1); }
+.ticket::before, .ticket::after { content: ''; position: absolute; left: 92px; width: 18px; height: 18px; border-radius: 50%; background: var(--canvas); transform: translateX(-50%); }
+.ticket::before { top: -9px; }
+.ticket::after { bottom: -9px; }
+.stub { align-self: stretch; display: grid; place-items: center; border-right: 2px dashed var(--line-2); }
+.t-body { padding: 16px 20px; min-width: 0; }
+.t-top { display: flex; align-items: center; gap: 10px; }
+.t-title { margin: 0; font-size: 16.5px; font-weight: 720; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.t-meta { margin: 3px 0 0; font-size: 13.5px; color: var(--ink-2); }
+.bar { margin-top: 12px; height: 8px; border-radius: 99px; background: var(--field); overflow: hidden; }
+.bar > span { display: block; height: 100%; width: var(--p); background: var(--c, var(--ink)); border-radius: inherit; }
+.bar--work > span { background-image: repeating-linear-gradient(-45deg, rgb(255 255 255 / .3) 0 6px, transparent 6px 12px); background-size: 17px 17px; animation: stripes 1s linear infinite; }
+@keyframes stripes { to { background-position: 17px 0; } }
+.bar--paused > span { opacity: .4; }
+.t-prog { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 8px 0 0; font-size: 13px; color: var(--ink-2); }
+.t-prog b { color: var(--ink); font-weight: 720; }
+.t-note { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin: 10px 0 0; font-size: 13px; color: var(--ink-2); }
+.ok-text { display: inline-flex; align-items: center; gap: 5px; color: var(--ok); font-weight: 650; }
+.t-fail { margin: 8px 0 0; font-size: 13.5px; color: var(--ink); max-width: 60ch; }
+.t-actions { display: flex; gap: 8px; padding: 0 20px 0 4px; }
+.state { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 720; flex: none; white-space: nowrap; }
+.state .i { width: 12px; height: 12px; stroke-width: 3; }
+.state--run { background: var(--perm-soft); color: var(--perm); }
+.state--pause { background: var(--field); color: var(--ink-2); }
+.state--ready { background: var(--ok-soft); color: var(--ok); }
+.state--fail { background: var(--bad-soft); color: var(--bad); }
+.aside { display: grid; gap: 14px; }
+.aside-card { background: var(--paper); border-radius: 20px; padding: 18px 20px; box-shadow: var(--shadow-1); }
+.aside-card h3 { margin: 0 0 6px; font-size: 15px; font-weight: 720; }
+.aside-card p { margin: 0 0 4px; font-size: 13.5px; color: var(--ink-2); }
+.toggle-row { display: flex; align-items: center; gap: 12px; justify-content: space-between; padding: 11px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.toggle-row:first-of-type { border-top: 0; }
+.switch { position: relative; width: 44px; height: 26px; border-radius: 99px; border: 0; background: var(--switch-off); flex: none; padding: 0; }
+.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); box-shadow: 0 1px 2px rgb(0 0 0 / .3); transition: transform .2s; }
+.switch[aria-checked="true"] { background: var(--primary); }
+.switch[aria-checked="true"]::after { transform: translateX(18px); }
+.stepper { display: inline-flex; align-items: center; gap: 4px; }
+.stepper button { width: 30px; height: 30px; border-radius: 9px; border: 0; background: var(--field); font-weight: 700; }
+.stepper b { min-width: 22px; text-align: center; }
+
+/* ---------- sites ---------- */
+.sites-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+.search { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 16px; border-radius: 14px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); width: 320px; color: var(--ink-3); }
+.search:focus-within { box-shadow: inset 0 0 0 2px var(--ink); }
+.search input { border: 0; outline: 0; background: none; flex: 1; min-width: 0; font-size: 15px; color: var(--ink); }
+.search input::placeholder { color: var(--ink-3); }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter { height: 40px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--field); font-size: 14px; font-weight: 620; color: var(--ink-2); display: inline-flex; align-items: center; gap: 8px; }
+.filter > span { font-weight: 750; color: var(--ink); }
+.filter[aria-pressed="true"] { background: var(--primary); color: var(--primary-ink); }
+.filter[aria-pressed="true"] > span { color: inherit; }
+.sites-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; }
+.sgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.scard { display: flex; gap: 12px; align-items: center; padding: 12px; border-radius: 18px; background: var(--paper); border: 0; text-align: left; box-shadow: inset 0 0 0 1.5px transparent; min-width: 0; color: var(--ink); }
+.scard:hover { box-shadow: inset 0 0 0 1.5px var(--line-2); }
+.scard[aria-current="true"] { box-shadow: inset 0 0 0 2px var(--ink); }
+.scard .app { --s: 44px; }
+.scard-main { min-width: 0; display: grid; gap: 4px; }
+.scard-name { display: flex; align-items: center; gap: 7px; font-weight: 720; font-size: 15px; }
+.scard-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.detail { padding: 22px; border-radius: 24px; background: var(--paper); box-shadow: var(--shadow-1); }
+.detail-head { display: flex; gap: 14px; align-items: center; }
+.detail-head .app { --s: 64px; }
+.detail-head h2 { margin: 0 0 6px; font-size: 24px; font-weight: 780; font-stretch: 112%; letter-spacing: -.01em; }
+.detail h3 { margin: 20px 0 6px; font-size: 14px; font-weight: 720; }
+.detail p { margin: 0; font-size: 14px; color: var(--ink-2); }
+.checked { margin-top: 18px !important; font-size: 12px !important; color: var(--ink-3) !important; }
+.sgrid-foot { margin: 14px 0 0; font-size: 13px; color: var(--ink-2); }
+.empty { grid-column: 1 / -1; padding: 30px; text-align: center; border-radius: 18px; background: var(--paper); color: var(--ink-2); }
+
+/* ---------- phones ---------- */
+.phones { display: flex; flex-wrap: wrap; gap: 40px 28px; align-items: flex-start; }
+.phone-fig { margin: 0; width: min(410px, 100%); }
+.phone-fig figcaption { margin-top: 14px; font-size: 14px; color: var(--board-ink-2); }
+.phone-fig figcaption b { display: block; color: var(--board-ink); font-size: 15px; margin-bottom: 2px; }
+.phone { width: 410px; height: 864px; padding: 10px; border-radius: 60px; background: #0A0B0D; box-shadow: 0 40px 80px -40px rgb(0 0 0 / .55), inset 0 0 0 2px #2A2C31; }
+.screen { position: relative; height: 100%; border-radius: 50px; overflow: hidden; background: var(--canvas); color: var(--ink); display: flex; flex-direction: column; }
+.sbar { position: relative; flex: none; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 6px 30px 0 44px; font-size: 15.5px; font-weight: 650; background: var(--hero); color: var(--hero-ink); }
+.island { position: absolute; left: 50%; top: 11px; transform: translateX(-50%); width: 124px; height: 36px; border-radius: 20px; background: #000; }
+.sbar-icons { display: flex; gap: 6px; align-items: center; }
+.sb { fill: currentColor; }
+.m-scroll { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+.m-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 54px; padding: 0 16px 0 18px; background: var(--hero); color: var(--hero-ink); }
+.m-top .brand { font-size: 19px; }
+.m-top .mark { width: 28px; height: 28px; }
+.m-top-title { font-weight: 720; font-size: 17px; }
+.m-hero { background: var(--hero); color: var(--hero-ink); padding: 4px 18px 44px; }
+.m-hero h1 { font-size: 39px; margin: 16px 0 10px; }
+.m-hero .lede { font-size: 15.5px; margin: 0 0 18px; }
+.m-hero .dock, .m-band .dock { border-radius: 20px; padding: 6px; gap: 10px; }
+.m-hero .dock-slot, .m-band .dock-slot { width: 48px; height: 48px; border-radius: 14px; }
+.m-hero .dock-input, .m-band .dock-input { height: 48px; font-size: 15.5px; }
+.m-paste { margin-top: 14px; }
+.m-band { background: var(--hero); color: var(--hero-ink); padding: 4px 16px 18px; }
+.m-band .detect { margin-top: 14px; min-height: 0; }
+.m-sheet { position: relative; margin-top: -24px; background: var(--paper); border-radius: 28px 28px 0 0; padding: 18px 14px 24px; }
+.m-sheet .where-head { padding: 0 4px; }
+.m-sheet .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.m-sheet .shelf-head { padding: 0 4px; }
+.m-body { padding: 16px; }
+.m-pagehead { background: var(--hero); color: var(--hero-ink); padding: 2px 18px 20px; }
+.m-pagehead h1 { margin: 6px 0 4px; font-size: 34px; font-weight: 820; font-stretch: 122%; letter-spacing: -.025em; line-height: 1; color: var(--hero-head); }
+.m-pagehead p { margin: 0; font-size: 14.5px; color: var(--hero-ink-2); }
+.mseg { display: flex; gap: 6px; margin-bottom: 14px; }
+.tabbar { position: relative; flex: none; display: grid; grid-template-columns: repeat(4, 1fr); padding: 8px 6px 30px; background: var(--paper); border-top: 1px solid var(--line); }
+.tab { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11.5px; font-weight: 650; color: var(--ink-3); border: 0; background: none; padding: 0; text-decoration: none; }
+.tab-ico { width: 58px; height: 30px; border-radius: 999px; display: grid; place-items: center; }
+.tab[aria-current="page"] { color: var(--ink); }
+.tab[aria-current="page"] .tab-ico { background: var(--sun); color: var(--sun-ink); }
+.tab .count { position: absolute; top: -3px; left: calc(50% + 8px); background: var(--ink); color: var(--paper); height: 18px; min-width: 18px; font-size: 11px; }
+.home-ind { position: absolute; z-index: 9; left: 50%; bottom: 8px; transform: translateX(-50%); width: 136px; height: 5px; border-radius: 3px; background: var(--ink); }
+.m-media { display: flex; gap: 14px; align-items: center; padding: 16px; }
+.m-thumb { position: relative; width: 84px; height: 150px; border-radius: 14px; overflow: hidden; flex: none; }
+.m-thumb > svg { width: 100%; height: 100%; display: block; }
+.m-thumb .duration { right: 6px; bottom: 6px; font-size: 11px; padding: 2px 6px; }
+.m-media b { display: block; font-size: 16px; font-weight: 720; line-height: 1.25; margin-bottom: 4px; }
+.m-media span { font-size: 13px; color: var(--ink-2); }
+.scrim { position: absolute; inset: 0; z-index: 4; background: rgb(10 11 13 / .5); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--paper); border-radius: 28px 28px 0 0; padding: 10px 16px 32px; box-shadow: 0 -10px 40px rgb(0 0 0 / .25); }
+.grabber { width: 40px; height: 5px; border-radius: 3px; background: var(--line-2); margin: 0 auto 10px; }
+.picker--m { padding: 0; }
+.picker--m .picker-head h2 { font-size: 20px; }
+.picker--m .grp { margin-top: 14px; }
+.picker--m .grp-label { font-size: 14px; margin-bottom: 8px; }
+.picker--m .modes { gap: 8px; }
+.picker--m .mode { padding: 10px 10px 9px; border-radius: 14px; gap: 4px; }
+.picker--m .mode b { font-size: 13px; letter-spacing: -.01em; white-space: nowrap; }
+.picker--m .mode > span { display: none; }
+.picker--m .mode .i--lg { width: 22px; height: 22px; }
+.picker--m .tick { top: 8px; right: 8px; width: 18px; height: 18px; }
+.picker--m .qlist, .picker--m .fchips { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px; }
+.picker--m .q { flex: none; flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; min-height: 0; padding: 8px 14px; }
+.picker--m .q input { position: absolute; opacity: 0; pointer-events: none; }
+.picker--m .q-tag { display: none; }
+.picker--m .q-size { margin-left: 0; font-size: 12px; }
+.picker--m .fchip { flex: none; min-width: 0; }
+.picker--m .consent { margin-top: 16px; padding: 12px 14px; }
+.picker--m .cta { margin-top: 14px; }
+.picker--m .btn--cta { min-height: 58px; }
+.route-card { padding: 20px; display: grid; gap: 12px; justify-items: start; }
+.route-card h2 { margin: 4px 0 0; font-size: 22px; font-weight: 780; font-stretch: 112%; letter-spacing: -.01em; line-height: 1.15; }
+.route-card p { margin: 0; font-size: 14.5px; color: var(--ink-2); }
+.m-small { margin: 14px 0 0; text-align: center; font-size: 13.5px; color: var(--ink-2); }
+.m-tickets { display: grid; gap: 12px; }
+.m-tickets .ticket { grid-template-columns: 70px minmax(0, 1fr); border-radius: 18px; }
+.m-tickets .ticket::before, .m-tickets .ticket::after { left: 70px; width: 16px; height: 16px; }
+.m-tickets .ticket::before { top: -8px; }
+.m-tickets .ticket::after { bottom: -8px; }
+.m-tickets .stub .app { --s: 42px; }
+.m-tickets .t-body { padding: 13px 14px; }
+.m-tickets .t-title { font-size: 15px; }
+.m-tickets .t-meta { font-size: 12.5px; }
+.m-tickets .t-row { display: flex; gap: 8px; margin-top: 10px; }
+.album { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+.album b { display: block; font-size: 16px; font-weight: 720; }
+.album span { font-size: 13px; color: var(--ink-2); }
+.album .pill { margin-left: auto; }
+.selrow { display: flex; justify-content: space-between; align-items: center; margin: 0 2px 10px; font-size: 14px; font-weight: 680; }
+.pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; border-radius: 16px; overflow: hidden; }
+.ph { position: relative; aspect-ratio: 1; border: 0; padding: 0;
+  background:
+    radial-gradient(circle at var(--x, 68%) 40%, #FFF3C4 0 7%, transparent 7.5%),
+    linear-gradient(180deg, hsl(var(--h) 75% 76%) 0%, hsl(calc(var(--h) + 28) 82% 66%) 54%, hsl(calc(var(--h) + 190) 45% 36%) 55%, hsl(calc(var(--h) + 200) 55% 18%) 100%); }
+.ph .chk { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; background: rgb(0 0 0 / .25); display: grid; place-items: center; color: transparent; }
+.ph .chk .i { width: 13px; height: 13px; stroke-width: 3.2; }
+.ph.on .chk { background: var(--sun); border-color: var(--sun); color: var(--sun-ink); }
+.ph.on::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 3px var(--sun); }
+.ph:not(.on) { filter: saturate(.5) brightness(.85); }
+.actionbar { position: absolute; z-index: 3; left: 0; right: 0; bottom: 0; padding: 12px 16px 32px; background: var(--paper); border-top: 1px solid var(--line); }
+.actionbar p { margin: 0 0 10px; font-size: 12.5px; color: var(--ink-2); display: flex; gap: 6px; align-items: center; }
+
+/* ---------- design system ---------- */
+.ds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.ds-card { background: var(--board-2); border-radius: 18px; padding: 20px 22px; color: var(--board-ink); }
+.ds-card h3 { margin: 0 0 12px; font-size: 15px; font-weight: 720; }
+.sw { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
+.sw > i { width: 40px; height: 40px; border-radius: 12px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .1); flex: none; }
+.sw b { display: block; font-size: 14px; }
+.sw span { font-size: 12.5px; color: var(--board-ink-2); }
+.ds-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.spec { padding: 10px 0; border-bottom: 1px solid color-mix(in srgb, var(--board-ink) 10%, transparent); }
+.spec small { display: block; font-size: 12px; color: var(--board-ink-2); margin-bottom: 2px; }
+.ds-card .ds-app { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+@media (max-width: 980px) { .ds { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- UI icons (drawn for this mockup) + the Ferry mark + thumbnail art -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B2D7A"/><stop offset=".55" stop-color="#F0788A"/><stop offset="1" stop-color="#FFC48A"/></linearGradient>
+    <linearGradient id="g-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B4C9B"/><stop offset="1" stop-color="#0E1B44"/></linearGradient>
+  </defs>
+  <symbol id="ferry-mark" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="9" style="fill:var(--mark-bg)"/>
+    <path d="M16 6.5V19M10.5 13.5 16 19l5.5-5.5" style="stroke:var(--mark-arrow)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M7 25q2.25-2.6 4.5 0t4.5 0 4.5 0 4.5 0" style="stroke:var(--mark-wave)" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="scene-port" viewBox="0 0 90 160" preserveAspectRatio="xMidYMid slice">
+    <rect width="90" height="160" fill="url(#g-sky)"/>
+    <circle cx="60" cy="74" r="13" fill="#FFE7A3"/>
+    <rect y="86" width="90" height="74" fill="url(#g-sea)"/>
+    <path d="M52 92h16M55 97h10M57 102h6" stroke="#FFE7A3" stroke-opacity=".7" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M12 99h48l-6 8H19z" fill="#14161A"/>
+    <path d="M22 92h27v7H22z" fill="#14161A"/>
+    <path d="M28 87h9v5h-9z" fill="#14161A"/>
+    <path d="M25 94.5h3M31 94.5h3M37 94.5h3M43 94.5h3" stroke="#FFD43B" stroke-width="1.6"/>
+    <path d="M6 115c8 2 16 2 24 0M44 121c10 2 20 2 30 0M14 132c12 2 24 2 36 0M30 146c12 2 24 2 36 0" stroke="#fff" stroke-opacity=".28" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+  <symbol id="i-paste" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></symbol>
+  <symbol id="i-av" viewBox="0 0 24 24"><rect x="2" y="5" width="15" height="14" rx="3"/><path d="M8 9.5v5l4.2-2.5z"/><path d="M20 9a4.5 4.5 0 0 1 0 6"/></symbol>
+  <symbol id="i-vonly" viewBox="0 0 24 24"><rect x="2" y="5" width="15" height="14" rx="3"/><path d="M8 9.5v5l4.2-2.5z"/><path d="m19.5 10 3 4m0-4-3 4"/></symbol>
+  <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></symbol>
+  <symbol id="i-user-check" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="m16 11 2 2 4-4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+  <symbol id="i-tray" viewBox="0 0 24 24"><path d="M12 3v10"/><path d="m8 9 4 4 4-4"/><path d="M3 15v3a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-3"/></symbol>
+  <symbol id="i-chev-left" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+  <symbol id="i-retry" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></symbol>
+  <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.1 8.1 20 20M8.1 15.9 20 4"/></symbol>
+  <symbol id="i-cc" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 12h5M14 12h4M6 15.5h8"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="sb-signal" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx=".8"/><rect x="5" y="5.5" width="3" height="6.5" rx=".8"/><rect x="10" y="3" width="3" height="9" rx=".8"/><rect x="15" y="0" width="3" height="12" rx=".8"/></symbol>
+  <symbol id="sb-wifi" viewBox="0 0 16 12"><path d="M1.5 4.3a9.4 9.4 0 0 1 13 0M4.2 7.1a5.6 5.6 0 0 1 7.6 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="10" r="1.4"/></symbol>
+  <symbol id="sb-battery" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="18" height="9" rx="2"/><path d="M25 4.5v4a2 2 0 0 0 0-4Z" opacity=".45"/></symbol>
+</svg>
+
+<header class="board-head">
+  <div class="board-head-in">
+    <p class="board-title"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry redesign <span class="tag">Mockups v1</span></p>
+    <nav class="board-nav" aria-label="Sections">
+      <a href="#home">Home</a><a href="#states">After pasting</a><a href="#picker">Choose a file</a><a href="#downloads">Downloads</a><a href="#sites">Sites</a><a href="#phone">Phone</a><a href="#system">Design system</a>
+    </nav>
+    <div class="seg" role="group" aria-label="Theme">
+      <button type="button" data-theme-set="light" aria-pressed="true"><svg class="i i--sm"><use href="#i-sun"/></svg>Light</button>
+      <button type="button" data-theme-set="dark" aria-pressed="false"><svg class="i i--sm"><use href="#i-moon"/></svg>Dark</button>
+    </div>
+  </div>
+</header>
+
+<main class="board">
+  <section class="intro" aria-label="About these mockups">
+    <div class="note note--lead">
+      <h1>A brighter Ferry that shows, up front, where it works.</h1>
+      <p>Design only. Nothing in the app has changed yet. Tell me what to change, and I'll build it after you approve.</p>
+      <p class="narrow-note">On a phone, the desktop screens are shrunk to fit. Pinch to zoom, or open this file on a computer.</p>
+    </div>
+    <div class="note">
+      <h2>What's new</h2>
+      <ul>
+        <li><b>English only.</b> Spanish and Arabic are gone.</li>
+        <li><b>Real site logos up front:</b> TikTok, Instagram, YouTube and the rest, so people see where Ferry works.</li>
+        <li><b>One plain answer per site:</b> download directly, official download only, or protected.</li>
+        <li><b>Live status (new):</b> a green or orange dot from the last hour of real downloads.</li>
+        <li><b>A bolder look:</b> sunny yellow, wide heavy type, chunky controls, downloads as tickets.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h2>Please decide</h2>
+      <ul>
+        <li><b>Yellow:</b> keep the big yellow top, or use yellow only on buttons?</li>
+        <li><b>Live status</b> needs a small server addition (success counts per site, no personal data). Build it?</li>
+        <li><b>YouTube</b> stays "official download only", as your spec's rules require. Facebook, SoundCloud and Bandcamp are the same.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================================ HOME -->
+  <section class="sec" id="home">
+    <div class="sec-head">
+      <h2>Home</h2>
+      <ul>
+        <li>The yellow top is the one loud thing on the page. It says "start here".</li>
+        <li>Logos are grouped by what Ferry can do with them, with a live dot on each.</li>
+        <li>Try it: type or paste any link in the box, tap an example, or tap a logo.</li>
+      </ul>
+    </div>
+    <div class="fit" data-fit="1280"><div class="frame">
+      <div class="chrome"><i></i><i></i><i></i><div class="chrome-url"><svg class="i i--xs"><use href="#i-lock"/></svg>ferry.example.com</div></div>
+      <header class="topbar">
+        <a class="brand" href="#home"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry</a>
+        <nav class="nav" aria-label="Main">
+          <a href="#home" aria-current="page">Download</a>
+          <a href="#downloads">Downloads <span class="count num">2</span></a>
+          <a href="#home">History</a>
+          <a href="#sites">Sites</a>
+        </nav>
+        <div class="top-actions">
+          <button class="icon-btn" type="button" aria-label="Dark theme"><svg class="i"><use href="#i-moon"/></svg></button>
+          <button class="icon-btn" type="button" aria-label="Settings"><svg class="i"><use href="#i-sliders"/></svg></button>
+        </div>
+      </header>
+      <section class="hero">
+        <div>
+          <h1 class="display">Paste a link.<br>Keep the file.</h1>
+          <p class="lede">Save video, sound or pictures from 171 sites, in the format and quality you choose.</p>
+          <div class="dock">
+            <span class="dock-slot" id="demo-slot"><svg class="i i--lg"><use href="#i-link"/></svg></span>
+            <label class="sr" for="demo-url">Link to a video, song or post</label>
+            <input class="dock-input" id="demo-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="Paste a link to a video, song or post">
+            <button class="btn btn--primary btn--tall" id="demo-paste" type="button"><svg class="i"><use href="#i-paste"/></svg>Paste</button>
+          </div>
+          <div class="detect on-hero" id="demo-detect" aria-live="polite"><span class="detect-hint">Ferry recognises the site as soon as you paste.</span></div>
+          <ul class="caps" aria-label="What you can get">
+            <li><svg class="i"><use href="#i-av"/></svg>Video + sound</li>
+            <li><svg class="i"><use href="#i-vonly"/></svg>Video only</li>
+            <li><svg class="i"><use href="#i-music"/></svg>Audio only</li>
+            <li><svg class="i"><use href="#i-image"/></svg>Pictures</li>
+          </ul>
+          <div class="demo-only">
+            <span>Try in this mockup:</span>
+            <button class="ex" type="button" data-example="tiktok"><span data-app="tiktok"></span>TikTok</button>
+            <button class="ex" type="button" data-example="youtube"><span data-app="youtube"></span>YouTube</button>
+            <button class="ex" type="button" data-example="internetarchive"><span data-app="internetarchive"></span>Internet Archive</button>
+            <button class="ex" type="button" data-example="netflix"><span data-app="netflix"></span>Netflix</button>
+          </div>
+        </div>
+        <aside class="where" id="demo-where" aria-label="Where Ferry works">
+          <div class="where-head"><h2>Where Ferry works</h2><span class="where-live"><i class="dot dot--pulse"></i>Live, last hour</span></div>
+          <div class="shelf shelf--first">
+            <div class="shelf-head">
+              <span class="shelf-ico shelf-ico--go"><svg class="i"><use href="#i-check"/></svg></span>
+              <div><div class="shelf-title">Download directly</div><div class="shelf-sub">Paste, pick a format, save</div></div>
+              <span class="shelf-n">171 sites</span>
+            </div>
+            <div class="tiles" data-tiles="tiktok instagram x vimeo twitch reddit pinterest bluesky dailymotion tumblr internetarchive peertube flickr" data-more="158" data-live></div>
+            <p class="shelf-foot">On most of these, you confirm the video is yours or that you have permission.</p>
+          </div>
+          <div class="shelf">
+            <div class="shelf-head">
+              <span class="shelf-ico shelf-ico--off"><svg class="i"><use href="#i-out"/></svg></span>
+              <div><div class="shelf-title">Official download only</div><div class="shelf-sub">Ferry shows you the site's own download</div></div>
+              <span class="shelf-n">9 sites</span>
+            </div>
+            <div class="tiles" data-tiles="youtube facebook soundcloud bandcamp threads snapchat" data-more="3"></div>
+          </div>
+          <div class="shelf">
+            <div class="shelf-head">
+              <span class="shelf-ico shelf-ico--lock"><svg class="i"><use href="#i-lock"/></svg></span>
+              <div><div class="shelf-title">Protected</div><div class="shelf-sub">DRM and paid content can't be saved</div></div>
+              <span class="shelf-n">70 sites</span>
+            </div>
+            <div class="tiles tiles--muted" data-tiles="netflix spotify applemusic tidal deezer hbomax" data-more="64"></div>
+          </div>
+          <div class="where-foot">
+            <span class="legend"><i class="dot"></i><span>Working now</span><i class="dot dot--warn"></i><span>Trouble right now</span></span>
+            <a class="link" href="#sites">See all 250 sites</a>
+          </div>
+        </aside>
+      </section>
+      <ol class="how">
+        <li><span class="how-n">1</span><div><b>Paste a link</b><p>From an app's Share button or the address bar. Ferry spots the site and tells you what it allows.</p></div></li>
+        <li><span class="how-n">2</span><div><b>Choose the file</b><p>Video with sound, video only or just the audio. Only qualities the source really has.</p></div></li>
+        <li><span class="how-n">3</span><div><b>Save it</b><p>Your browser saves the file. Big downloads pick up again if the connection drops.</p></div></li>
+      </ol>
+      <p class="appfoot"><span>No account, no ads, no tracking.</span><span>Files leave the server within an hour.</span><span>Logos only identify sites. Ferry isn't affiliated with them.</span></p>
+    </div></div>
+  </section>
+
+  <!-- ================================================================ LINK STATES -->
+  <section class="sec" id="states">
+    <div class="sec-head">
+      <h2>After pasting</h2>
+      <ul>
+        <li>Every link gets one plain answer, right under the box.</li>
+        <li>Ferry never pretends: official-only and protected sites say so before anything is fetched.</li>
+      </ul>
+    </div>
+    <div class="states">
+      <article class="scase">
+        <div class="scase-top"><div class="dock dock--sm"><span class="dock-slot"><span data-app="internetarchive" data-size="40"></span></span><span class="dock-url">archive.org/details/night-train-blues</span></div></div>
+        <div class="scase-body">
+          <span class="pill pill--free"><svg class="i"><use href="#i-check"/></svg>Free to save</span>
+          <h3>Pick a format and save</h3>
+          <p>Public-domain and openly licensed media. Nothing to confirm.</p>
+          <button class="btn btn--primary btn--block" type="button">Choose format</button>
+        </div>
+      </article>
+      <article class="scase">
+        <div class="scase-top"><div class="dock dock--sm"><span class="dock-slot"><span data-app="tiktok" data-size="40"></span></span><span class="dock-url">tiktok.com/@harborlight/video/7431…</span></div></div>
+        <div class="scase-body">
+          <span class="pill pill--perm"><svg class="i"><use href="#i-user-check"/></svg>Your own or with permission</span>
+          <h3>Confirm, then save</h3>
+          <p>TikTok creators decide whether their videos can be saved.</p>
+          <label class="consent consent--sm"><input type="checkbox" checked><span><b>It's my video, or I have permission</b></span></label>
+          <button class="btn btn--primary btn--block" type="button">Choose format</button>
+        </div>
+      </article>
+      <article class="scase">
+        <div class="scase-top"><div class="dock dock--sm"><span class="dock-slot"><span data-app="youtube" data-size="40"></span></span><span class="dock-url">youtube.com/watch?v=Xb3kP9qLm2c</span></div></div>
+        <div class="scase-body">
+          <span class="pill pill--off"><svg class="i"><use href="#i-out"/></svg>Official download only</span>
+          <h3>Use YouTube's own download</h3>
+          <p>YouTube only allows downloads through its own tools, so Ferry doesn't download from it.</p>
+          <div class="routes">
+            <a class="route" href="#states"><div><b>Your uploads</b><span>YouTube Studio</span></div><svg class="i i--sm"><use href="#i-out"/></svg></a>
+            <a class="route" href="#states"><div><b>Everything at once</b><span>Google Takeout</span></div><svg class="i i--sm"><use href="#i-out"/></svg></a>
+          </div>
+        </div>
+      </article>
+      <article class="scase">
+        <div class="scase-top"><div class="dock dock--sm"><span class="dock-slot"><span data-app="netflix" data-size="40"></span></span><span class="dock-url">netflix.com/watch/81234567</span></div></div>
+        <div class="scase-body">
+          <span class="pill pill--lock"><svg class="i"><use href="#i-lock"/></svg>Protected</span>
+          <h3>This can't be saved</h3>
+          <p>Netflix videos are DRM-protected, and Ferry never removes copy protection.</p>
+          <button class="btn btn--line btn--block" type="button">Paste another link</button>
+        </div>
+      </article>
+      <article class="scase">
+        <div class="scase-top"><div class="dock dock--sm"><span class="dock-slot"><svg class="i i--lg"><use href="#i-globe"/></svg></span><span class="dock-url">harbor-radio.example/show/412</span></div></div>
+        <div class="scase-body">
+          <span class="pill pill--any"><svg class="i"><use href="#i-globe"/></svg>Any other site</span>
+          <h3>Ferry will try</h3>
+          <p>It works when the page has a plain video or audio file. You confirm you have permission.</p>
+          <button class="btn btn--primary btn--block" type="button">Check this page</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ================================================================ PICKER -->
+  <section class="sec" id="picker">
+    <div class="sec-head">
+      <h2>Choose a file</h2>
+      <ul>
+        <li>Only real qualities: this TikTok tops out at 1080p, so 4K isn't offered.</li>
+        <li>Each format says if it's copied (no quality loss) or converted.</li>
+        <li>Switch to "Audio only" to see the honest bitrate advice. All choices here are clickable.</li>
+      </ul>
+    </div>
+    <div class="fit" data-fit="1280"><div class="frame">
+      <div class="chrome"><i></i><i></i><i></i><div class="chrome-url"><svg class="i i--xs"><use href="#i-lock"/></svg>ferry.example.com</div></div>
+      <header class="topbar">
+        <a class="brand" href="#home"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry</a>
+        <nav class="nav" aria-label="Main">
+          <a href="#home" aria-current="page">Download</a>
+          <a href="#downloads">Downloads <span class="count num">2</span></a>
+          <a href="#home">History</a>
+          <a href="#sites">Sites</a>
+        </nav>
+        <div class="top-actions">
+          <button class="icon-btn" type="button" aria-label="Dark theme"><svg class="i"><use href="#i-moon"/></svg></button>
+          <button class="icon-btn" type="button" aria-label="Settings"><svg class="i"><use href="#i-sliders"/></svg></button>
+        </div>
+      </header>
+      <div class="band">
+        <div class="dock">
+          <span class="dock-slot"><span data-app="tiktok" data-size="56"></span></span>
+          <input class="dock-input" type="url" value="https://www.tiktok.com/@harborlight/video/7431982044417805611" aria-label="Link">
+          <button class="icon-btn icon-btn--field" type="button" aria-label="Clear link"><svg class="i"><use href="#i-x"/></svg></button>
+        </div>
+        <div class="detect on-hero">
+          <b>TikTok</b>
+          <span class="pill pill--perm"><svg class="i"><use href="#i-user-check"/></svg>Your own or with permission</span>
+          <span class="pill livepill"><i class="dot"></i>Working now</span>
+        </div>
+      </div>
+      <div class="work">
+        <article class="card media">
+          <div class="media-thumb">
+            <svg class="blur" aria-hidden="true"><use href="#scene-port"/></svg>
+            <svg class="portrait" viewBox="0 0 90 160" role="img" aria-label="Video thumbnail"><use href="#scene-port"/></svg>
+            <span class="duration num">0:42</span>
+          </div>
+          <div class="media-body">
+            <h3>Morning ferry across the bay</h3>
+            <div class="media-by"><span data-app="tiktok" data-size="22"></span>@harborlight</div>
+            <ul class="facts">
+              <li><svg class="i i--sm"><use href="#i-av"/></svg><span><b>Video</b> 1080 × 1920, 30 fps</span></li>
+              <li><svg class="i i--sm"><use href="#i-music"/></svg><span><b>Sound</b> AAC stereo, 128 kbps</span></li>
+              <li><svg class="i i--sm"><use href="#i-cc"/></svg><span><b>Subtitles</b> none</span></li>
+              <li><svg class="i i--sm"><use href="#i-clock"/></svg><span><b>Length</b> 0:42</span></li>
+            </ul>
+          </div>
+        </article>
+        <section class="card picker" data-picker="d" data-consent="on" aria-label="Your file"></section>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ================================================================ DOWNLOADS -->
+  <section class="sec" id="downloads">
+    <div class="sec-head">
+      <h2>Downloads</h2>
+      <ul>
+        <li>Each download is a ticket: the stub shows where it came from, the bar takes that site's colour.</li>
+        <li>Problems say what happened and what to do, in plain words.</li>
+      </ul>
+    </div>
+    <div class="fit" data-fit="1280"><div class="frame">
+      <div class="chrome"><i></i><i></i><i></i><div class="chrome-url"><svg class="i i--xs"><use href="#i-lock"/></svg>ferry.example.com/downloads</div></div>
+      <header class="topbar">
+        <a class="brand" href="#home"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry</a>
+        <nav class="nav" aria-label="Main">
+          <a href="#home">Download</a>
+          <a href="#downloads" aria-current="page">Downloads <span class="count num">2</span></a>
+          <a href="#home">History</a>
+          <a href="#sites">Sites</a>
+        </nav>
+        <div class="top-actions">
+          <button class="icon-btn" type="button" aria-label="Dark theme"><svg class="i"><use href="#i-moon"/></svg></button>
+          <button class="icon-btn" type="button" aria-label="Settings"><svg class="i"><use href="#i-sliders"/></svg></button>
+        </div>
+      </header>
+      <div class="page">
+        <div class="page-head">
+          <div><h1>Downloads</h1><p class="page-sub">2 in progress, 2 ready, 1 needs a look</p></div>
+          <div class="page-actions">
+            <button class="btn btn--soft btn--sm" type="button"><svg class="i i--sm"><use href="#i-download"/></svg>Save all ready</button>
+            <button class="btn btn--line btn--sm" type="button">Clear finished</button>
+          </div>
+        </div>
+        <div class="dl-wrap">
+          <div class="tickets">
+            <article class="ticket">
+              <div class="stub"><span data-app="vimeo"></span></div>
+              <div class="t-body">
+                <div class="t-top"><h3 class="t-title">Harbor timelapse at blue hour</h3><span class="state state--run">Downloading</span></div>
+                <p class="t-meta">Video + sound, MP4, 2160p 4K</p>
+                <div class="bar" style="--p:64%;--c:#1AB7EA"><span></span></div>
+                <p class="t-prog num"><b>64%</b><span>412 of 645 MB</span><span>8.1 MB/s</span><span>About 30 s left</span></p>
+              </div>
+              <div class="t-actions"><button class="btn btn--soft btn--sm" type="button"><svg class="i i--sm"><use href="#i-pause"/></svg>Pause</button><button class="icon-btn icon-btn--field" type="button" aria-label="Cancel download"><svg class="i"><use href="#i-x"/></svg></button></div>
+            </article>
+            <article class="ticket">
+              <div class="stub"><span data-app="internetarchive"></span></div>
+              <div class="t-body">
+                <div class="t-top"><h3 class="t-title">Night Train Blues (1928)</h3><span class="state state--run">Converting</span></div>
+                <p class="t-meta">Audio only, MP3, 320 kbps</p>
+                <div class="bar bar--work" style="--p:80%;--c:var(--ink)"><span></span></div>
+                <p class="t-prog num"><b>80%</b><span>Converting to MP3</span><span>A few seconds left</span></p>
+              </div>
+              <div class="t-actions"><button class="icon-btn icon-btn--field" type="button" aria-label="Cancel download"><svg class="i"><use href="#i-x"/></svg></button></div>
+            </article>
+            <article class="ticket">
+              <div class="stub"><span data-app="tiktok"></span></div>
+              <div class="t-body">
+                <div class="t-top"><h3 class="t-title">Morning ferry across the bay</h3><span class="state state--ready"><svg class="i"><use href="#i-check"/></svg>Ready</span></div>
+                <p class="t-meta">Video + sound, MP4, 1080p, 24.6 MB</p>
+                <p class="t-note"><span class="ok-text"><svg class="i i--sm"><use href="#i-check"/></svg>Copied, no quality loss</span><span>Leaves the server in 52 min</span><button class="link-btn" type="button">Keep longer</button></p>
+              </div>
+              <div class="t-actions"><button class="btn btn--primary btn--sm" type="button"><svg class="i i--sm"><use href="#i-download"/></svg>Save file</button><button class="icon-btn icon-btn--field" type="button" aria-label="More actions"><svg class="i"><use href="#i-more"/></svg></button></div>
+            </article>
+            <article class="ticket">
+              <div class="stub"><span data-app="imgur"></span></div>
+              <div class="t-body">
+                <div class="t-top"><h3 class="t-title">Harbor walk, 12 pictures</h3><span class="state state--ready"><svg class="i"><use href="#i-check"/></svg>Ready</span></div>
+                <p class="t-meta">Pictures, ZIP, 18.4 MB</p>
+                <p class="t-note"><span class="ok-text"><svg class="i i--sm"><use href="#i-shield"/></svg>Location data removed</span><span>Leaves the server in 58 min</span></p>
+              </div>
+              <div class="t-actions"><button class="btn btn--primary btn--sm" type="button"><svg class="i i--sm"><use href="#i-download"/></svg>Save ZIP</button><button class="icon-btn icon-btn--field" type="button" aria-label="More actions"><svg class="i"><use href="#i-more"/></svg></button></div>
+            </article>
+            <article class="ticket">
+              <div class="stub"><span data-app="twitch"></span></div>
+              <div class="t-body">
+                <div class="t-top"><h3 class="t-title">Saturday build stream, part 2</h3><span class="state state--pause">Paused</span></div>
+                <p class="t-meta">Video + sound, MP4, 720p</p>
+                <div class="bar bar--paused" style="--p:31%;--c:#9146FF"><span></span></div>
+                <p class="t-prog num"><b>31%</b><span>198 of 640 MB</span></p>
+              </div>
+              <div class="t-actions"><button class="btn btn--soft btn--sm" type="button"><svg class="i i--sm"><use href="#i-play"/></svg>Resume</button><button class="icon-btn icon-btn--field" type="button" aria-label="Cancel download"><svg class="i"><use href="#i-x"/></svg></button></div>
+            </article>
+            <article class="ticket">
+              <div class="stub"><span data-app="x"></span></div>
+              <div class="t-body">
+                <div class="t-top"><h3 class="t-title">Launch day clip</h3><span class="state state--fail">Didn't finish</span></div>
+                <p class="t-meta">Video + sound, MP4</p>
+                <p class="t-fail">X didn't send the video. The post may need a sign-in, and Ferry never signs in to other sites.</p>
+              </div>
+              <div class="t-actions"><button class="btn btn--soft btn--sm" type="button"><svg class="i i--sm"><use href="#i-retry"/></svg>Try again</button><button class="icon-btn icon-btn--field" type="button" aria-label="Remove"><svg class="i"><use href="#i-x"/></svg></button></div>
+            </article>
+          </div>
+          <aside class="aside">
+            <section class="aside-card">
+              <h3>Ready files</h3>
+              <p>Files stay on the server for one hour, then they're deleted. "Keep longer" adds another hour.</p>
+            </section>
+            <section class="aside-card">
+              <h3>While downloading</h3>
+              <div class="toggle-row"><span>Save files automatically when they're ready</span><button class="switch" type="button" role="switch" aria-checked="true" aria-label="Save files automatically"></button></div>
+              <div class="toggle-row"><span>Delete from the server right after saving</span><button class="switch" type="button" role="switch" aria-checked="false" aria-label="Delete after saving"></button></div>
+              <div class="toggle-row"><span>Downloads at the same time</span><span class="stepper"><button type="button" aria-label="Fewer">−</button><b class="num">3</b><button type="button" aria-label="More">+</button></span></div>
+            </section>
+            <section class="aside-card">
+              <h3>History</h3>
+              <p>Finished downloads are listed in History, on this device only.</p>
+              <a class="link" href="#downloads">Open history</a>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ================================================================ SITES -->
+  <section class="sec" id="sites">
+    <div class="sec-head">
+      <h2>Sites</h2>
+      <ul>
+        <li>Search all 250 sites and filter by what Ferry can do.</li>
+        <li>Each site explains why, and links to its own download when it has one. Tap any card.</li>
+      </ul>
+    </div>
+    <div class="fit" data-fit="1280"><div class="frame">
+      <div class="chrome"><i></i><i></i><i></i><div class="chrome-url"><svg class="i i--xs"><use href="#i-lock"/></svg>ferry.example.com/sites</div></div>
+      <header class="topbar">
+        <a class="brand" href="#home"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry</a>
+        <nav class="nav" aria-label="Main">
+          <a href="#home">Download</a>
+          <a href="#downloads">Downloads <span class="count num">2</span></a>
+          <a href="#home">History</a>
+          <a href="#sites" aria-current="page">Sites</a>
+        </nav>
+        <div class="top-actions">
+          <button class="icon-btn" type="button" aria-label="Dark theme"><svg class="i"><use href="#i-moon"/></svg></button>
+          <button class="icon-btn" type="button" aria-label="Settings"><svg class="i"><use href="#i-sliders"/></svg></button>
+        </div>
+      </header>
+      <div class="page">
+        <div class="page-head">
+          <div><h1>Sites</h1><p class="page-sub">250 sites, each with one clear answer. Live status comes from the last hour of downloads.</p></div>
+        </div>
+        <div class="sites-tools">
+          <label class="search"><svg class="i"><use href="#i-search"/></svg><input id="site-q" type="search" placeholder="Search sites" aria-label="Search sites"></label>
+          <div class="filters" role="group" aria-label="Filter by status">
+            <button class="filter" type="button" data-f="all" aria-pressed="true">All <span class="num">250</span></button>
+            <button class="filter" type="button" data-f="go" aria-pressed="false">Download directly <span class="num">171</span></button>
+            <button class="filter" type="button" data-f="off" aria-pressed="false">Official download only <span class="num">9</span></button>
+            <button class="filter" type="button" data-f="lock" aria-pressed="false">Protected <span class="num">70</span></button>
+          </div>
+        </div>
+        <div class="sites-wrap">
+          <div>
+            <div class="sgrid" id="sgrid"></div>
+            <p class="sgrid-foot">Showing 24 well-known sites. Search finds all 250.</p>
+          </div>
+          <aside class="detail" id="sdetail" aria-live="polite"></aside>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ================================================================ PHONE -->
+  <section class="sec" id="phone">
+    <div class="sec-head">
+      <h2>Phone</h2>
+      <ul>
+        <li>Same design, made for one hand: a big Paste button, tabs at the bottom, choices in a bottom sheet.</li>
+        <li>Phones open Ferry from the Share menu, so the link is usually already in the box.</li>
+      </ul>
+    </div>
+    <div class="phones">
+
+      <!-- M1 home -->
+      <figure class="phone-fig">
+        <div class="fit" data-fit="410"><div class="phone"><div class="screen">
+          <div class="sbar"><span class="num">9:41</span><i class="island"></i><span class="sbar-icons"><svg class="sb" width="18" height="12"><use href="#sb-signal"/></svg><svg class="sb" width="16" height="12"><use href="#sb-wifi"/></svg><svg class="sb" width="27" height="13"><use href="#sb-battery"/></svg></span></div>
+          <div class="m-scroll">
+            <div class="m-top"><a class="brand" href="#phone"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry</a><button class="icon-btn" type="button" aria-label="Settings"><svg class="i"><use href="#i-sliders"/></svg></button></div>
+            <div class="m-hero">
+              <h1 class="display">Paste a link.<br>Keep the file.</h1>
+              <p class="lede">Video, sound or pictures from 171 sites.</p>
+              <div class="dock"><span class="dock-slot"><svg class="i i--lg"><use href="#i-link"/></svg></span><input class="dock-input" type="url" placeholder="Paste a link" aria-label="Link"></div>
+              <button class="btn btn--primary btn--block btn--tall m-paste" type="button"><svg class="i"><use href="#i-paste"/></svg>Paste link</button>
+            </div>
+            <div class="m-sheet">
+              <div class="where-head"><h2>Where Ferry works</h2><span class="where-live"><i class="dot dot--pulse"></i>Live</span></div>
+              <div class="shelf shelf--first">
+                <div class="shelf-head"><span class="shelf-ico shelf-ico--go"><svg class="i"><use href="#i-check"/></svg></span><div class="shelf-title">Download directly</div><span class="shelf-n">171</span></div>
+                <div class="tiles" data-tiles="tiktok instagram x vimeo twitch reddit pinterest" data-more="164" data-live></div>
+              </div>
+              <div class="shelf">
+                <div class="shelf-head"><span class="shelf-ico shelf-ico--off"><svg class="i"><use href="#i-out"/></svg></span><div class="shelf-title">Official download only</div><span class="shelf-n">9</span></div>
+                <div class="tiles" data-tiles="youtube facebook soundcloud" data-more="6"></div>
+              </div>
+              <div class="shelf">
+                <div class="shelf-head"><span class="shelf-ico shelf-ico--lock"><svg class="i"><use href="#i-lock"/></svg></span><div class="shelf-title">Protected</div><span class="shelf-n">70</span></div>
+                <div class="tiles tiles--muted" data-tiles="netflix spotify applemusic" data-more="67"></div>
+              </div>
+            </div>
+          </div>
+          <nav class="tabbar" aria-label="Main">
+            <a class="tab" href="#phone" aria-current="page"><span class="tab-ico"><svg class="i"><use href="#i-link"/></svg></span>Download</a>
+            <a class="tab" href="#phone"><span class="tab-ico"><svg class="i"><use href="#i-tray"/></svg></span>Downloads<span class="count num">2</span></a>
+            <a class="tab" href="#phone"><span class="tab-ico"><svg class="i"><use href="#i-clock"/></svg></span>History</a>
+            <a class="tab" href="#phone"><span class="tab-ico"><svg class="i"><use href="#i-grid"/></svg></span>Sites</a>
+          </nav>
+          <i class="home-ind"></i>
+        </div></div></div>
+        <figcaption><b>Home</b>The logo wall continues below the fold.</figcaption>
+      </figure>
+
+      <!-- M2 TikTok + bottom sheet -->
+      <figure class="phone-fig">
+        <div class="fit" data-fit="410"><div class="phone"><div class="screen">
+          <div class="sbar"><span class="num">9:41</span><i class="island"></i><span class="sbar-icons"><svg class="sb" width="18" height="12"><use href="#sb-signal"/></svg><svg class="sb" width="16" height="12"><use href="#sb-wifi"/></svg><svg class="sb" width="27" height="13"><use href="#sb-battery"/></svg></span></div>
+          <div class="m-scroll">
+            <div class="m-top"><a class="brand" href="#phone"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry</a><button class="icon-btn" type="button" aria-label="Settings"><svg class="i"><use href="#i-sliders"/></svg></button></div>
+            <div class="m-band">
+              <div class="dock"><span class="dock-slot"><span data-app="tiktok" data-size="48"></span></span><input class="dock-input" type="url" value="tiktok.com/@harborlight/video/7431982044417805611" aria-label="Link"><button class="icon-btn icon-btn--plain" type="button" aria-label="Clear link"><svg class="i"><use href="#i-x"/></svg></button></div>
+              <div class="detect on-hero"><span class="pill pill--perm"><svg class="i"><use href="#i-user-check"/></svg>Your own or with permission</span><span class="pill livepill"><i class="dot"></i>Working now</span></div>
+            </div>
+            <div class="m-media">
+              <div class="m-thumb"><svg viewBox="0 0 90 160" role="img" aria-label="Video thumbnail"><use href="#scene-port"/></svg><span class="duration num">0:42</span></div>
+              <div><b>Morning ferry across the bay</b><span>@harborlight, 1080 × 1920</span></div>
+            </div>
+          </div>
+          <div class="scrim"></div>
+          <section class="sheet" aria-label="Your file"><div class="grabber"></div><div class="picker picker--m" data-picker="m" data-consent="off"></div></section>
+          <i class="home-ind"></i>
+        </div></div></div>
+        <figcaption><b>TikTok link</b>Choices slide up from the bottom. The button stays off until the box is ticked.</figcaption>
+      </figure>
+
+      <!-- M3 YouTube -->
+      <figure class="phone-fig">
+        <div class="fit" data-fit="410"><div class="phone"><div class="screen">
+          <div class="sbar"><span class="num">9:41</span><i class="island"></i><span class="sbar-icons"><svg class="sb" width="18" height="12"><use href="#sb-signal"/></svg><svg class="sb" width="16" height="12"><use href="#sb-wifi"/></svg><svg class="sb" width="27" height="13"><use href="#sb-battery"/></svg></span></div>
+          <div class="m-scroll">
+            <div class="m-top"><a class="brand" href="#phone"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry</a><button class="icon-btn" type="button" aria-label="Settings"><svg class="i"><use href="#i-sliders"/></svg></button></div>
+            <div class="m-band">
+              <div class="dock"><span class="dock-slot"><span data-app="youtube" data-size="48"></span></span><input class="dock-input" type="url" value="youtube.com/watch?v=Xb3kP9qLm2c" aria-label="Link"><button class="icon-btn icon-btn--plain" type="button" aria-label="Clear link"><svg class="i"><use href="#i-x"/></svg></button></div>
+              <div class="detect on-hero"><span class="pill pill--off"><svg class="i"><use href="#i-out"/></svg>Official download only</span></div>
+            </div>
+            <div class="m-body">
+              <section class="card route-card">
+                <span data-app="youtube" data-size="44"></span>
+                <h2>Use YouTube's own download</h2>
+                <p>YouTube only allows downloads through its own tools, so Ferry doesn't download from YouTube. Here's how to get your videos:</p>
+                <div class="routes">
+                  <a class="route" href="#phone"><div><b>Your own uploads</b><span>YouTube Studio › Content › Download</span></div><svg class="i i--sm"><use href="#i-out"/></svg></a>
+                  <a class="route" href="#phone"><div><b>All your uploads at once</b><span>Google Takeout</span></div><svg class="i i--sm"><use href="#i-out"/></svg></a>
+                  <a class="route" href="#phone"><div><b>Watch offline</b><span>YouTube Premium, in the YouTube app</span></div><svg class="i i--sm"><use href="#i-out"/></svg></a>
+                </div>
+              </section>
+              <p class="m-small"><a class="link" href="#sites">How Ferry decides</a></p>
+            </div>
+          </div>
+          <nav class="tabbar" aria-label="Main">
+            <a class="tab" href="#phone" aria-current="page"><span class="tab-ico"><svg class="i"><use href="#i-link"/></svg></span>Download</a>
+            <a class="tab" href="#phone"><span class="tab-ico"><svg class="i"><use href="#i-tray"/></svg></span>Downloads<span class="count num">2</span></a>
+            <a class="tab" href="#phone"><span class="tab-ico"><svg class="i"><use href="#i-clock"/></svg></span>History</a>
+            <a class="tab" href="#phone"><span class="tab-ico"><svg class="i"><use href="#i-grid"/></svg></span>Sites</a>
+          </nav>
+          <i class="home-ind"></i>
+        </div></div></div>
+        <figcaption><b>YouTube link</b>No dead end: the official ways to get your own videos.</figcaption>
+      </figure>
+
+      <!-- M4 downloads -->
+      <figure class="phone-fig">
+        <div class="fit" data-fit="410"><div class="phone"><div class="screen">
+          <div class="sbar"><span class="num">9:41</span><i class="island"></i><span class="sbar-icons"><svg class="sb" width="18" height="12"><use href="#sb-signal"/></svg><svg class="sb" width="16" height="12"><use href="#sb-wifi"/></svg><svg class="sb" width="27" height="13"><use href="#sb-battery"/></svg></span></div>
+          <div class="m-scroll">
+            <div class="m-top"><a class="brand" href="#phone"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry</a><button class="icon-btn" type="button" aria-label="Settings"><svg class="i"><use href="#i-sliders"/></svg></button></div>
+            <div class="m-pagehead"><h1>Downloads</h1><p>2 in progress, 2 ready</p></div>
+            <div class="m-body">
+              <div class="mseg filters"><button class="filter" type="button" aria-pressed="true">All <span class="num">5</span></button><button class="filter" type="button" aria-pressed="false">Active <span class="num">2</span></button><button class="filter" type="button" aria-pressed="false">Ready <span class="num">2</span></button></div>
+              <div class="m-tickets">
+                <article class="ticket">
+                  <div class="stub"><span data-app="vimeo"></span></div>
+                  <div class="t-body">
+                    <div class="t-top"><h3 class="t-title">Harbor timelapse at blue hour</h3></div>
+                    <p class="t-meta">MP4, 2160p 4K</p>
+                    <div class="bar" style="--p:64%;--c:#1AB7EA"><span></span></div>
+                    <p class="t-prog num"><b>64%</b><span>8.1 MB/s</span><span>30 s left</span></p>
+                  </div>
+                </article>
+                <article class="ticket">
+                  <div class="stub"><span data-app="internetarchive"></span></div>
+                  <div class="t-body">
+                    <div class="t-top"><h3 class="t-title">Night Train Blues (1928)</h3></div>
+                    <p class="t-meta">MP3, 320 kbps</p>
+                    <div class="bar bar--work" style="--p:80%;--c:var(--ink)"><span></span></div>
+                    <p class="t-prog num"><b>80%</b><span>Converting to MP3</span></p>
+                  </div>
+                </article>
+                <article class="ticket">
+                  <div class="stub"><span data-app="tiktok"></span></div>
+                  <div class="t-body">
+                    <div class="t-top"><h3 class="t-title">Morning ferry across the bay</h3></div>
+                    <p class="t-meta">MP4, 1080p, 24.6 MB</p>
+                    <div class="t-row"><button class="btn btn--primary btn--sm" type="button"><svg class="i i--sm"><use href="#i-download"/></svg>Save file</button><span class="state state--ready"><svg class="i"><use href="#i-check"/></svg>Ready</span></div>
+                  </div>
+                </article>
+                <article class="ticket">
+                  <div class="stub"><span data-app="x"></span></div>
+                  <div class="t-body">
+                    <div class="t-top"><h3 class="t-title">Launch day clip</h3></div>
+                    <p class="t-meta">X didn't send the video. It may need a sign-in.</p>
+                    <div class="t-row"><button class="btn btn--soft btn--sm" type="button"><svg class="i i--sm"><use href="#i-retry"/></svg>Try again</button><span class="state state--fail">Didn't finish</span></div>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+          <nav class="tabbar" aria-label="Main">
+            <a class="tab" href="#phone"><span class="tab-ico"><svg class="i"><use href="#i-link"/></svg></span>Download</a>
+            <a class="tab" href="#phone" aria-current="page"><span class="tab-ico"><svg class="i"><use href="#i-tray"/></svg></span>Downloads<span class="count num">2</span></a>
+            <a class="tab" href="#phone"><span class="tab-ico"><svg class="i"><use href="#i-clock"/></svg></span>History</a>
+            <a class="tab" href="#phone"><span class="tab-ico"><svg class="i"><use href="#i-grid"/></svg></span>Sites</a>
+          </nav>
+          <i class="home-ind"></i>
+        </div></div></div>
+        <figcaption><b>Downloads</b>Tickets shrink to fit; Save file is one tap.</figcaption>
+      </figure>
+
+      <!-- M5 gallery -->
+      <figure class="phone-fig">
+        <div class="fit" data-fit="410"><div class="phone"><div class="screen">
+          <div class="sbar"><span class="num">9:41</span><i class="island"></i><span class="sbar-icons"><svg class="sb" width="18" height="12"><use href="#sb-signal"/></svg><svg class="sb" width="16" height="12"><use href="#sb-wifi"/></svg><svg class="sb" width="27" height="13"><use href="#sb-battery"/></svg></span></div>
+          <div class="m-scroll">
+            <div class="m-top"><button class="icon-btn" type="button" aria-label="Back"><svg class="i"><use href="#i-chev-left"/></svg></button><span class="m-top-title">Pick pictures</span><span style="width:40px"></span></div>
+            <div class="m-body">
+              <div class="album"><span data-app="imgur" data-size="44"></span><div><b>Harbor walk</b><span>15 pictures on Imgur</span></div><span class="pill pill--free pill--mini"><svg class="i"><use href="#i-check"/></svg>Free to save</span></div>
+              <div class="selrow"><span class="num">12 of 15 selected</span><button class="link-btn" type="button">Select all</button></div>
+              <div class="pgrid" id="pgrid"></div>
+            </div>
+          </div>
+          <div class="actionbar">
+            <p><svg class="i i--sm"><use href="#i-shield"/></svg>Location and camera details are removed from every picture.</p>
+            <button class="btn btn--primary btn--block btn--cta" type="button"><svg class="i"><use href="#i-download"/></svg><span><b>Download 12 pictures</b><small>One ZIP file, 18.4 MB</small></span></button>
+          </div>
+          <i class="home-ind"></i>
+        </div></div></div>
+        <figcaption><b>Album or carousel</b>Pick pictures; get one ZIP of clean copies.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ================================================================ DESIGN SYSTEM -->
+  <section class="sec" id="system">
+    <div class="sec-head">
+      <h2>Design system</h2>
+      <ul>
+        <li>One loud colour, one typeface family, four status colours. Text on yellow is always dark ink (contrast above 12:1).</li>
+        <li>Every status pairs a colour with an icon and words, so it never relies on colour alone.</li>
+      </ul>
+    </div>
+    <div class="ds">
+      <div class="ds-card">
+        <h3>Colour</h3>
+        <div class="sw"><i style="background:#FFD43B"></i><div><b>Sun #FFD43B</b><span>Start here, selected choices</span></div></div>
+        <div class="sw"><i style="background:#14161A"></i><div><b>Ink #14161A</b><span>Text and main buttons (light theme)</span></div></div>
+        <div class="sw"><i style="background:#FFFFFF"></i><div><b>Paper #FFFFFF</b><span>Cards and panels</span></div></div>
+        <div class="sw"><i style="background:#F3F4F6"></i><div><b>Canvas #F3F4F6</b><span>Page background</span></div></div>
+        <div class="ds-row">
+          <span class="pill pill--free"><svg class="i"><use href="#i-check"/></svg>Free to save</span>
+          <span class="pill pill--perm"><svg class="i"><use href="#i-user-check"/></svg>With permission</span>
+          <span class="pill pill--off"><svg class="i"><use href="#i-out"/></svg>Official only</span>
+          <span class="pill pill--lock"><svg class="i"><use href="#i-lock"/></svg>Protected</span>
+        </div>
+      </div>
+      <div class="ds-card">
+        <h3>Type: Archivo</h3>
+        <div class="spec"><small>Display, wide and extra bold</small><span class="display" style="font-size:40px;color:var(--board-ink)">Keep the file.</span></div>
+        <div class="spec"><small>Heading, semi-wide bold</small><span style="font-size:22px;font-weight:760;font-stretch:112%">Where Ferry works</span></div>
+        <div class="spec"><small>Body, regular</small><span style="font-size:15px">Video with sound, video only or just the audio.</span></div>
+        <div class="spec" style="border:0"><small>Numbers line up</small><span class="num" style="font-size:15px;font-weight:650">64% &nbsp; 412 of 645 MB &nbsp; 8.1 MB/s</span></div>
+      </div>
+      <div class="ds-card">
+        <h3>Pieces</h3>
+        <div class="ds-row"><button class="btn btn--primary" type="button"><svg class="i"><use href="#i-download"/></svg>Save file</button><button class="btn btn--soft" type="button">Try again</button><button class="btn btn--line" type="button">Clear</button></div>
+        <div class="ds-app"><span data-app="tiktok" data-live="ok"></span><span data-app="instagram" data-live="ok"></span><span data-app="reddit" data-live="warn"></span><span data-app="youtube"></span><span data-app="netflix"></span></div>
+        <p style="font-size:13px;color:var(--board-ink-2);margin:12px 0 0">Site tiles use each site's real logo and colours. The dot is live status: green working now, orange trouble right now.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="credits">
+    <p>Logos: Simple Icons 16.37.0 (CC0). They are trademarks of their owners and appear only to name each site.</p>
+    <p>Font: Archivo (SIL Open Font License), loaded from Google Fonts in this file only. The app will bundle it.</p>
+    <p>Site counts and statuses come from Ferry's platform registry (24 Nov 2026). Live dots, titles, sizes and pictures here are sample data.</p>
+  </footer>
+</main>
+
+<!-- Site logos: Simple Icons (CC0), inlined by a build step -->
+<!--BRAND-SPRITE:START-->
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="si-tiktok" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></symbol>
+<symbol id="si-instagram" viewBox="0 0 24 24"><path d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></symbol>
+<symbol id="si-x" viewBox="0 0 24 24"><path d="M14.234 10.162 22.977 0h-2.072l-7.591 8.824L7.251 0H.258l9.168 13.343L.258 24H2.33l8.016-9.318L16.749 24h6.993zm-2.837 3.299-.929-1.329L3.076 1.56h3.182l5.965 8.532.929 1.329 7.754 11.09h-3.182z"/></symbol>
+<symbol id="si-vimeo" viewBox="0 0 24 24"><path d="M23.9765 6.4168c-.105 2.338-1.739 5.5429-4.894 9.6088-3.2679 4.247-6.0258 6.3699-8.2898 6.3699-1.409 0-2.578-1.294-3.553-3.881l-1.9179-7.1138c-.719-2.584-1.488-3.878-2.312-3.878-.179 0-.806.378-1.8809 1.132l-1.129-1.457a315.06 315.06 0 003.501-3.1279c1.579-1.368 2.765-2.085 3.5539-2.159 1.867-.18 3.016 1.1 3.447 3.838.465 2.953.789 4.789.971 5.5069.5389 2.45 1.1309 3.674 1.7759 3.674.502 0 1.256-.796 2.265-2.385 1.004-1.589 1.54-2.797 1.612-3.628.144-1.371-.395-2.061-1.614-2.061-.574 0-1.167.121-1.777.391 1.186-3.8679 3.434-5.7568 6.7619-5.6368 2.4729.06 3.6279 1.664 3.4929 4.7969z"/></symbol>
+<symbol id="si-twitch" viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></symbol>
+<symbol id="si-reddit" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 3.314 1.343 6.314 3.515 8.485l-2.286 2.286C.775 23.225 1.097 24 1.738 24H12c6.627 0 12-5.373 12-12S18.627 0 12 0Zm4.388 3.199c1.104 0 1.999.895 1.999 1.999 0 1.105-.895 2-1.999 2-.946 0-1.739-.657-1.947-1.539v.002c-1.147.162-2.032 1.15-2.032 2.341v.007c1.776.067 3.4.567 4.686 1.363.473-.363 1.064-.58 1.707-.58 1.547 0 2.802 1.254 2.802 2.802 0 1.117-.655 2.081-1.601 2.531-.088 3.256-3.637 5.876-7.997 5.876-4.361 0-7.905-2.617-7.998-5.87-.954-.447-1.614-1.415-1.614-2.538 0-1.548 1.255-2.802 2.803-2.802.645 0 1.239.218 1.712.585 1.275-.79 2.881-1.291 4.64-1.365v-.01c0-1.663 1.263-3.034 2.88-3.207.188-.911.993-1.595 1.959-1.595Zm-8.085 8.376c-.784 0-1.459.78-1.506 1.797-.047 1.016.64 1.429 1.426 1.429.786 0 1.371-.369 1.418-1.385.047-1.017-.553-1.841-1.338-1.841Zm7.406 0c-.786 0-1.385.824-1.338 1.841.047 1.017.634 1.385 1.418 1.385.785 0 1.473-.413 1.426-1.429-.046-1.017-.721-1.797-1.506-1.797Zm-3.703 4.013c-.974 0-1.907.048-2.77.135-.147.015-.241.168-.183.305.483 1.154 1.622 1.964 2.953 1.964 1.33 0 2.47-.81 2.953-1.964.057-.137-.037-.29-.184-.305-.863-.087-1.795-.135-2.769-.135Z"/></symbol>
+<symbol id="si-pinterest" viewBox="0 0 24 24"><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z"/></symbol>
+<symbol id="si-dailymotion" viewBox="0 0 24 24"><path d="M21.823 7.327a11.928 11.928 0 0 0-2.606-3.814 12.126 12.126 0 0 0-3.866-2.57A12.246 12.246 0 0 0 10.617 0H1.831a.602.602 0 0 0-.609.603v3.764c0 .162.064.312.179.426l4.164 4.123a.612.612 0 0 0 .439.177h4.56c.806 0 1.56.313 2.125.88.557.559.856 1.296.843 2.075-.029 1.571-1.343 2.849-2.931 2.849h-6.74a.613.613 0 0 0-.432.176.619.619 0 0 0-.178.427v3.764c0 .162.063.312.178.427l4.139 4.099a.647.647 0 0 0 .476.21h2.572a12.276 12.276 0 0 0 4.733-.945 12.145 12.145 0 0 0 3.866-2.571 11.959 11.959 0 0 0 2.607-3.813c.633-1.479.956-3.051.956-4.67 0-1.619-.321-3.19-.956-4.669l.001-.005ZM2.441 4.118V1.982l2.945 2.755.001 2.297-2.946-2.916Zm4.975 17.813-2.945-2.917v-2.137l2.945 2.755v2.299Zm-2.004-5.832h5.19c2.248 0 4.107-1.807 4.147-4.03a4.027 4.027 0 0 0-1.192-2.937 4.203 4.203 0 0 0-2.996-1.239H6.606V5.216h3.996c1.831 0 3.553.706 4.849 1.986a6.724 6.724 0 0 1-.152 9.736 6.875 6.875 0 0 1-4.697 1.84H8.275L5.412 16.1v-.001Zm15.289.1a10.753 10.753 0 0 1-2.345 3.431 10.91 10.91 0 0 1-3.48 2.314 11.018 11.018 0 0 1-4.26.847H8.633v-2.814h1.916c2.145 0 4.161-.802 5.675-2.254a7.88 7.88 0 0 0 2.451-5.728c0-2.177-.87-4.21-2.451-5.728-1.514-1.454-3.528-2.254-5.675-2.254h-4.16L3.383 1.202h7.234c1.479 0 2.911.285 4.259.847a10.957 10.957 0 0 1 3.48 2.313 10.769 10.769 0 0 1 2.345 3.432c.571 1.33.86 2.743.86 4.202 0 1.46-.289 2.873-.86 4.203Z"/></symbol>
+<symbol id="si-tumblr" viewBox="0 0 24 24"><path d="M14.563 24c-5.093 0-7.031-3.756-7.031-6.411V9.747H5.116V6.648c3.63-1.313 4.512-4.596 4.71-6.469C9.84.051 9.941 0 9.999 0h3.517v6.114h4.801v3.633h-4.82v7.47c.016 1.001.375 2.371 2.207 2.371h.09c.631-.02 1.486-.205 1.936-.419l1.156 3.425c-.436.636-2.4 1.374-4.156 1.404h-.178l.011.002z"/></symbol>
+<symbol id="si-bluesky" viewBox="0 0 24 24"><path d="M5.202 2.857C7.954 4.922 10.913 9.11 12 11.358c1.087-2.247 4.046-6.436 6.798-8.501C20.783 1.366 24 .213 24 3.883c0 .732-.42 6.156-.667 7.037-.856 3.061-3.978 3.842-6.755 3.37 4.854.826 6.089 3.562 3.422 6.299-5.065 5.196-7.28-1.304-7.847-2.97-.104-.305-.152-.448-.153-.327 0-.121-.05.022-.153.327-.568 1.666-2.782 8.166-7.847 2.97-2.667-2.737-1.432-5.473 3.422-6.3-2.777.473-5.899-.308-6.755-3.369C.42 10.04 0 4.615 0 3.883c0-3.67 3.217-2.517 5.202-1.026"/></symbol>
+<symbol id="si-imgur" viewBox="0 0 24 24"><path d="M21.147 3.043c-.002-.113-.069-.182-.189-.191a14.117 14.117 0 00-.51-.045l-.162-.01a21.998 21.998 0 00-1.085-.046l-.217-.005c-.172-.003-.35-.004-.532-.004l-.189-.001c-.295 0-.601.003-.919.01l-.106.003a55.86 55.86 0 00-.87.026l-.237.009c-.335.013-.676.029-1.027.049l-.012.001c-.357.021-.724.045-1.095.071l-.275.021c-.304.023-.609.048-.92.076l-.25.021c-.38.035-.766.074-1.156.115-.08.009-.161.019-.242.027-.319.035-.641.073-.965.113l-.33.042c-.403.051-.806.105-1.212.164a.547.547 0 00-.154.045.303.303 0 00-.097.074l-.003.002c-.045.055-.047.12.004.179.003.004.002.008.005.012l3.488 3.456-6.629 6.596c-.069.067-.068.165 0 .251.856 1.093 1.44 1.793 2.143 2.492.699.703 1.398 1.286 2.493 2.143a.216.216 0 00.132.051.167.167 0 00.119-.051l6.597-6.629 3.455 3.488a.143.143 0 00.101.047c.096 0 .187-.118.212-.292.746-5.141.882-10.051.634-12.31z M15.87 24l6.356-6.357.026-.026.156-.155-.006-.006a3.144 3.144 0 00.822-1.711c.804-5.53.903-10.591.654-12.952a2.904 2.904 0 00-.834-1.812 2.96 2.96 0 00-1.816-.855C20.458.042 19.476 0 18.318 0c-2.999 0-6.667.284-10.063.777a3.143 3.143 0 00-1.887.991L0 8.137V24H15.87zm1.528-6.707c-.151 0-.563.405-.563.613a.1.1 0 01-.099.1.1.1 0 01-.099-.1c0-.208-.411-.613-.563-.613a.1.1 0 01-.099-.1c0-.054.044-.098.099-.098.152 0 .563-.404.563-.614 0-.055.044-.098.099-.098.054 0 .099.043.099.098 0 .21.412.614.563.614a.1.1 0 010 .198zM5.4 7.045c.197 0 .735-.528.735-.801a.13.13 0 01.128-.129c.071 0 .128.058.128.129 0 .272.538.801.735.801.071 0 .128.057.128.128a.128.128 0 01-.128.128c-.197 0-.735.528-.735.801a.128.128 0 01-.128.128.128.128 0 01-.128-.128c0-.273-.538-.801-.735-.801a.128.128 0 010-.256zm-3.99 3.26c0-.065.057-.098.119-.118.69-.228 1.269-.8 1.403-1.554.011-.064.053-.118.118-.118.066 0 .107.054.119.118.133.754.711 1.326 1.401 1.554.062.02.118.053.118.118s-.056.098-.118.119c-.69.227-1.269.799-1.403 1.553-.011.064-.053.119-.119.119-.065 0-.106-.054-.118-.119-.134-.754-.713-1.326-1.403-1.553-.061-.022-.117-.054-.117-.119zm1.565 9.307c-.113 0-.42.302-.42.459 0 .04-.034.073-.074.073a.074.074 0 01-.074-.073c0-.157-.307-.459-.42-.459a.074.074 0 01-.074-.073c0-.039.034-.073.074-.073.113 0 .42-.302.42-.457 0-.042.033-.073.074-.073.04 0 .074.031.074.073 0 .155.307.457.42.457.04 0 .073.034.073.073a.073.073 0 01-.073.073zm.568-3.047c-.14 0-.521.375-.521.568a.092.092 0 11-.183 0c0-.193-.381-.568-.521-.568a.09.09 0 01-.091-.09c0-.051.041-.092.091-.092.14 0 .521-.375.521-.568a.09.09 0 01.092-.09.09.09 0 01.091.09c0 .193.381.568.521.568a.091.091 0 010 .182zm3.334 4.382c-.203 0-.758.546-.758.827 0 .073-.06.133-.132.133a.133.133 0 01-.133-.133c0-.281-.555-.827-.758-.827a.134.134 0 01-.133-.133c0-.073.059-.132.133-.132.204 0 .758-.545.758-.828 0-.071.06-.132.133-.132.073 0 .132.061.132.132 0 .283.555.828.758.828.074 0 .133.059.133.132a.133.133 0 01-.133.133zm1.922-.806c-1.086-.851-1.869-1.498-2.653-2.287-.789-.784-1.436-1.566-2.287-2.654-.626-.8-.566-1.897.144-2.607l.001-.001.002-.001L9.364 7.26 7.149 5.066l-.003-.003-.002-.003c-.52-.52-.7-1.27-.472-1.958.148-.447.464-.802.867-1.049a1.983 1.983 0 01.371-.19 2.1 2.1 0 01.468-.131c.005 0 .009-.003.014-.004C11.746 1.24 15.363.96 18.317.96h.002c1.125 0 2.072.041 2.818.121.469.046.903.249 1.228.576.328.331.525.767.562 1.237.243 2.311.144 7.253-.651 12.714-.001.01-.006.016-.007.025a2.258 2.258 0 01-.18.586c-.006.014-.01.028-.018.042-.333.699-1.001 1.163-1.771 1.163-.51 0-.992-.2-1.358-.567l-.003-.002-.004-.004-2.192-2.215-5.333 5.359-.001.002h-.001a1.94 1.94 0 01-1.378.573c-.44 0-.877-.151-1.231-.429zm2.576 2.09c-.139 0-.518.373-.518.566a.09.09 0 01-.091.09.09.09 0 01-.09-.09c0-.193-.379-.566-.519-.566a.09.09 0 110-.18c.139 0 .519-.373.519-.566a.09.09 0 01.09-.09c.05 0 .091.041.091.09 0 .193.379.566.518.566.05 0 .091.039.091.09s-.04.09-.091.09zm2.115-2.437c.248 0 .922-.662.922-1.003 0-.088.072-.161.161-.161.088 0 .161.073.161.161 0 .341.674 1.003.921 1.003.089 0 .161.073.161.161a.16.16 0 01-.161.161c-.247 0-.921.662-.921 1.005a.162.162 0 01-.161.162.162.162 0 01-.161-.162c0-.343-.674-1.005-.922-1.005a.161.161 0 010-.322z"/></symbol>
+<symbol id="si-flickr" viewBox="0 0 24 24"><path d="M5.334 6.666C2.3884 6.666 0 9.055 0 12c0 2.9456 2.3884 5.334 5.334 5.334 2.9456 0 5.332-2.3884 5.332-5.334 0-2.945-2.3864-5.334-5.332-5.334zm13.332 0c-2.9456 0-5.332 2.389-5.332 5.334 0 2.9456 2.3864 5.334 5.332 5.334C21.6116 17.334 24 14.9456 24 12c0-2.945-2.3884-5.334-5.334-5.334Z"/></symbol>
+<symbol id="si-internetarchive" viewBox="0 0 24 24"><path d="M22.667 22.884V24H1.333v-1.116zm-.842-1.675v1.396H2.175v-1.396zM4.233 6.14l.234.118.118 1.882.117 3.058v2.941l-.117 3.666-.02 2.47-.332.098H3.062l-.352-.098-.136-2.47-.118-3.646v-2.941l.118-3.078.107-1.892.244-.107zm16.842 0l.235.118.117 1.882.117 3.058v2.941l-.117 3.666-.02 2.47-.332.098h-1.171l-.352-.098-.137-2.47-.117-3.646v-2.941l.117-3.078.108-1.892.244-.107zm-11.79 0l.235.118.117 1.882.117 3.058v2.941l-.117 3.666-.02 2.47-.331.098H8.114l-.352-.098-.136-2.47-.117-3.646v-2.941l.117-3.078.107-1.892.244-.107zm6.457 0l.234.118.117 1.882.118 3.058v2.941l-.118 3.666-.019 2.47-.332.098H14.57l-.351-.098-.137-2.47-.117-3.646v-2.941l.117-3.078.108-1.892.244-.107zm6.083-2.511V5.58H2.175V3.628zM11.798 0l10.307 2.347-.413.723H1.951l-.618-.587Z"/></symbol>
+<symbol id="si-peertube" viewBox="0 0 24 24"><path d="M12 6.545v10.91L20.727 12M3.273 12v12L12 17.455M3.273 0v12L12 6.545"/></symbol>
+<symbol id="si-kick" viewBox="0 0 24 24"><path d="M1.333 0h8v5.333H12V2.667h2.667V0h8v8H20v2.667h-2.667v2.666H20V16h2.667v8h-8v-2.667H12v-2.666H9.333V24h-8Z"/></symbol>
+<symbol id="si-rumble" viewBox="0 0 24 24"><path d="M14.4528 13.5458c.8064-.6542.9297-1.8381.2756-2.6445a1.8802 1.8802 0 0 0-.2756-.2756 21.2127 21.2127 0 0 0-4.3121-2.776c-1.066-.51-2.256.2-2.4261 1.414a23.5226 23.5226 0 0 0-.14 5.5021c.116 1.23 1.292 1.964 2.372 1.492a19.6285 19.6285 0 0 0 4.5062-2.704v-.008zm6.9322-5.4002c2.0335 2.228 2.0396 5.637.014 7.8723A26.1487 26.1487 0 0 1 8.2946 23.846c-2.6848.6713-5.4168-.914-6.1662-3.5781-1.524-5.2002-1.3-11.0803.17-16.3045.772-2.744 3.3521-4.4661 6.0102-3.832 4.9242 1.174 9.5443 4.196 13.0764 8.0121v.002z"/></symbol>
+<symbol id="si-bilibili" viewBox="0 0 24 24"><path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c0-.373.129-.689.386-.947.258-.257.574-.386.947-.386zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373Z"/></symbol>
+<symbol id="si-mastodon" viewBox="0 0 24 24"><path d="M23.268 5.313c-.35-2.578-2.617-4.61-5.304-5.004C17.51.242 15.792 0 11.813 0h-.03c-3.98 0-4.835.242-5.288.309C3.882.692 1.496 2.518.917 5.127.64 6.412.61 7.837.661 9.143c.074 1.874.088 3.745.26 5.611.118 1.24.325 2.47.62 3.68.55 2.237 2.777 4.098 4.96 4.857 2.336.792 4.849.923 7.256.38.265-.061.527-.132.786-.213.585-.184 1.27-.39 1.774-.753a.057.057 0 0 0 .023-.043v-1.809a.052.052 0 0 0-.02-.041.053.053 0 0 0-.046-.01 20.282 20.282 0 0 1-4.709.545c-2.73 0-3.463-1.284-3.674-1.818a5.593 5.593 0 0 1-.319-1.433.053.053 0 0 1 .066-.054c1.517.363 3.072.546 4.632.546.376 0 .75 0 1.125-.01 1.57-.044 3.224-.124 4.768-.422.038-.008.077-.015.11-.024 2.435-.464 4.753-1.92 4.989-5.604.008-.145.03-1.52.03-1.67.002-.512.167-3.63-.024-5.545zm-3.748 9.195h-2.561V8.29c0-1.309-.55-1.976-1.67-1.976-1.23 0-1.846.79-1.846 2.35v3.403h-2.546V8.663c0-1.56-.617-2.35-1.848-2.35-1.112 0-1.668.668-1.67 1.977v6.218H4.822V8.102c0-1.31.337-2.35 1.011-3.12.696-.77 1.608-1.164 2.74-1.164 1.311 0 2.302.5 2.962 1.498l.638 1.06.638-1.06c.66-.999 1.65-1.498 2.96-1.498 1.13 0 2.043.395 2.74 1.164.675.77 1.012 1.81 1.012 3.12z"/></symbol>
+<symbol id="si-ted" viewBox="0 0 24 24"><path d="M0 7.664v2.223h2.43v6.449H5.1v-6.45h2.43V7.665zm7.945 0v8.672h7.31v-2.223h-4.638v-1.08h4.637v-2.066h-4.637v-1.08h4.637V7.664zm7.759 0v8.672h3.863c3.024 0 4.433-1.688 4.433-4.349 0-2.185-1.021-4.323-3.912-4.323zm2.672 2.223h.85c1.931 0 2.102 1.518 2.102 2.063 0 .815-.243 2.163-1.907 2.163h-1.045z"/></symbol>
+<symbol id="si-nasa" viewBox="0 0 24 24"><path d="M4.344 13.598c.075.281.195.39.407.39.22 0 .335-.132.335-.39V8.804h1.379v4.794c0 .675-.088.968-.43 1.31-.247.248-.703.439-1.278.439-.464 0-.909-.154-1.192-.438-.249-.25-.386-.505-.599-1.311l-.846-3.196c-.074-.281-.194-.39-.406-.39-.22 0-.336.132-.336.39v4.794H0v-4.794c0-.675.088-.968.43-1.31.247-.248.703-.439 1.278-.439.464 0 .909.154 1.192.438.249.25.385.505.599 1.311zM22.575 15.196l-1.591-4.98a.415.415 0 00-.06-.132.226.226 0 00-.186-.082.226.226 0 00-.185.082.414.414 0 00-.06.132l-1.591 4.98h-1.425l1.739-5.44c.09-.283.22-.524.384-.684.282-.275.614-.419 1.138-.419.525 0 .857.144 1.139.42.164.16.294.4.384.683L24 15.196h-1.425zM15.531 15.196c.903 0 1.344-.192 1.692-.538.385-.383.569-.802.569-1.427 0-.553-.202-1.064-.51-1.37-.403-.4-.903-.527-1.719-.527h-1.142c-.436 0-.61-.053-.748-.188-.094-.093-.139-.23-.139-.393 0-.168.04-.334.156-.448.103-.1.243-.147.511-.147h3.301V8.804h-3.049c-.903 0-1.343.192-1.691.538-.385.383-.57.802-.57 1.427 0 .553.203 1.064.51 1.37.404.4.904.527 1.72.527h1.141c.437 0 .61.053.748.188.095.093.14.23.14.393 0 .169-.041.335-.157.448-.102.1-.242.147-.51.147h-3.405l-1.306-4.086c-.09-.283-.22-.524-.384-.684-.282-.275-.615-.419-1.139-.419s-.857.144-1.138.42c-.165.16-.294.4-.385.683l-1.738 5.44h1.424l1.592-4.98a.415.415 0 01.06-.132.226.226 0 01.185-.082c.082 0 .142.028.186.082a.413.413 0 01.06.132l1.591 4.98h4.144z"/></symbol>
+<symbol id="si-wikimediacommons" viewBox="0 0 24 24"><path d="M9.048 15.203a2.952 2.952 0 1 1 5.904 0 2.952 2.952 0 0 1-5.904 0zm11.749.064v-.388h-.006a8.726 8.726 0 0 0-.639-2.985 8.745 8.745 0 0 0-1.706-2.677l.004-.004-.186-.185-.044-.045-.026-.026-.204-.204-.006.007c-.848-.756-1.775-1.129-2.603-1.461-1.294-.519-2.138-.857-2.534-2.467.443.033.839.174 1.13.481C15.571 6.996 11.321 0 11.321 0s-1.063 3.985-2.362 5.461c-.654.744.22.273 1.453-.161.279 1.19.77 2.119 1.49 2.821.791.771 1.729 1.148 2.556 1.48.672.27 1.265.508 1.767.916l-.593.594-.668-.668-.668 2.463 2.463-.668-.668-.668.6-.599a6.285 6.285 0 0 1 1.614 3.906h-.844v-.944l-2.214 1.27 2.214 1.269v-.944h.844a6.283 6.283 0 0 1-1.614 3.906l-.6-.599.668-.668-2.463-.668.668 2.463.668-.668.6.6a6.263 6.263 0 0 1-3.907 1.618v-.848h.945L12 18.45l-1.27 2.214h.944v.848a6.266 6.266 0 0 1-3.906-1.618l.599-.6.668.668.668-2.463-2.463.668.668.668-.6.599a6.29 6.29 0 0 1-1.615-3.906h.844v.944l2.214-1.269-2.214-1.27v.944h-.843a6.292 6.292 0 0 1 1.615-3.906l.6.599-.668.668 2.463.668-.668-2.463-.668.668-2.359-2.358-.23.229-.044.045-.185.185.004.004a8.749 8.749 0 0 0-2.345 5.662h-.006v.649h.006a8.749 8.749 0 0 0 2.345 5.662l-.004.004.185.185.045.045.045.045.185.185.004-.004a8.73 8.73 0 0 0 2.677 1.707 8.75 8.75 0 0 0 2.985.639V24h.649v-.006a8.75 8.75 0 0 0 2.985-.639 8.717 8.717 0 0 0 2.677-1.707l.004.004.187-.187.044-.043.043-.044.187-.186-.004-.004a8.733 8.733 0 0 0 1.706-2.677 8.726 8.726 0 0 0 .639-2.985h.006v-.259z"/></symbol>
+<symbol id="si-loom" viewBox="0 0 24 24"><path d="M24 10.665h-7.018l6.078-3.509-1.335-2.312-6.078 3.509 3.508-6.077L16.843.94l-3.508 6.077V0h-2.67v7.018L7.156.94 4.844 2.275l3.509 6.077-6.078-3.508L.94 7.156l6.078 3.509H0v2.67h7.017L.94 16.844l1.335 2.313 6.077-3.508-3.509 6.077 2.312 1.335 3.509-6.078V24h2.67v-7.017l3.508 6.077 2.312-1.335-3.509-6.078 6.078 3.509 1.335-2.313-6.077-3.508h7.017v-2.67H24zm-12 4.966a3.645 3.645 0 1 1 0-7.29 3.645 3.645 0 0 1 0 7.29z"/></symbol>
+<symbol id="si-mixcloud" viewBox="0 0 24 24"><path d="M2.462 8.596l1.372 6.49h.319l1.372-6.49h2.462v6.808H6.742v-5.68l.232-.81h-.402l-1.43 6.49H2.854l-1.44-6.49h-.391l.222.81v5.68H0V8.596zM24 8.63v1.429L21.257 12 24 13.941v1.43l-3.235-2.329h-.348l-3.226 2.329v-1.43l2.734-1.94-2.733-1.942V8.63l3.225 2.338h.348zm-7.869 2.75v1.24H9.304v-1.24z"/></symbol>
+<symbol id="si-audiomack" viewBox="0 0 24 24"><path d="M.331 11.378s.5418-.089.765.1439c.2234.2332.077.7156-.2195.7237-.2965.01-.5705.063-.765-.1439-.1946-.2066-.1424-.6218.2195-.7237m5.881 3.2925c-.0522.01-.1075-.018-.164-.059-.3884-.5413-.5287-2.3923-.707-2.5025-.185-.1144-.8545 1.0255-2.1862.903-.5569-.051-1.1236-.4121-1.4573-.662.031-.4206.0364-1.4027.8659-1.0833.5038.1939 1.3667.7266 2.1245-.23.8378-1.0579 1.2999-.7506 1.577-.5206.2771.23.0925 1.4259.5058 1.0916.4133-.3343 2.082-2.4103 2.082-2.4103s1.292-1.303 1.4898.067c.1979 1.3698 1.0403 2.8877 1.2635 2.8445.2234-.043 2.8223-5.3253 3.1945-5.666.3722-.3409 1.6252-.2961 1.5657.5781-.0596.8742-.1871 6.308-.1871 6.308s-.147 1.5311.0924.7128c.0992-.3392.206-.6453.3392-1.0024.6414-2.0534 1.734-5.5613 2.2784-7.3688.1252-.4325.233-.8037.3166-1.0891l.0001-.0008a3.5925 3.5925 0 0 1 .0973-.3305c.0455-.1532.0763-.2546.0858-.2813.0243-.068.0925-.1192.1884-.157.0962-.061.1995-.064.3165-.067.3021-.027.6907.012 1.0401.1119.1018 0 .2125.037.3172.1118v.0001s.0063 0 .0151.01c.0023 0 .0048 0 .0073.01.0219.015.0573.045.0983.095.0012 0 .0025 0 .004.01.017.021.0341.045.0515.073.1952.2863.315.814.1948 1.7498-.2996 2.3354-.5316 7.1397-.5316 7.1397s-.0461.2298.4353-.782c.0167-.035.0383-.066.058-.098.026-.017.0552-.042.0913-.085.2974-.3546 1.0968-.5629 1.6512-.5586.2336.028.4293.087.5462.1609.2188.333.0897 1.562.0897 1.562-.4612.043-1.3403.2908-1.6519.3366-.3118.046-.7852 2.0699-1.4433 1.8629-.6581-.2069-2.1246-1.1268-2.1246-1.2533 0-.1102.1152-1.4546.1453-1.8016.0022-.024.004-.046.0058-.068a.152.152 0 0 1 .0014-.014l-.0002.0003c.0213-.2733.0023-.3927-.1239-.1199-.1086.2346-.581 1.7359-1.1078 3.3709-.0556.1429-1.0511 3.1558-1.1818 3.5231-.156.4261-.287.7523-.3776.921-.1378.1867-.3234.3036-.5826.2252-.6465-.1954-1.4654-1.0889-1.473-1.3106-.0155-1.2503.0608-7.973-.2423-7.4127-.311.5744-2.73 4.5608-2.73 4.5608-.0405.01-.0705.01-.1062.01-.1712-.019-.4366-.074-.51-.2384-.004-.01-.0094-.018-.0129-.028-.0035-.01-.0075-.022-.0135-.04-.0329-.1097-.0463-.2289-.0753-.3265-.1082-.3652-.2813-.8886-.463-1.421-.2784-.9079-.5654-1.8366-.6127-1.9391-.0923-.2007-.2268-.116-.3475-.0002-.54.458-1.6868 2.4793-2.7225 2.5898"/></symbol>
+<symbol id="si-odysee" viewBox="0 0 24 24"><path d="M11.965 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12 12 12 0 0 0-3.209-8.167 7.272 7.272 0 0 1-.799 3.218c-.548.957-2.281 2.77-3.264 3.699a.723.723 0 0 0 .056 1.104c.996.74 2.658 2.151 2.788 3.422.176 1.835 1.6 4.02 1.675 4.159a.67.67 0 0 1-.105.327 12.067 12.067 0 0 1-2.03 1.898 2.435 2.435 0 0 1-.807.126c-1.944-.04-1.526-1.866-1.712-2.905s-.78-3.085-2.716-2.788c0 0 .484 4.243-1.489 5.546s-5.843 2.27-6.55-.408 2.46-2.384 2.684-2.384c.223 0 2.233-.632 1.267-2.53-.967-1.898-2.01-3.5-2.01-3.5a11.37 11.37 0 0 0-2.735 1.285 5.42 5.42 0 0 0-1.061.82c-1.065 1.104-2.19 1.713-2.954 1.358a1.368 1.368 0 0 1-.32-.221A11.926 11.926 0 0 1 .1 13.503c.43-.641 2.082-2.038 3.696-2.906 1.304-.702 2.737-.988 3.118-1.355-.671-2.235-1.882-5.703.832-7.33C9.881.634 12.69-.142 13.77 2.958c1.08 3.1.802 3.796 1.267 3.796.465 0 1.608.223 2.09-1.75.356-1.445.574-2.685 1.379-3.087A12 12 0 0 0 12 0a12 12 0 0 0-.035 0zm-.498 2.125c-.353-.019-.78.05-1.303.224 0 0-1.895.52-1.749 2.53.13 1.777 1.08 2.753 3.053 2.01 1.972-.737 2.31-1.264 1.824-2.753-.364-1.117-.765-1.956-1.825-2.011zm.48.726a.249.249 0 0 1 .183.07 1.58 1.58 0 0 1 .232.346.253.253 0 0 1-.197.37.253.253 0 0 1-.233-.131 1.559 1.559 0 0 0-.148-.232.256.256 0 0 1 0-.353.249.249 0 0 1 .163-.07zm3.529.152a.22.22 0 0 1 .192.103.22.22 0 0 1-.07.305.22.22 0 1 1-.122-.408zM12.609 4.27a.253.253 0 0 1 .227.133 1.5 1.5 0 0 1 .102.982.253.253 0 0 1-.246.205h-.049a.253.253 0 0 1-.2-.295 1.013 1.013 0 0 0-.071-.697.253.253 0 0 1 .237-.328zm-8.035.552a.12.12 0 0 1 .029.003.12.12 0 1 1-.147.091.12.12 0 0 1 .118-.094zm15.77 3.419.273.539.593.12-.539.275-.123.592-.272-.539-.592-.123.538-.272zm-17.767.535a.22.22 0 0 1 .193.104.22.22 0 0 1-.07.304.22.22 0 1 1-.123-.408zm16.004 2.79a.258.258 0 0 1 .062.007.258.258 0 1 1-.31.195.258.258 0 0 1 .248-.202zM4.914 16.115a.17.17 0 0 1 .165.14.17.17 0 0 1-.137.197.17.17 0 1 1-.028-.337zm9.769 4.094a.2.2 0 0 1 .036.004.2.2 0 1 1-.233.15.2.2 0 0 1 .197-.154z"/></symbol>
+<symbol id="si-patreon" viewBox="0 0 24 24"><path d="M22.957 7.21c-.004-3.064-2.391-5.576-5.191-6.482-3.478-1.125-8.064-.962-11.384.604C2.357 3.231 1.093 7.391 1.046 11.54c-.039 3.411.302 12.396 5.369 12.46 3.765.047 4.326-4.804 6.068-7.141 1.24-1.662 2.836-2.132 4.801-2.618 3.376-.836 5.678-3.501 5.673-7.031Z"/></symbol>
+<symbol id="si-niconico" viewBox="0 0 24 24"><path d="M.4787 7.534v12.1279A2.0213 2.0213 0 0 0 2.5 21.6832h2.3888l1.323 2.0948a.4778.4778 0 0 0 .4043.2205.4778.4778 0 0 0 .441-.2205l1.323-2.0948h6.9828l1.323 2.0948a.4778.4778 0 0 0 .441.2205c.1838 0 .3308-.0735.4043-.2205l1.323-2.0948h2.6462a2.0213 2.0213 0 0 0 2.0213-2.0213V7.5339a2.0213 2.0213 0 0 0-2.0213-1.9845h-7.681l4.4468-4.4469L17.1637 0l-5.1452 5.1452L6.8 0 5.6973 1.1025l4.4102 4.4102H2.5367a2.0213 2.0213 0 0 0-2.058 2.058z"/></symbol>
+<symbol id="si-sinaweibo" viewBox="0 0 24 24"><path d="M10.098 20.323c-3.977.391-7.414-1.406-7.672-4.02-.259-2.609 2.759-5.047 6.74-5.441 3.979-.394 7.413 1.404 7.671 4.018.259 2.6-2.759 5.049-6.737 5.439l-.002.004zM9.05 17.219c-.384.616-1.208.884-1.829.602-.612-.279-.793-.991-.406-1.593.379-.595 1.176-.861 1.793-.601.622.263.82.972.442 1.592zm1.27-1.627c-.141.237-.449.353-.689.253-.236-.09-.313-.361-.177-.586.138-.227.436-.346.672-.24.239.09.315.36.18.601l.014-.028zm.176-2.719c-1.893-.493-4.033.45-4.857 2.118-.836 1.704-.026 3.591 1.886 4.21 1.983.64 4.318-.341 5.132-2.179.8-1.793-.201-3.642-2.161-4.149zm7.563-1.224c-.346-.105-.57-.18-.405-.615.375-.977.42-1.804 0-2.404-.781-1.112-2.915-1.053-5.364-.03 0 0-.766.331-.571-.271.376-1.217.315-2.224-.27-2.809-1.338-1.337-4.869.045-7.888 3.08C1.309 10.87 0 13.273 0 15.348c0 3.981 5.099 6.395 10.086 6.395 6.536 0 10.888-3.801 10.888-6.82 0-1.822-1.547-2.854-2.915-3.284v.01zm1.908-5.092c-.766-.856-1.908-1.187-2.96-.962-.436.09-.706.511-.616.932.09.42.511.691.932.602.511-.105 1.067.044 1.442.465.376.421.466.977.316 1.473-.136.406.089.856.51.992.405.119.857-.105.992-.512.33-1.021.12-2.178-.646-3.035l.03.045zm2.418-2.195c-1.576-1.757-3.905-2.419-6.054-1.968-.496.104-.812.587-.706 1.081.104.496.586.813 1.082.707 1.532-.331 3.185.15 4.296 1.383 1.112 1.246 1.429 2.943.947 4.416-.165.48.106 1.007.586 1.157.479.165.991-.104 1.157-.586.675-2.088.241-4.478-1.338-6.235l.03.045z"/></symbol>
+<symbol id="si-9gag" viewBox="0 0 24 24"><path d="m17.279 21.008 5.193-2.995V5.992l-5.193-2.996C14.423 1.348 12.048 0 12 0c-.048 0-2.423 1.348-5.279 2.996L1.528 5.992v2.354l5.193 2.996c2.856 1.648 5.232 2.996 5.28 2.996.048 0 1.469-.797 3.157-1.772a229.633 229.633 0 0 1 3.097-1.772c.016 0 .027 1.096.027 2.437l-.002 2.436-3.076 1.772c-1.692.975-3.115 1.783-3.163 1.795-.048.013-1.471-.776-3.162-1.752-1.69-.976-3.113-1.775-3.161-1.775-.155 0-4.036 2.274-4.011 2.35.031.093 10.136 5.937 10.276 5.943.057.002 2.44-1.344 5.296-2.992ZM9.847 8.391c-1.118-.65-2.033-1.2-2.033-1.222 0-.071 4.06-2.376 4.186-2.376.125 0 4.186 2.305 4.186 2.376 0 .063-4.047 2.375-4.184 2.39-.068.007-1.037-.519-2.155-1.168Z"/></symbol>
+<symbol id="si-giphy" viewBox="0 0 24 24"><path d="M2.666 0v24h18.668V8.666l-2.668 2.668v10H5.334V2.668H10L12.666 0zm10.668 0v8h8V5.334h-2.668V2.668H16V0"/></symbol>
+<symbol id="si-youtube" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></symbol>
+<symbol id="si-facebook" viewBox="0 0 24 24"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></symbol>
+<symbol id="si-soundcloud" viewBox="0 0 24 24"><path d="M23.999 14.165c-.052 1.796-1.612 3.169-3.4 3.169h-8.18a.68.68 0 0 1-.675-.683V7.862a.747.747 0 0 1 .452-.724s.75-.513 2.333-.513a5.364 5.364 0 0 1 2.763.755 5.433 5.433 0 0 1 2.57 3.54c.282-.08.574-.121.868-.12.884 0 1.73.358 2.347.992s.948 1.49.922 2.373ZM10.721 8.421c.247 2.98.427 5.697 0 8.672a.264.264 0 0 1-.53 0c-.395-2.946-.22-5.718 0-8.672a.264.264 0 0 1 .53 0ZM9.072 9.448c.285 2.659.37 4.986-.006 7.655a.277.277 0 0 1-.55 0c-.331-2.63-.256-5.02 0-7.655a.277.277 0 0 1 .556 0Zm-1.663-.257c.27 2.726.39 5.171 0 7.904a.266.266 0 0 1-.532 0c-.38-2.69-.257-5.21 0-7.904a.266.266 0 0 1 .532 0Zm-1.647.77a26.108 26.108 0 0 1-.008 7.147.272.272 0 0 1-.542 0 27.955 27.955 0 0 1 0-7.147.275.275 0 0 1 .55 0Zm-1.67 1.769c.421 1.865.228 3.5-.029 5.388a.257.257 0 0 1-.514 0c-.21-1.858-.398-3.549 0-5.389a.272.272 0 0 1 .543 0Zm-1.655-.273c.388 1.897.26 3.508-.01 5.412-.026.28-.514.283-.54 0-.244-1.878-.347-3.54-.01-5.412a.283.283 0 0 1 .56 0Zm-1.668.911c.4 1.268.257 2.292-.026 3.572a.257.257 0 0 1-.514 0c-.241-1.262-.354-2.312-.023-3.572a.283.283 0 0 1 .563 0Z"/></symbol>
+<symbol id="si-bandcamp" viewBox="0 0 24 24"><path d="M0 18.75l7.437-13.5H24l-7.438 13.5H0z"/></symbol>
+<symbol id="si-threads" viewBox="0 0 24 24"><path d="M18.263 11.097c-.03-3.486-1.92-5.586-5.111-5.586-2.13 0-3.922.963-4.863 2.499l2.062 1.438c.535-.843 1.272-1.543 2.628-1.543 1.528 0 2.318.85 2.544 2.431a15 15 0 0 0-2.236-.173c-4.125 0-6.068 1.867-6.068 4.336s1.943 3.99 4.804 3.99c3.139 0 5.013-2.115 5.781-4.735.798.361 1.348 1.204 1.348 2.47 0 3.387-3.907 5.232-7.22 5.232-4.885 0-8.077-3.207-8.077-8.424 0-6.392 4.223-10.487 9.9-10.487 3.808 0 5.69 1.671 6.97 3.914l2.108-1.475C21.44 2.078 18.331 0 13.663 0 6.227 0 1.168 5.277 1.168 12.934c0 7 4.953 11.066 10.856 11.066 4.878 0 9.809-2.846 9.809-7.716 0-2.545-1.46-4.231-3.569-5.187m-6.33 4.855c-1.077 0-2.026-.512-2.026-1.453 0-1.483 1.822-1.934 3.606-1.934.678 0 1.34.045 1.927.173-.422 1.927-1.671 3.215-3.508 3.214Z"/></symbol>
+<symbol id="si-snapchat" viewBox="0 0 24 24"><path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.15-.055-.225-.015-.243.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.224-.645.119-.869-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z"/></symbol>
+<symbol id="si-vk" viewBox="0 0 24 24"><path d="m9.489.004.729-.003h3.564l.73.003.914.01.433.007.418.011.403.014.388.016.374.021.36.025.345.03.333.033c1.74.196 2.933.616 3.833 1.516.9.9 1.32 2.092 1.516 3.833l.034.333.029.346.025.36.02.373.025.588.012.41.013.644.009.915.004.98-.001 3.313-.003.73-.01.914-.007.433-.011.418-.014.403-.016.388-.021.374-.025.36-.03.345-.033.333c-.196 1.74-.616 2.933-1.516 3.833-.9.9-2.092 1.32-3.833 1.516l-.333.034-.346.029-.36.025-.373.02-.588.025-.41.012-.644.013-.915.009-.98.004-3.313-.001-.73-.003-.914-.01-.433-.007-.418-.011-.403-.014-.388-.016-.374-.021-.36-.025-.345-.03-.333-.033c-1.74-.196-2.933-.616-3.833-1.516-.9-.9-1.32-2.092-1.516-3.833l-.034-.333-.029-.346-.025-.36-.02-.373-.025-.588-.012-.41-.013-.644-.009-.915-.004-.98.001-3.313.003-.73.01-.914.007-.433.011-.418.014-.403.016-.388.021-.374.025-.36.03-.345.033-.333c.196-1.74.616-2.933 1.516-3.833.9-.9 2.092-1.32 3.833-1.516l.333-.034.346-.029.36-.025.373-.02.588-.025.41-.012.644-.013.915-.009ZM6.79 7.3H4.05c.13 6.24 3.25 9.99 8.72 9.99h.31v-3.57c2.01.2 3.53 1.67 4.14 3.57h2.84c-.78-2.84-2.83-4.41-4.11-5.01 1.28-.74 3.08-2.54 3.51-4.98h-2.58c-.56 1.98-2.22 3.78-3.8 3.95V7.3H10.5v6.92c-1.6-.4-3.62-2.34-3.71-6.92Z"/></symbol>
+<symbol id="si-netflix" viewBox="0 0 24 24"><path d="m5.398 0 8.348 23.602c2.346.059 4.856.398 4.856.398L10.113 0H5.398zm8.489 0v9.172l4.715 13.33V0h-4.715zM5.398 1.5V24c1.873-.225 2.81-.312 4.715-.398V14.83L5.398 1.5z"/></symbol>
+<symbol id="si-spotify" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></symbol>
+<symbol id="si-applemusic" viewBox="0 0 24 24"><path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.4-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.801.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 001.57-.1c.822-.106 1.596-.35 2.295-.81a5.046 5.046 0 001.88-2.207c.186-.42.293-.87.37-1.324.113-.675.138-1.358.137-2.04-.002-3.8 0-7.595-.003-11.393zm-6.423 3.99v5.712c0 .417-.058.827-.244 1.206-.29.59-.76.962-1.388 1.14-.35.1-.706.157-1.07.173-.95.045-1.773-.6-1.943-1.536a1.88 1.88 0 011.038-2.022c.323-.16.67-.25 1.018-.324.378-.082.758-.153 1.134-.24.274-.063.457-.23.51-.516a.904.904 0 00.02-.193c0-1.815 0-3.63-.002-5.443a.725.725 0 00-.026-.185c-.04-.15-.15-.243-.304-.234-.16.01-.318.035-.475.066-.76.15-1.52.303-2.28.456l-2.325.47-1.374.278c-.016.003-.032.01-.048.013-.277.077-.377.203-.39.49-.002.042 0 .086 0 .13-.002 2.602 0 5.204-.003 7.805 0 .42-.047.836-.215 1.227-.278.64-.77 1.04-1.434 1.233-.35.1-.71.16-1.075.172-.96.036-1.755-.6-1.92-1.544-.14-.812.23-1.685 1.154-2.075.357-.15.73-.232 1.108-.31.287-.06.575-.116.86-.177.383-.083.583-.323.6-.714v-.15c0-2.96 0-5.922.002-8.882 0-.123.013-.25.042-.37.07-.285.273-.448.546-.518.255-.066.515-.112.774-.165.733-.15 1.466-.296 2.2-.444l2.27-.46c.67-.134 1.34-.27 2.01-.403.22-.043.442-.088.663-.106.31-.025.523.17.554.482.008.073.012.148.012.223.002 1.91.002 3.822 0 5.732z"/></symbol>
+<symbol id="si-tidal" viewBox="0 0 24 24"><path d="M12.012 3.992L8.008 7.996 4.004 3.992 0 7.996 4.004 12l4.004-4.004L12.012 12l-4.004 4.004 4.004 4.004 4.004-4.004L12.012 12l4.004-4.004-4.004-4.004zM16.042 7.996l3.979-3.979L24 7.996l-3.979 3.979z"/></symbol>
+<symbol id="si-deezer" viewBox="0 0 24 24"><path d="M.693 10.024c.381 0 .693-1.256.693-2.807 0-1.55-.312-2.807-.693-2.807C.312 4.41 0 5.666 0 7.217s.312 2.808.693 2.808ZM21.038 1.56c-.364 0-.684.805-.91 2.096C19.765 1.446 19.184 0 18.526 0c-.78 0-1.464 2.036-1.784 5-.312-2.158-.788-3.536-1.325-3.536-.745 0-1.386 2.704-1.62 6.472-.442-1.932-1.083-3.145-1.793-3.145s-1.35 1.213-1.793 3.145c-.242-3.76-.874-6.463-1.628-6.463-.537 0-1.013 1.378-1.325 3.535C6.938 2.036 6.262 0 5.474 0c-.658 0-1.247 1.447-1.602 3.665-.217-1.291-.546-2.105-.91-2.105-.675 0-1.221 2.807-1.221 6.272 0 3.466.546 6.273 1.221 6.273.277 0 .537-.476.736-1.273.32 2.928.996 4.938 1.776 4.938.606 0 1.143-1.204 1.507-3.11.251 3.622.875 6.195 1.602 6.195.46 0 .875-1.023 1.187-2.677C10.142 21.6 11 24 12.004 24c1.005 0 1.863-2.4 2.235-5.822.312 1.654.727 2.677 1.186 2.677.728 0 1.352-2.573 1.603-6.195.364 1.906.9 3.11 1.507 3.11.78 0 1.455-2.01 1.775-4.938.208.797.46 1.273.737 1.273.675 0 1.22-2.807 1.22-6.273-.008-3.457-.553-6.272-1.23-6.272ZM23.307 10.024c.381 0 .693-1.256.693-2.807 0-1.55-.312-2.807-.693-2.807-.381 0-.693 1.256-.693 2.807s.312 2.808.693 2.808Z"/></symbol>
+<symbol id="si-hbomax" viewBox="0 0 24 24"><path d="M3.784 8.716c-.655 0-1.32.29-2.173.946v-.78H0v6.236h1.715V11.24c.749-.592 1.091-.78 1.372-.78.333 0 .551.209.551.729v3.928h1.715V11.23c.748-.582 1.081-.769 1.372-.769.333 0 .55.208.55.728v3.928H8.99v-4.53c0-1.403-.8-1.871-1.57-1.871-.654 0-1.32.27-2.192.936-.28-.697-.894-.936-1.444-.936zm8.689 0c-1.705 0-3.118 1.466-3.118 3.284 0 1.82 1.413 3.285 3.118 3.285.842 0 1.57-.312 2.131-.988v.82h1.632V8.883h-1.632v.822c-.561-.676-1.29-.988-2.131-.988zm4.064.166c.707 1.102 1.507 2.09 2.443 3.077a26.593 26.593 0 0 0-2.443 3.16h2.069a13.603 13.603 0 0 1 1.673-2.183 14.067 14.067 0 0 1 1.632 2.182H24a25.142 25.142 0 0 0-2.432-3.16A23.918 23.918 0 0 0 24 8.883h-2.047a14.65 14.65 0 0 1-1.674 2.11 13.357 13.357 0 0 1-1.674-2.11zm-3.804 1.279c1.018 0 1.84.82 1.84 1.84a1.837 1.837 0 0 1-1.84 1.839c-1.019 0-1.84-.82-1.84-1.84 0-1.018.821-1.84 1.84-1.84zm0 .415c-.78 0-1.414.633-1.414 1.423s.634 1.424 1.413 1.424c.78 0 1.414-.634 1.414-1.424s-.634-1.424-1.414-1.424z"/></symbol>
+<symbol id="si-max" viewBox="0 0 24 24"><path d="M1.769 0A1.77 1.77 0 0 0 0 1.769V22.23A1.77 1.77 0 0 0 1.769 24H22.23A1.77 1.77 0 0 0 24 22.231V1.77A1.77 1.77 0 0 0 22.231 0zm12.485 3.28a4.301 4.301 0 0 1 4.3 4.302 4.301 4.301 0 0 1-1.993 3.63 6.085 6.085 0 0 1 1.054 3.422 6.085 6.085 0 0 1-6.085 6.085 6.085 6.085 0 0 1-6.085-6.085 6.085 6.085 0 0 1 4.66-5.916 4.301 4.301 0 0 1-.152-1.136 4.301 4.301 0 0 1 4.301-4.301zm0 1.849a2.453 2.453 0 0 0-2.453 2.453 2.453 2.453 0 0 0 2.453 2.453 2.453 2.453 0 0 0 2.453-2.453 2.453 2.453 0 0 0-2.453-2.453zm-2.724 5.268a4.237 4.237 0 0 0-4.237 4.237 4.237 4.237 0 0 0 4.237 4.237 4.237 4.237 0 0 0 4.237-4.237 4.237 4.237 0 0 0-4.237-4.237zm.032 2.54a1.781 1.781 0 1 1 0 3.562 1.781 1.781 0 0 1 0-3.562Z"/></symbol>
+</svg>
+<!--BRAND-SPRITE:END-->
+
+<script>
+(() => {
+  'use strict';
+  const root = document.documentElement;
+
+  /* ---------- theme ---------- */
+  const themeBtns = document.querySelectorAll('[data-theme-set]');
+  function setTheme(t) {
+    root.dataset.theme = t;
+    themeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.themeSet === t)));
+    try { localStorage.setItem('ferry-mockup-theme', t); } catch (e) { /* storage may be blocked */ }
+  }
+  themeBtns.forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.themeSet)));
+  let saved = null;
+  try { saved = localStorage.getItem('ferry-mockup-theme'); } catch (e) { /* ignore */ }
+  setTheme(saved === 'dark' ? 'dark' : 'light');
+
+  /* ---------- site data (statuses from Ferry's registry; live = sample) ---------- */
+  const SITES = {
+    tiktok: { name: 'TikTok', st: 'perm', live: 'ok', host: 'tiktok.com', types: 'Video, pictures, audio' },
+    instagram: { name: 'Instagram', st: 'perm', live: 'ok', host: 'instagram.com', types: 'Video, pictures' },
+    x: { name: 'X', st: 'perm', live: 'warn', host: 'x.com', types: 'Video, GIFs, pictures' },
+    vimeo: { name: 'Vimeo', st: 'perm', live: 'ok', host: 'vimeo.com', types: 'Video, live, subtitles' },
+    twitch: { name: 'Twitch', st: 'perm', live: 'ok', host: 'twitch.tv', types: 'Live, video' },
+    reddit: { name: 'Reddit', st: 'perm', live: 'warn', host: 'reddit.com', types: 'Video, pictures, GIFs' },
+    pinterest: { name: 'Pinterest', st: 'perm', live: 'ok', host: 'pinterest.com', types: 'Pictures, video' },
+    bluesky: { name: 'Bluesky', st: 'perm', live: 'ok', host: 'bsky.app', types: 'Video, pictures, GIFs' },
+    dailymotion: { name: 'Dailymotion', st: 'perm', live: 'ok', host: 'dailymotion.com', types: 'Video, subtitles' },
+    tumblr: { name: 'Tumblr', st: 'perm', live: 'ok', host: 'tumblr.com', types: 'Pictures, GIFs, video, audio' },
+    internetarchive: { name: 'Internet Archive', short: 'Archive', st: 'free', live: 'ok', host: 'archive.org', types: 'Video, audio, pictures' },
+    peertube: { name: 'PeerTube', st: 'free', live: 'ok', host: 'peertube.example', types: 'Video' },
+    flickr: { name: 'Flickr', st: 'free', live: 'ok', host: 'flickr.com', types: 'Pictures, video' },
+    imgur: { name: 'Imgur', st: 'free', live: 'ok', host: 'imgur.com', types: 'Pictures, GIFs, video' },
+    kick: { name: 'Kick', st: 'perm', live: 'ok', host: 'kick.com', types: 'Live, video' },
+    rumble: { name: 'Rumble', st: 'perm', live: 'ok', host: 'rumble.com', types: 'Video, live' },
+    bilibili: { name: 'Bilibili', st: 'perm', live: 'ok', host: 'bilibili.com', types: 'Video, audio, subtitles' },
+    ted: { name: 'TED', st: 'perm', live: 'ok', host: 'ted.com', types: 'Video, subtitles' },
+    nasa: { name: 'NASA', st: 'free', live: 'ok', host: 'nasa.gov', types: 'Video, pictures' },
+    youtube: { name: 'YouTube', st: 'off', host: 'youtube.com', types: 'Video, audio' },
+    facebook: { name: 'Facebook', st: 'off', host: 'facebook.com', types: 'Video, live, pictures' },
+    soundcloud: { name: 'SoundCloud', st: 'off', host: 'soundcloud.com', types: 'Audio' },
+    bandcamp: { name: 'Bandcamp', st: 'off', host: 'bandcamp.com', types: 'Audio' },
+    threads: { name: 'Threads', st: 'off', host: 'threads.com', types: 'Video, pictures' },
+    snapchat: { name: 'Snapchat', st: 'off', host: 'snapchat.com', types: 'Video' },
+    vk: { name: 'VK', st: 'off', host: 'vk.com', types: 'Video, live, pictures' },
+    netflix: { name: 'Netflix', st: 'lock', host: 'netflix.com', types: 'Video' },
+    spotify: { name: 'Spotify', st: 'lock', host: 'spotify.com', types: 'Audio' },
+    applemusic: { name: 'Apple Music', short: 'Apple Music', st: 'lock', host: 'music.apple.com', types: 'Audio' },
+    tidal: { name: 'TIDAL', st: 'lock', host: 'tidal.com', types: 'Audio' },
+    deezer: { name: 'Deezer', st: 'lock', host: 'deezer.com', types: 'Audio' },
+    hbomax: { name: 'HBO Max', st: 'lock', host: 'hbomax.com', types: 'Video' },
+  };
+  const HOSTS = [
+    ['tiktok.com', 'tiktok'], ['instagram.com', 'instagram'], ['instagr.am', 'instagram'], ['x.com', 'x'], ['twitter.com', 'x'],
+    ['vimeo.com', 'vimeo'], ['twitch.tv', 'twitch'], ['reddit.com', 'reddit'], ['redd.it', 'reddit'], ['pinterest.com', 'pinterest'], ['pin.it', 'pinterest'],
+    ['bsky.app', 'bluesky'], ['dailymotion.com', 'dailymotion'], ['dai.ly', 'dailymotion'], ['tumblr.com', 'tumblr'], ['archive.org', 'internetarchive'],
+    ['flickr.com', 'flickr'], ['flic.kr', 'flickr'], ['imgur.com', 'imgur'], ['kick.com', 'kick'], ['rumble.com', 'rumble'], ['bilibili.com', 'bilibili'],
+    ['ted.com', 'ted'], ['nasa.gov', 'nasa'], ['youtube.com', 'youtube'], ['youtu.be', 'youtube'], ['facebook.com', 'facebook'], ['fb.watch', 'facebook'],
+    ['soundcloud.com', 'soundcloud'], ['bandcamp.com', 'bandcamp'], ['threads.com', 'threads'], ['threads.net', 'threads'], ['snapchat.com', 'snapchat'],
+    ['vk.com', 'vk'], ['netflix.com', 'netflix'], ['spotify.com', 'spotify'], ['music.apple.com', 'applemusic'], ['tidal.com', 'tidal'], ['deezer.com', 'deezer'],
+    ['hbomax.com', 'hbomax'], ['max.com', 'hbomax'],
+  ];
+  const SAMPLE = {
+    tiktok: 'https://www.tiktok.com/@harborlight/video/7431982044417805611',
+    youtube: 'https://www.youtube.com/watch?v=Xb3kP9qLm2c',
+    internetarchive: 'https://archive.org/details/night-train-blues-1928',
+    netflix: 'https://www.netflix.com/watch/81234567',
+  };
+  const STATUS = {
+    free: { label: 'Free to save', icon: 'i-check', say: () => 'Open-licensed media. Pick a format and save.' },
+    perm: { label: 'Your own or with permission', icon: 'i-user-check', say: () => "You'll confirm it's yours or that you have permission." },
+    off: { label: 'Official download only', icon: 'i-out', say: (n) => `Ferry shows you ${n}'s own download instead.` },
+    lock: { label: 'Protected', icon: 'i-lock', say: () => 'DRM or paid content. Ferry never removes protection.' },
+    any: { label: 'Any other site', icon: 'i-globe', say: () => 'Ferry will try. It works when the page has a plain video or audio file.' },
+  };
+  const SHORT = { free: 'Free to save', perm: 'With permission', off: 'Official only', lock: 'Protected' };
+  const LIVE = { ok: 'Working now', warn: 'Trouble right now' };
+  const LIGHT = new Set(['pinterest', 'dailymotion', 'flickr', 'internetarchive', 'nasa', 'niconico', 'sinaweibo', 'youtube', 'facebook']);
+
+  const icon = (id, cls = 'i') => `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
+  function glyph(id) {
+    if (id === 'tiktok') {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#si-tiktok" transform="translate(-.8 -.8)" fill="#25F4EE"/><use href="#si-tiktok" transform="translate(.8 .8)" fill="#FE2C55"/><use href="#si-tiktok" fill="#fff"/></svg>';
+    }
+    return `<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#si-${id}"/></svg>`;
+  }
+  function app(id, opts = {}) {
+    const dot = opts.live ? `<i class="ldot ldot--${opts.live}"></i>` : '';
+    const size = opts.size ? ` style="--s:${opts.size}px"` : '';
+    return `<span class="app b-${id}${LIGHT.has(id) ? ' app--light' : ''}"${size}>${glyph(id)}${dot}</span>`;
+  }
+  const pill = (st, mini) => `<span class="pill pill--${st}${mini ? ' pill--mini' : ''}">${icon(STATUS[st].icon)}${mini ? SHORT[st] : STATUS[st].label}</span>`;
+  const livePill = (l) => `<span class="pill livepill"><i class="dot${l === 'warn' ? ' dot--warn' : ''}"></i>${LIVE[l]}</span>`;
+
+  /* ---------- hydrate logo placeholders and shelves ---------- */
+  document.querySelectorAll('[data-app]').forEach((el) => {
+    el.outerHTML = app(el.dataset.app, { live: el.dataset.live, size: el.dataset.size });
+  });
+  document.querySelectorAll('[data-tiles]').forEach((el) => {
+    const withLive = el.hasAttribute('data-live');
+    let html = el.dataset.tiles.split(/\s+/).map((id) => {
+      const s = SITES[id];
+      return `<button type="button" class="tile" data-site="${id}" title="${s.name}: ${STATUS[s.st].label}">${app(id, { live: withLive ? s.live : null })}<span class="tile-name">${s.short || s.name}</span></button>`;
+    }).join('');
+    if (el.dataset.more) html += `<span class="tile tile--more" aria-label="${el.dataset.more} more sites"><span class="app num">+${el.dataset.more}</span><span class="tile-name">more</span></span>`;
+    el.innerHTML = html;
+  });
+
+  /* ---------- home: live link detection demo ---------- */
+  const input = document.getElementById('demo-url');
+  const slot = document.getElementById('demo-slot');
+  const line = document.getElementById('demo-detect');
+  const where = document.getElementById('demo-where');
+  const HINT = '<span class="detect-hint">Ferry recognises the site as soon as you paste.</span>';
+  let last = null;
+  function detect(v) {
+    if (!v) return null;
+    let u;
+    try { u = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(v) ? v : `https://${v}`); } catch (e) { return null; }
+    if (!/^https?:$/.test(u.protocol) || !u.hostname.includes('.')) return null;
+    const h = u.hostname.toLowerCase().replace(/^(www|m|mobile)\./, '');
+    const hit = HOSTS.find(([d]) => h === d || h.endsWith(`.${d}`));
+    return hit ? hit[1] : 'any';
+  }
+  function show(v) {
+    const id = detect(v);
+    if (id === last) return;
+    last = id;
+    where.classList.toggle('matching', Boolean(id) && id !== 'any');
+    where.querySelectorAll('.tile').forEach((t) => t.classList.toggle('is-match', t.dataset.site === id));
+    if (!id) { slot.innerHTML = icon('i-link', 'i i--lg'); line.innerHTML = HINT; return; }
+    if (id === 'any') {
+      slot.innerHTML = `<span class="app b-any" style="--s:56px">${icon('i-globe')}</span>`;
+      line.innerHTML = `${pill('any')}<span class="detect-hint">${STATUS.any.say()}</span>`;
+      return;
+    }
+    const s = SITES[id];
+    slot.innerHTML = app(id, { size: 56 });
+    line.innerHTML = `<b>${s.name}</b>${pill(s.st)}${s.live ? livePill(s.live) : ''}<span class="detect-hint">${STATUS[s.st].say(s.name)}</span>`;
+  }
+  input.addEventListener('input', () => show(input.value.trim()));
+  function fill(id) {
+    input.value = SAMPLE[id] || `https://${SITES[id].host}/example`;
+    show(input.value);
+    input.focus();
+  }
+  document.querySelectorAll('[data-example]').forEach((b) => b.addEventListener('click', () => fill(b.dataset.example)));
+  where.addEventListener('click', (e) => { const t = e.target.closest('.tile[data-site]'); if (t) fill(t.dataset.site); });
+  document.getElementById('demo-paste').addEventListener('click', () => fill('tiktok'));
+
+  /* ---------- picker (desktop + phone) ---------- */
+  const PICK = {
+    av: { qLabel: 'Quality', hint: 'TikTok has this video up to 1080p', def: [0, 0],
+      quals: [['1080p', 'Full HD', '24.6 MB'], ['720p', 'HD', '12.1 MB'], ['540p', '', '7.9 MB'], ['360p', '', '4.2 MB']],
+      fmts: [['MP4', 'Copied, no quality loss'], ['MOV', 'Copied'], ['MKV', 'Copied'], ['WebM', 'Converted, slower'], ['AVI', 'Converted, slower']] },
+    v: { qLabel: 'Quality', hint: 'The file has no sound track', def: [0, 0],
+      quals: [['1080p', 'Full HD', '23.9 MB'], ['720p', 'HD', '11.4 MB'], ['540p', '', '7.2 MB'], ['360p', '', '3.5 MB']],
+      fmts: [['MP4', 'Copied, no quality loss'], ['MOV', 'Copied'], ['MKV', 'Copied'], ['WebM', 'Converted, slower'], ['AVI', 'Converted, slower']] },
+    a: { qLabel: 'Bitrate', hint: "The source is 128 kbps. Higher can't add quality", def: [3, 0],
+      quals: [['320 kbps', '', '1.7 MB'], ['256 kbps', '', '1.3 MB'], ['192 kbps', '', '1.0 MB'], ['128 kbps', 'Source', '0.7 MB']],
+      fmts: [['M4A', 'Copied, no quality loss'], ['MP3', 'Converted'], ['AAC', 'Copied'], ['OPUS', 'Converted'], ['OGG', 'Converted'], ['WAV', 'Converted, large'], ['FLAC', 'Converted, large']] },
+  };
+  const LOSSLESS = { WAV: '7.4 MB', FLAC: '4.4 MB' };
+  const MODES = [['av', 'Video + sound', 'MP4, WebM, MOV, MKV, AVI', 'i-av'], ['v', 'Video only', 'No sound track', 'i-vonly'], ['a', 'Audio only', 'MP3, M4A, FLAC and more', 'i-music']];
+
+  function picker(el) {
+    const uid = `pk-${el.dataset.picker}`;
+    const compact = el.classList.contains('picker--m');
+    const st = { mode: 'av', q: 0, f: 0, ok: el.dataset.consent === 'on' };
+    function html() {
+      const m = PICK[st.mode];
+      const f = m.fmts[st.f];
+      const q = m.quals[st.q];
+      const lossless = st.mode === 'a' && f[0] in LOSSLESS;
+      const main = `Download ${f[0]}`;
+      const sub = lossless ? `Lossless, ${LOSSLESS[f[0]]}` : `${q[0]}, ${q[2]}`;
+      return `
+        <div class="picker-head"><h2>Your file</h2>${compact ? '' : '<span class="grp-hint">Only what this video really has</span>'}</div>
+        <div class="grp"><p class="grp-label" id="${uid}-ml">What do you want?</p>
+          <div class="modes" role="radiogroup" aria-labelledby="${uid}-ml">${MODES.map(([k, t, s, ic]) => `<label class="mode"><input type="radio" name="${uid}-mode" value="${k}"${st.mode === k ? ' checked' : ''}>${icon(ic, 'i i--lg')}<b>${t}</b><span>${s}</span><i class="tick">${icon('i-check')}</i></label>`).join('')}</div></div>
+        <div class="grp${lossless ? ' is-off' : ''}"><p class="grp-label" id="${uid}-ql">${m.qLabel}<span class="grp-hint">${lossless ? "Lossless, so bitrate doesn't apply" : m.hint}</span></p>
+          <div class="qlist" role="radiogroup" aria-labelledby="${uid}-ql">${m.quals.map(([a, tag, size], i) => `<label class="q"><input type="radio" name="${uid}-q" value="${i}"${st.q === i ? ' checked' : ''}${lossless ? ' disabled' : ''}><span class="q-main">${a}</span>${tag ? `<span class="q-tag">${tag}</span>` : ''}<span class="q-size num">${size}</span></label>`).join('')}</div></div>
+        <div class="grp"><p class="grp-label" id="${uid}-fl">Format</p>
+          <div class="fchips" role="radiogroup" aria-labelledby="${uid}-fl">${m.fmts.map(([a, s], i) => `<label class="fchip"><input type="radio" name="${uid}-f" value="${i}"${st.f === i ? ' checked' : ''}><b>${a}</b><span>${s}</span></label>`).join('')}</div></div>
+        ${compact ? '' : `<div class="grp"><p class="grp-label">More options</p><div class="more">
+          <button class="opt" type="button">${icon('i-cc', 'i i--sm')}Subtitles <small>none for this video</small></button>
+          <button class="opt" type="button">${icon('i-image', 'i i--sm')}Cover picture</button>
+          <button class="opt" type="button">${icon('i-scissors', 'i i--sm')}Trim</button>
+          <button class="opt" type="button">${icon('i-file', 'i i--sm')}File name</button></div></div>`}
+        <label class="consent"><input type="checkbox" name="${uid}-ok"${st.ok ? ' checked' : ''}><span><b>It's my video, or I have permission to save it</b><span>TikTok creators decide whether their videos can be saved.</span></span></label>
+        <div class="cta"><button class="btn btn--primary btn--block btn--cta" type="button"${st.ok ? '' : ' disabled'}>${icon('i-download')}<span><b>${main}</b><small class="num">${sub}</small></span></button>${compact ? '' : "<p class=\"cta-note\">The file leaves the server one hour after it's ready.</p>"}</div>`;
+    }
+    const render = () => { el.innerHTML = html(); };
+    el.addEventListener('change', (e) => {
+      const t = e.target;
+      if (t.name === `${uid}-mode`) { st.mode = t.value; [st.q, st.f] = PICK[st.mode].def; }
+      else if (t.name === `${uid}-q`) st.q = Number(t.value);
+      else if (t.name === `${uid}-f`) st.f = Number(t.value);
+      else if (t.name === `${uid}-ok`) st.ok = t.checked;
+      const sel = t.type === 'radio' ? `input[name="${t.name}"][value="${t.value}"]` : `input[name="${t.name}"]`;
+      render();
+      const again = el.querySelector(sel);
+      if (again) again.focus({ preventScroll: true });
+    });
+    render();
+  }
+  document.querySelectorAll('[data-picker]').forEach(picker);
+
+  /* ---------- sites page ---------- */
+  const NOTES = {
+    youtube: { why: "YouTube only allows downloads through its own tools, so Ferry never downloads from YouTube, even public videos.",
+      routes: [['Your own uploads', 'YouTube Studio › Content › Download'], ['All your uploads at once', 'Google Takeout'], ['Watch offline', 'YouTube Premium, in the YouTube app']] },
+    tiktok: { why: "Ferry saves TikTok videos you posted, or that the creator lets you save. You confirm this before each download. TikTok sometimes blocks automated access, so a few links fail.",
+      routes: [['Save in the TikTok app', 'Only when the creator allows downloads'], ['Your own account data', "TikTok's data download"]] },
+    instagram: { why: 'Ferry saves posts you published, or that you have permission to save. Stories and many reels need a sign-in, which Ferry never uses.',
+      routes: [['Download your information', 'Accounts Center'], ['Save a public reel in the app', 'Only when the creator allows it']] },
+    x: { why: "Posts you made, or have the uploader's permission to save. Protected and age-restricted posts need a sign-in, which Ferry never uses.",
+      routes: [['Download an archive of your data', 'Settings and privacy › Your account']] },
+    reddit: { why: 'Posts you made, or have permission to save. Reddit is blocking many automated downloads right now, so links often fail.',
+      routes: [['Request a copy of your Reddit data', 'Reddit settings']] },
+    vimeo: { why: 'Vimeo owners turn downloads on or off. Save videos you own, or that you have permission to save.',
+      routes: [['Download button under the player', 'When the owner turned downloads on']] },
+    facebook: { why: 'Facebook only allows downloads of your own content, through its own tools.',
+      routes: [['Download your information', 'Accounts Center'], ['Download a reel you posted', 'In the Facebook app']] },
+    soundcloud: { why: "SoundCloud only allows downloads through its own Download button, so Ferry sends you there.",
+      routes: [['Download button on the track page', 'Signed in, when the uploader allows it']] },
+    bandcamp: { why: "Buy the release or use the artist's free download on Bandcamp, then download it from your collection.",
+      routes: [['Your Bandcamp collection', 'After you buy or claim a free download']] },
+    internetarchive: { why: "Public-domain and openly licensed items. Ferry uses the Internet Archive's own API and skips items the archive restricts.",
+      routes: [['Download options panel', 'On every item page']] },
+    netflix: { why: 'Netflix videos are DRM-protected. Ferry never removes copy protection.' },
+    spotify: { why: 'Spotify is DRM-protected. Podcasts with a public RSS feed can be saved from that feed instead.' },
+  };
+  const DEFAULT_WHY = {
+    free: () => 'Public-domain or openly licensed media. Pick a format and save.',
+    perm: (n) => `Save ${n} posts you made, or that you have permission to save. You confirm this before each download.`,
+    off: (n) => `${n} only allows downloads through its own tools, so Ferry points you there.`,
+    lock: (n) => `${n} is DRM-protected or paid. Ferry never removes protection.`,
+  };
+  const GRID = ['tiktok', 'instagram', 'youtube', 'x', 'facebook', 'vimeo', 'twitch', 'reddit', 'pinterest', 'soundcloud', 'bluesky', 'internetarchive',
+    'dailymotion', 'tumblr', 'imgur', 'flickr', 'peertube', 'bandcamp', 'threads', 'snapchat', 'netflix', 'spotify', 'applemusic', 'tidal'];
+  const grid = document.getElementById('sgrid');
+  const detail = document.getElementById('sdetail');
+  const q = document.getElementById('site-q');
+  const sites = { f: 'all', q: '', sel: 'youtube' };
+  const inFilter = (id) => {
+    const s = SITES[id];
+    if (sites.f === 'go' && !(s.st === 'free' || s.st === 'perm')) return false;
+    if (sites.f === 'off' && s.st !== 'off') return false;
+    if (sites.f === 'lock' && s.st !== 'lock') return false;
+    return !sites.q || s.name.toLowerCase().includes(sites.q);
+  };
+  function drawGrid() {
+    const ids = GRID.filter(inFilter);
+    grid.innerHTML = ids.length ? ids.map((id) => {
+      const s = SITES[id];
+      return `<button type="button" class="scard" data-site="${id}" aria-current="${id === sites.sel}">${app(id, { live: s.live })}<span class="scard-main"><span class="scard-name">${s.name}</span><span class="scard-row">${pill(s.st, true)}</span></span></button>`;
+    }).join('') : '<p class="empty">No well-known site matches. In the app, search covers all 250 sites.</p>';
+  }
+  function drawDetail() {
+    const id = sites.sel;
+    const s = SITES[id];
+    const n = NOTES[id] || {};
+    const routes = n.routes || [];
+    detail.innerHTML = `
+      <div class="detail-head">${app(id, { size: 64 })}<div><h2>${s.name}</h2><div class="scard-row">${pill(s.st)}${s.live ? livePill(s.live) : ''}</div></div></div>
+      <h3>What it has</h3><p>${s.types}</p>
+      <h3>How Ferry handles it</h3><p>${n.why || DEFAULT_WHY[s.st](s.name)}</p>
+      ${routes.length ? `<h3>${s.name}'s own ways to download</h3><div class="routes">${routes.map(([b, sub]) => `<a class="route" href="#sites"><div><b>${b}</b><span>${sub}</span></div>${icon('i-out', 'i i--sm')}</a>`).join('')}</div>` : ''}
+      <p class="checked">Rules checked 24 Nov 2026</p>`;
+  }
+  grid.addEventListener('click', (e) => {
+    const c = e.target.closest('.scard');
+    if (!c) return;
+    sites.sel = c.dataset.site;
+    grid.querySelectorAll('.scard').forEach((x) => x.setAttribute('aria-current', String(x === c)));
+    drawDetail();
+  });
+  document.querySelectorAll('.filters [data-f]').forEach((b) => b.addEventListener('click', () => {
+    sites.f = b.dataset.f;
+    document.querySelectorAll('.filters [data-f]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    drawGrid();
+  }));
+  q.addEventListener('input', () => { sites.q = q.value.trim().toLowerCase(); drawGrid(); });
+  drawGrid();
+  drawDetail();
+
+  /* ---------- album pictures ---------- */
+  const pg = document.getElementById('pgrid');
+  const hues = [200, 18, 280, 330, 190, 40, 220, 350, 160, 260, 10, 300, 210, 30, 240];
+  pg.innerHTML = hues.map((h, i) => `<button type="button" class="ph${[4, 9, 13].includes(i) ? '' : ' on'}" style="--h:${h};--x:${20 + ((i * 37) % 60)}%" aria-label="Picture ${i + 1}" aria-pressed="${![4, 9, 13].includes(i)}"><span class="chk">${icon('i-check')}</span></button>`).join('');
+  pg.addEventListener('click', (e) => { const p = e.target.closest('.ph'); if (p) { p.classList.toggle('on'); p.setAttribute('aria-pressed', String(p.classList.contains('on'))); } });
+
+  /* ---------- scale the fixed-size frames to fit the window ---------- */
+  function fit() {
+    document.querySelectorAll('[data-fit]').forEach((box) => {
+      const inner = box.firstElementChild;
+      const s = Math.min(1, box.clientWidth / Number(box.dataset.fit));
+      inner.style.zoom = s < 1 ? s.toFixed(4) : '';
+    });
+  }
+  window.addEventListener('resize', fit);
+  fit();
+})();
+</script>
+</body>
+</html>

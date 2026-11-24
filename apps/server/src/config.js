@@ -8,6 +8,7 @@ import { existsSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { locateTool } from './engines/locate.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(here, '../../..');
@@ -95,8 +96,9 @@ export function loadConfig(env = process.env) {
       ytdlp: env.YTDLP_PATH || detectVenvTool('yt-dlp'),
       // Image galleries (optional engine; GPL-2.0, run as a separate program only).
       galleryDl: env.GALLERYDL_PATH || detectVenvTool('gallery-dl'),
-      ffmpeg: env.FFMPEG_PATH || 'ffmpeg',
-      ffprobe: env.FFPROBE_PATH || 'ffprobe',
+      // PATH first, then (Windows) winget/Chocolatey/Scoop locations; see engines/locate.js.
+      ffmpeg: env.FFMPEG_PATH || locateTool('ffmpeg', { env }) || 'ffmpeg',
+      ffprobe: env.FFPROBE_PATH || locateTool('ffprobe', { env }) || 'ffprobe',
       // No JavaScript runtime by default: yt-dlp only needs one to solve
       // YouTube's player challenges, which Ferry does not do (see RESEARCH.md).
       jsRuntime: env.YTDLP_JS_RUNTIME || 'none',

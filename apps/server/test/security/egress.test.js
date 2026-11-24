@@ -170,6 +170,60 @@ test('DNS rebinding and mixed public/private answers are refused', async () => {
   }
 });
 
+test('a DNS failure is a network error for the job, never a blocked destination', async () => {
+  const resolver = async () => {
+    throw Object.assign(new Error('query timed out'), { code: 'ETIMEOUT' });
+  };
+  const proxy = await startEgressProxy({ guard: guardWith({ resolver }) });
+  try {
+    const cred = proxy.issue({ tag: 'job-dns' });
+    const tunnel = await connectVia(proxy.port, 'slow-dns.test:443', authHeader(cred.url));
+    assert.equal(tunnel.statusCode, 502);
+    const plain = await new Promise((resolve, reject) => {
+      const req = http.request({ host: '127.0.0.1', port: proxy.port, path: 'http://slow-dns.test/file.jpg', headers: { 'proxy-authorization': authHeader(cred.url) } }, (res) => resolve(res.statusCode));
+      req.on('error', reject);
+      req.end();
+    });
+    assert.equal(plain, 502);
+    assert.deepEqual(cred.session.blocked, [], 'only refused destinations are recorded as blocked');
+  } finally {
+    await proxy.close();
+  }
+});
+
+/** Like the operating system's resolver: asking for both families waits for the slower one. */
+function familyResolver({ v4, v6, calls = [] }) {
+  const answer = (spec, family) => (spec === 'hang' ? new Promise(() => {}) : spec === 'none' ? Promise.reject(Object.assign(new Error('ENOTFOUND'), { code: 'ENOTFOUND' })) : Promise.resolve(spec.map((address) => ({ address, family }))));
+  return (host, family) => {
+    calls.push(`${host}/${family ?? 'any'}`);
+    if (family === 4) return answer(v4, 4);
+    if (family === 6) return answer(v6, 6);
+    return v4 === 'hang' || v6 === 'hang' ? new Promise(() => {}) : answer([...(v4 === 'none' ? [] : v4), ...(v6 === 'none' ? [] : v6)], 4);
+  };
+}
+
+test('a family that never answers does not hold up the one that does', async () => {
+  // Measured on a real network: AAAA for a TikTok CDN host timed out after 15 s; A took 50 ms.
+  const guard = createDestinationGuard({ allowedPorts: [443], timeoutMs: 1500, resolver: familyResolver({ v4: ['93.184.216.34'], v6: 'hang' }) });
+  const started = Date.now();
+  const r = await guard.resolveDestination('cdn.test', 443);
+  assert.equal(r.address, '93.184.216.34');
+  assert.ok(Date.now() - started < 1000, `took ${Date.now() - started} ms`);
+  const v6only = createDestinationGuard({ allowedPorts: [443], timeoutMs: 1500, resolver: familyResolver({ v4: 'none', v6: ['2606:2800:220:1:248:1893:25c8:1946'] }) });
+  assert.equal((await v6only.resolveDestination('v6.test', 443)).family, 6);
+  const mixed = createDestinationGuard({ allowedPorts: [443], timeoutMs: 1500, resolver: familyResolver({ v4: ['93.184.216.34'], v6: ['::1'] }) });
+  await assert.rejects(mixed.resolveDestination('mixed.test', 443), { code: 'BLOCKED_DESTINATION' }, 'every address that arrives is still checked');
+});
+
+test('validated answers are reused briefly, so a slow resolver is not asked for every connection', async () => {
+  const calls = [];
+  const guard = createDestinationGuard({ allowedPorts: [443, 8443], timeoutMs: 1500, resolver: familyResolver({ v4: ['93.184.216.34'], v6: 'none', calls }) });
+  await guard.resolveDestination('cdn.test', 443);
+  await guard.resolveDestination('cdn.test', 8443);
+  assert.deepEqual(calls, ['cdn.test/4', 'cdn.test/6']);
+  await assert.rejects(guard.resolveDestination('cdn.test', 22), { code: 'BLOCKED_DESTINATION' }, 'the port rule still applies to cached hosts');
+});
+
 test('the proxy connects to the validated IP, not a re-resolved name', async () => {
   const resolver = async () => [{ address: '93.184.216.34', family: 4 }];
   const seen = [];

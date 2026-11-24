@@ -4,7 +4,7 @@ Status legend: ✅ done and tested · 🟡 done, partially verified · ⏭️ fu
 
 | # | Phase | Deliverables | Verification | Status |
 |---|---|---|---|---|
-| 1 | Foundation & design system | npm workspaces (`@ferry/shared`, `@ferry/server`, `@ferry/web`), config, logging, design tokens, layout shell, themes, i18n scaffolding | `npm test`, `npm run build` | see §Status |
+| 1 | Foundation & design system | npm workspaces (`@ferry/shared`, `@ferry/server`, `@ferry/web`), config, logging, design tokens, layout shell, themes, copy dictionary | `npm test`, `npm run build` | see §Status |
 | 2 | URL detection & platform registry | `url.js` (parse/normalize/detect), ≥ 100-platform catalog, policy classes, overrides store, `/platforms`, generated `PLATFORM-COMPATIBILITY.md` | unit tests (detection matrix, catalog integrity, policy resolution) | |
 | 3 | Metadata & capability discovery | Adapters (yt-dlp, direct, Internet Archive, PeerTube), probe normalization, DRM filtering, quality ladder, `/probe` | unit tests on recorded fixtures; integration test with local fixture server | |
 | 4 | Download processing engine | Safe process runner, egress guard proxy, yt-dlp download with progress, job directories | integration tests (real yt-dlp against local fixtures) | |
@@ -36,13 +36,12 @@ used in tests.
 4. **Official export integrations** — OAuth flows that use platform-provided download features for a user's *own* content.
 5. **Aspect-ratio tools** — crop/pad presets for social formats.
 6. **Accounts (optional)** — end-to-end encrypted history sync.
-7. **More languages** and community translations.
 
 ## Status (2026-11-24)
 
 | # | Phase | Status | Evidence |
 |---|---|---|---|
-| 1 | Foundation & design system | ✅ | Monorepo, tokens (`apps/web/src/styles/index.css`), light/dark, EN/ES/AR with RTL |
+| 1 | Foundation & design system | ✅ | Monorepo, tokens (`apps/web/src/styles/index.css`), light/dark; redesigned 2026-11-24 to the approved mockups (`design/ferry-redesign-mockups.html`): English only, site logos with statuses, live status dots, download tickets |
 | 2 | URL detection & platform registry | ✅ | 249 platforms + 2 fallbacks; `shared/test/catalog.test.js`, `url.test.js`; generated `PLATFORM-COMPATIBILITY.md` |
 | 3 | Metadata & capability discovery | ✅ | yt-dlp, direct, Internet Archive and PeerTube adapters; `unit/normalize.test.js`; API tests on fixtures |
 | 4 | Download processing engine | ✅ | Process runner, egress guard, progress parsing; `unit/process.test.js`, `security/*` |

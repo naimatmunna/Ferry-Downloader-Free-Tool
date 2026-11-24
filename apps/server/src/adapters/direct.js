@@ -11,6 +11,12 @@ import { downloadToFile } from './http.js';
 const PROBE_BYTES = 2 * 1024 * 1024;
 const HEADER_DURATION_FORMATS = /mov|mp4|m4a|matroska|webm|flac|ogg|wav/;
 
+/**
+ * The address ends like a media file but serves a web page (Wikimedia Commons
+ * `…/wiki/File:x.webm`): the probe service reads it as a page instead.
+ */
+export class NotADirectFile extends Error {}
+
 /** @param {import('./index.js').AdapterDeps} deps */
 export function createDirectAdapter(deps) {
   return {
@@ -37,7 +43,7 @@ export function createDirectAdapter(deps) {
       const type = String(res.headers['content-type'] ?? '').toLowerCase();
       if (type.startsWith('text/html') || type.startsWith('application/xhtml')) {
         res.discard();
-        throw new FerryError('NO_MEDIA_FOUND', { internal: 'direct link served HTML' });
+        throw new NotADirectFile('direct link served HTML');
       }
       const range = /\/(\d+)$/.exec(String(res.headers['content-range'] ?? ''));
       const length = Number(res.headers['content-length']);

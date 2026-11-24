@@ -66,6 +66,13 @@ export async function startFixtureServer({ dir = FIXTURES_DIR, host = '127.0.0.1
     let bps = 0;
 
     if (pathname === '/gone') return void res.writeHead(404).end('gone');
+    if (pathname === '/wiki/File:Fixture_clip.webm') {
+      // A web page whose address ends like a media file (Wikimedia Commons file pages do this).
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      return void res.end('<!doctype html><html><head><meta charset="utf-8"><title>File:Fixture clip.webm</title>'
+        + '<meta property="og:title" content="Fixture clip on a file page"><meta property="og:video" content="/clip-h264-aac.mp4"></head>'
+        + '<body><video controls src="/clip-h264-aac.mp4"></video></body></html>\n');
+    }
     const statusId = /^\/api\/v1\/statuses\/(\d+)$/.exec(pathname)?.[1];
     if (statusId) {
       const found = GALLERY_POSTS[statusId];

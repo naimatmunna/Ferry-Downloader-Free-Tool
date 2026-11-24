@@ -51,12 +51,12 @@ Legend: ✅ strong / complete · 🟡 partial, caveated or paywalled · ❌ miss
 | **ZIP bundle** | Not documented (4K exports a JSON *list*, not files) | ❌ | ✅ streamed ZIP for multi-file jobs | — |
 | **Download manager** (pause / resume / cancel / retry) | ✅ queue managers (JDownloader; OVD balanced queue; SnapDownloader background queue) | 🟡 hand-off to the browser only (web rippers) | ✅ real progress only (bytes, speed, ETA when reported) via **batched polling — 1 s while active, slower when the tab is hidden, immediate refresh when visible** (stateless, survives mobile backgrounding; no SSE); pause/resume (`--continue`), cancel kills the process tree, retry only retryable codes (max 3), reattaches after reload; Range + strong-ETag delivery | Web Push "file ready" on Android/desktop (*rec.*) |
 | **History** | 🟡 on-device history (NewPipe); JSON import/export of lists (4K) | ❌ none (web rippers) | ✅ on device, capped at 500, search/filter, re-download if policy still allows, delete one/all, opt-out, source links optional | Opt-in end-to-end-encrypted sync (PRD future) |
-| **Settings & presets** | ✅ 4K "Smart Mode" presets | 🟡 per-download choices only | ✅ defaults for mode, container, quality, audio, bitrate, metadata, naming, theme, language, concurrency, auto-save, privacy; clear local data | Multiple named presets (*rec.*) |
-| **Platform status page** | 🟡 cobalt reports outages in changelogs; 4K in release notes | ❌ silent breakage; opaque codes | ✅ Platforms page: policy, content types, reliability, last checked, official routes; operator overrides with reason reach clients without redeploy. 🟡 reliability is curated, not computed | ✅ automated health from job outcomes (`platform_health_daily`, scale-out design); degraded banner at paste time |
+| **Settings & presets** | ✅ 4K "Smart Mode" presets | 🟡 per-download choices only | ✅ defaults for mode, container, quality, audio, bitrate, metadata, naming, theme, concurrency, auto-save, privacy; clear local data | Multiple named presets (*rec.*) |
+| **Platform status page** | 🟡 cobalt reports outages in changelogs; 4K in release notes | ❌ silent breakage; opaque codes | ✅ Sites page and Home logo wall: status in plain words, content types, reliability, last checked, official routes, live status from job outcomes (last hour, else 24 h); operator overrides with reason reach clients without redeploy. 🟡 reliability is curated, not computed | ✅ automated health from job outcomes (`platform_health_daily`, scale-out design); degraded banner at paste time |
 | **Share-to-app (Android)** | 🟡 native apps (Seal, NewPipe) — but sideloaded; 4K Android app | ❌ copy-paste into a website | ✅ PWA share target (GET `/share`, first URL from `url`/`text`/`title`); Chrome Android 76+; Samsung Internet likely (inferred); Firefox Android ❌ | Install prompt on Android Chromium only (*rec.*) |
 | **iOS handling** | 🟡 cobalt: in-browser processing on iOS 15+, large files on iOS 18+ | ❌ "use a file-manager app" (SnapSave), $4.99/week copycats, old iOS unsupported (ssstik) | ✅ Safari-tab downloads to Files > Downloads with guidance; **standalone mode detected → "Open in Safari" instead of a download link** (WebKit 290847); no install promotion on iOS | Native share extension (PRD future); re-test every iOS release |
 | **Accessibility** | Not documented for any competitor | Not documented; ad overlays and fake buttons are hazards | ✅ WCAG 2.2 AA: 24×24 px minimum (44×44 touch), visible focus, ≥ 4.5:1 text, `aria-live` status, keyboard, reduced motion; **"Keep longer" on ready files** for 2.2.1 Timing Adjustable | VoiceOver/TalkBack test passes (*rec.*) |
-| **i18n / RTL** | Not documented | Not documented | ✅ English, Español, العربية; RTL via logical properties | More languages, community translations |
+| **i18n / RTL** | Not documented | Not documented | English only by decision (2026-11-24) | — |
 | **Privacy** | ✅ NewPipe (on-device, no Google APIs); cobalt (zero-log, opt-out analytics) | ❌ push-ad networks, marketing cookies, undocumented telemetry | ✅ no accounts, analytics or third-party requests; history on device; no IP logging by default; URLs hashed in logs; files deleted at TTL or on request | Published data-flow diagram + independent audit (*rec.*) |
 | **Self-hosting** | 🟡 cobalt (Docker; but non-commercial web UI and a dormant repo) | ❌ closed desktop apps or SaaS | ✅ one container, no external services; non-root, read-only FS, resource limits | Redis/BullMQ + S3 + MongoDB drivers (PRD future) |
 | **Security posture** | 🟡 yt-dlp fixes advisories fast (6 in 2026, all fixed by 2026.07.04) | ❌ bundled installers, malicious extensions, compromised official downloads, clone domains | ✅ egress guard (SSRF, DNS rebinding), no shell, hardened yt-dlp (no cookies, impersonation, `--exec`), outputs written by FFmpeg and verified by ffprobe, sandbox CSP, per-job tokens; no installer or extension | Signed images + SBOM, `security.txt` (*rec.*) |
@@ -114,7 +114,7 @@ regardless of score.
 | M5 | Verify batched polling on real devices: 1 s while active, backoff when hidden, immediate refresh on `visibilitychange` | 50 | 1 | 80% | 0.5 | **80** |
 | M6 | YouTube `EXPORT_ONLY` state with Studio / Takeout / Premium routes — **must** | 40 | 2 | 80% | 1 | **64** |
 | M7 | Honest-label test suite (no option above source, bitrate warnings, sizes only when known) | 70 | 1 | 90% | 1 | **63** |
-| M8 | Platforms page: override reason + "degraded" banner at paste time | 50 | 1 | 80% | 1 | **40** |
+| M8 | Sites page: override reason + "degraded" banner at paste time | 50 | 1 | 80% | 1 | **40** |
 | M9 | "Keep longer" on ready files with an expiry warning (WCAG 2.2.1) — **must** | 30 | 1 | 80% | 1 | **24** |
 | M10 | Engine-error classification so the catch-all stays < 10% of failures | 20 | 2 | 70% | 2 | **14** |
 
@@ -126,7 +126,7 @@ regardless of score.
 | F2 | "Fit under N MB" target-size compression | 15 | 1 | 60% | 1 | **9.0** |
 | F3 | Multiple named presets | 25 | 0.5 | 70% | 1 | **8.8** |
 | F4 | Published data-flow diagram, independent audit, signed images + SBOM | 100 | 0.5 | 60% | 4 | **7.5** |
-| F5 | More UI languages | 15 | 1 | 70% | 2 | **5.3** |
+| F5 | More UI languages (declined: English only) | 15 | 1 | 70% | 2 | **5.3** |
 | F6 | Audio-track picker with AI-dub labels | 10 | 1 | 70% | 1.5 | **4.7** |
 | F7 | Aspect-ratio conversion (9:16, 1:1, 16:9) | 10 | 1 | 70% | 1.5 | **4.7** |
 | F8 | Web Push "file ready" (Android, desktop) | 20 | 0.5 | 70% | 1.5 | **4.7** |

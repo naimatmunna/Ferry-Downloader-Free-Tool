@@ -138,6 +138,11 @@ export const ERRORS = Object.freeze({
   NOT_FOUND: { status: 404, retryable: false, message: 'Not found.' },
   UNSUPPORTED_MEDIA_TYPE: { status: 415, retryable: false, message: 'Requests must be sent as JSON.' },
   PAYLOAD_TOO_LARGE: { status: 413, retryable: false, message: 'The request is too large.' },
+  ENGINE_UNAVAILABLE: {
+    status: 503,
+    retryable: true,
+    message: "This server is missing a tool it needs to prepare files (FFmpeg). Its operator needs to install it.",
+  },
   INTERNAL_ERROR: { status: 500, retryable: true, message: 'Something went wrong on our side.' },
 });
 

@@ -8,6 +8,7 @@ import { formatDuration } from '@ferry/shared/formats';
 import { Semaphore } from '../jobs/queue.js';
 import { newProbeId } from '../security/tokens.js';
 import { NotThisPlatform } from '../adapters/peertube.js';
+import { NotADirectFile } from '../adapters/direct.js';
 import { normalizeInfo, publicMedia } from './normalize.js';
 
 /** Small LRU with TTL. */
@@ -58,9 +59,10 @@ function policyError(platform, policy) {
 
 /**
  * @param {{ config: import('../config.js').Config, registry: any, policies: any, adapters: any, signer: any,
- *   logger: import('pino').Logger, metrics: any, urlHash: (u: string) => string }} deps
+ *   logger: import('pino').Logger, metrics: any, urlHash: (u: string) => string, processingReady?: () => boolean }} deps
+ *   processingReady: FFmpeg and ffprobe were found (every download needs them).
  */
-export function createProbeService({ config, registry, policies, adapters, signer, logger, metrics, urlHash }) {
+export function createProbeService({ config, registry, policies, adapters, signer, logger, metrics, urlHash, processingReady = () => true }) {
   const cache = new ProbeCache(config.limits.probeCacheSize, config.limits.probeTtlMs);
   const semaphore = new Semaphore(config.limits.maxConcurrentProbes);
   const allowHosts = new Set(config.egress.allowHosts);
@@ -82,6 +84,8 @@ export function createProbeService({ config, registry, policies, adapters, signe
   function gate(platform) {
     const policy = policies.effective(platform);
     if (!canProbe(policy.status)) throw policyError(platform, policy);
+    // Without FFmpeg/ffprobe every download would fail after the transfer: say so before any work.
+    if (!processingReady()) throw new FerryError('ENGINE_UNAVAILABLE', { internal: 'FFmpeg or ffprobe not found at startup' });
     if (!policies.isAvailable(platform)) {
       throw new FerryError('UNSUPPORTED_PLATFORM', {
         message: `${platform.name} isn't available on this server yet.`,
@@ -139,13 +143,25 @@ export function createProbeService({ config, registry, policies, adapters, signe
       try {
         info = await adapter.probe({ url: detection.href, playlist, signal: combined, tag: urlHash(detection.href), platform });
       } catch (err) {
-        if (!(err instanceof NotThisPlatform)) throw err;
-        // Looked federated but isn't: treat as an ordinary website.
-        platform = registry.get('generic');
-        policy = gate(platform);
-        adapter = adapters.byId('yt-dlp');
-        detection = { ...detection, platform, via: 'generic' };
-        info = await adapter.probe({ url: detection.href, playlist, signal: combined, tag: urlHash(detection.href) });
+        if (err instanceof NotADirectFile) {
+          // Only the address looked like a file: read the page with the platform's own engine
+          // (same platform and policy; a bare "direct" link becomes an ordinary website).
+          if (platform.id === 'direct') {
+            platform = registry.get('generic');
+            policy = gate(platform);
+          }
+          detection = { ...detection, platform, directExt: null, via: platform.id === 'generic' ? 'generic' : detection.via };
+          adapter = adapters.forPlatform(platform, detection);
+          if (!adapter || adapter.id === 'direct') throw new FerryError('NO_MEDIA_FOUND', { internal: 'direct link served HTML' });
+          info = await adapter.probe({ url: detection.href, playlist, signal: combined, tag: urlHash(detection.href), platform });
+        } else if (err instanceof NotThisPlatform) {
+          // Looked federated but isn't: treat as an ordinary website.
+          platform = registry.get('generic');
+          policy = gate(platform);
+          adapter = adapters.byId('yt-dlp');
+          detection = { ...detection, platform, via: 'generic' };
+          info = await adapter.probe({ url: detection.href, playlist, signal: combined, tag: urlHash(detection.href) });
+        } else throw err;
       }
     } catch (err) {
       metrics.inc('ferry_probes_total', { result: 'error', code: err?.code ?? 'INTERNAL_ERROR' });

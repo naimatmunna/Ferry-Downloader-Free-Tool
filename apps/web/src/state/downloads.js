@@ -9,6 +9,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { isActive } from '@ferry/shared/jobs';
 import { ApiError, api, archiveHref, fileHref } from '../lib/api.js';
 import { saveFile } from '../lib/download.js';
+import { storage } from '../lib/storage.js';
 import { useHistory } from './history.js';
 import { useSettings } from './settings.js';
 
@@ -129,11 +130,7 @@ export const useDownloads = create(
             output: job.output.files.map((f) => ({ name: f.name, sizeBytes: f.sizeBytes, mime: f.mime, kind: f.kind })),
           });
           downloadEvents.onReady?.(job);
-          if (useSettings.getState().autoSave) {
-            // A gallery with several images is handed over as one ZIP.
-            if (job.request?.mode === 'gallery' && job.output.files.length > 1) get().saveArchive(job.id);
-            else get().save(job.id, job.output.files[0]?.id, { auto: true });
-          }
+          if (useSettings.getState().autoSave) get().saveResult(job.id, { auto: true });
         } else if (job.status === 'failed') {
           history.update(job.id, { status: 'failed', errorCode: job.error?.code ?? null });
           downloadEvents.onFailed?.(job);
@@ -154,7 +151,7 @@ export const useDownloads = create(
         downloadEvents.onSaved?.(job, file, auto);
       },
 
-      saveArchive(id) {
+      saveArchive(id, { auto = false } = {}) {
         const t = get().tracked[id];
         const job = get().jobs[id];
         const href = job && t ? archiveHref(job, t.token) : null;
@@ -162,6 +159,15 @@ export const useDownloads = create(
         saveFile(href);
         set((s) => ({ tracked: { ...s.tracked, [id]: { ...s.tracked[id], saved: true } } }));
         useHistory.getState().update(id, { status: 'saved' });
+        downloadEvents.onSaved?.(job, { name: job.output.archiveName ?? `${job.source.title}.zip` }, auto);
+      },
+
+      /** Save what a finished job produced: its file, or one ZIP for a gallery of several images. */
+      saveResult(id, { auto = false } = {}) {
+        const job = get().jobs[id];
+        if (!job?.output?.files?.length) return;
+        if (job.request?.mode === 'gallery' && job.output.files.length > 1) get().saveArchive(id, { auto });
+        else get().save(id, job.output.files[0].id, { auto });
       },
 
       async act(id, action) {
@@ -232,9 +238,11 @@ export function schedule(ms) {
   timer = setTimeout(tick, ms);
 }
 
-/** Start polling for jobs restored from a previous visit. */
+/** Start polling for jobs restored from a previous visit, and send submissions still waiting on this device. */
 export function startDownloadSync() {
   schedule(0);
+  // poll() only pumps after it has jobs to ask about; a restored queue must not wait for that.
+  useDownloads.getState().pump();
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) schedule(0);
   });

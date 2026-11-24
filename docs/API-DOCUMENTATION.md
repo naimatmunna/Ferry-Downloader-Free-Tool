@@ -138,7 +138,8 @@ Public client configuration.
 
 ### `GET /api/v1/status`
 Public service health for the status display: engine availability, queue load,
-and per-platform outcomes over the last 24 hours (aggregate counts only).
+and per-platform live status (aggregate counts only). The web app shows it as the
+coloured dots on site logos.
 
 ```json
 {
@@ -146,13 +147,16 @@ and per-platform outcomes over the last 24 hours (aggregate counts only).
   "engines": { "extraction": true, "conversion": true, "galleries": true },
   "queue": { "active": 1, "waiting": 0, "concurrency": 2 },
   "platforms": {
-    "internet-archive": { "attempts": 42, "successRate": 97.6, "status": "operational", "topErrors": [{ "code": "NETWORK_ERROR", "count": 1 }] }
+    "internet-archive": { "window": "1h", "attempts": 12, "successRate": 91.7, "status": "operational", "topErrors": [{ "code": "NETWORK_ERROR", "count": 1 }] }
   }
 }
 ```
 
+`window` is `1h` when the last 60 minutes hold at least 3 attempts, otherwise `24h`;
+`attempts` and `successRate` describe that window, `topErrors` the last 24 hours.
 `status` is `operational` (≥ 90 %), `degraded` (≥ 50 %), `failing`, or `unknown` (< 3 attempts).
 Only source-side failures count against a platform; policy refusals and user limits do not.
+Outcomes are kept in 5-minute buckets for 24 hours, in memory only.
 
 ---
 

@@ -150,7 +150,6 @@ degrades to in-memory behaviour.
 // ferry:settings:v1
 interface Settings {
   theme: 'system' | 'light' | 'dark';
-  language: 'en' | 'es' | 'ar';
   defaults: {
     mode: 'av' | 'video' | 'audio';
     videoContainer: 'mp4' | 'webm' | 'mkv' | 'mov' | 'avi';

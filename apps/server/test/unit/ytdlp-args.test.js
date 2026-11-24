@@ -78,6 +78,9 @@ test('engine errors map to specific, user-meaningful codes', () => {
     ['ERROR: unable to download video data: <urlopen error [Errno 11001] getaddrinfo failed>', 'NETWORK_ERROR'],
     ['ERROR: [x] Unable to extract video data; please report this issue', 'EXTRACTION_FAILED'],
     ['ERROR: File is larger than max-filesize (2000 bytes > 1000 bytes). Aborting.', 'FILE_TOO_LARGE'],
+    // Live wording (2026-11-24): sign-in walls Ferry will never pass, so "the site may have changed" would mislead.
+    ['ERROR: [Reddit] 6rrwyj: Account authentication is required. Use --cookies-from-browser or --cookies for the authentication.', 'AUTH_REQUIRED'],
+    ['ERROR: [vimeo] 33951933: The web client only works when logged-in. Use --cookies, --cookies-from-browser, --username and --password', 'AUTH_REQUIRED'],
   ];
   for (const [stderr, code] of cases) assert.equal(classifyEngineError(stderr), code, stderr);
   assert.equal(classifyEngineError('weird'), 'EXTRACTION_FAILED');

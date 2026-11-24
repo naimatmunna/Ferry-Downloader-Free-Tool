@@ -19,8 +19,8 @@
     "dev:web": "npm run dev -w @ferry/web",
     "build": "npm run build -w @ferry/web",
     "start": "node apps/server/src/main.js",
-    "test": "node --test --test-concurrency=1 \"packages/shared/test/**/*.test.js\" \"apps/server/test/**/*.test.js\"",
-    "test:unit": "node --test \"packages/shared/test/**/*.test.js\" \"apps/server/test/unit/**/*.test.js\"",
+    "test": "node --test --test-concurrency=1 \"packages/shared/test/**/*.test.js\" \"apps/server/test/**/*.test.js\" \"apps/web/test/**/*.test.js\"",
+    "test:unit": "node --test \"packages/shared/test/**/*.test.js\" \"apps/server/test/unit/**/*.test.js\" \"apps/web/test/**/*.test.js\"",
     "test:e2e": "playwright test",
     "docs:platforms": "node scripts/generate-platform-docs.mjs",
     "fixtures": "node scripts/make-fixtures.mjs"

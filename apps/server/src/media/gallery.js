@@ -12,6 +12,13 @@ import { SAFE_INPUT } from '../engines/ffmpeg.js';
 /** Longest side FFmpeg is asked to decode (the pixel budget is checked too). */
 export const MAX_IMAGE_SIDE = 30_000;
 
+/**
+ * Pixels decoded across all frames of one animation (bounds CPU time; memory
+ * stays flat because frames are converted one by one). 2 Gpx is about 3,000
+ * frames at 800×800 or 960 frames at 1080p.
+ */
+export const ANIMATION_PIXEL_BUDGET = 2_000_000_000;
+
 /** Decoders that may legitimately sit behind each sniffed type. */
 const DECODERS = Object.freeze({
   'image/jpeg': ['mjpeg'],
@@ -29,8 +36,13 @@ const OUTPUTS = Object.freeze({
   gif: { ext: 'gif', mime: 'image/gif', codec: 'gif', encode: ['-c:v', 'gif', '-loop', '0', '-f', 'gif'] },
 });
 
-/** One palette for the whole animation, transparency kept. */
-const GIF_FILTER = '[0:v:0]split[a][b];[a]palettegen=reserve_transparent=1[p];[b][p]paletteuse[out]';
+/**
+ * A palette per frame, transparency kept. A single palette for the whole file
+ * would only exist after the last frame, so FFmpeg would hold every decoded
+ * frame until then (measured: 79 MB → 782 MB for 20 → 300 frames of a 12 KB
+ * 800×800 GIF); per-frame palettes keep memory flat (41 MB in both cases).
+ */
+const GIF_FILTER = '[0:v:0]split[a][b];[a]palettegen=reserve_transparent=1:stats_mode=single[p];[b][p]paletteuse=new=1[out]';
 
 /** EXIF orientation → the FFmpeg filter that makes the picture upright. */
 const ORIENTATION_FILTER = Object.freeze({ 2: 'hflip', 3: 'hflip,vflip', 4: 'vflip', 5: 'transpose=0', 6: 'transpose=1', 7: 'transpose=3', 8: 'transpose=2' });
@@ -151,7 +163,10 @@ export function planImage({ src, sniffed, head, probe, outDir, name, maxPixels, 
   if (sniffed === 'image/jpeg') args.push('-noautorotate'); // orientation is applied below, exactly once
   args.push(...SAFE_INPUT, '-i', src);
   if (out === 'gif') {
-    args.push('-filter_complex', GIF_FILTER, '-map', '[out]');
+    const maxFrames = Math.max(1, Math.floor(ANIMATION_PIXEL_BUDGET / (v.width * v.height)));
+    if (v.frames != null && v.frames > maxFrames) throw new FerryError('FILE_TOO_LARGE', { internal: `animation has ${v.frames} frames of ${v.width}x${v.height}` });
+    // GIF reports its frame count; APNG/WebP animations may not, so the budget is also a hard stop.
+    args.push('-filter_complex', GIF_FILTER, '-map', '[out]', '-frames:v', String(maxFrames));
   } else {
     args.push('-map', '0:v:0', '-frames:v', '1');
     if (ORIENTATION_FILTER[orientation]) args.push('-vf', ORIENTATION_FILTER[orientation]);

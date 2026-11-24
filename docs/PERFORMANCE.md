@@ -17,7 +17,7 @@ Numbers are for this development machine; source-site latency dominates analysis
 | Conversion cost (3 s of 1080p) | Re-encode 1080p H.264 → WebM (VP9 + Opus) | 1805.3 ms |
 | Conversion cost (3 s of 1080p) | Re-encode 1080p → MP4 720p (downscale) | 1153.5 ms |
 | Delivery (512 MB file, loopback) | Server RSS before → peak while streaming | 85 MB → 111 MB (Δ 26 MB, incl. this test's own reader); 203 MB/s |
-| Client bundle | Initial JavaScript (gzip, static import graph) | 129.9 KB in 11 files; CSS 9.9 KB |
+| Client bundle | Initial JavaScript (gzip, static import graph) | 145.4 KB in 3 files, incl. the Home site logos; CSS 10.6 KB; other site logos 27.4 KB, loaded on demand (measured after the 2026-11-24 redesign) |
 
 ## Budgets
 

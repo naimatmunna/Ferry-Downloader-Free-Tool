@@ -15,7 +15,7 @@ const RULES = [
   [/Sign in to confirm (you|you're|you’re) not a bot|confirm you.re not a robot|captcha/i, 'SOURCE_RATE_LIMITED'],
   [/confirm your age|age[- ]restricted|age[- ]gate|inappropriate for some users/i, 'AUTH_REQUIRED'],
   [/members[- ]only|join this channel|requires a subscription|paid content|premium (members|subscribers)|purchase|rental/i, 'AUTH_REQUIRED'],
-  [/login required|log ?in to|sign ?in to (view|watch|access|see)|requires (an )?(login|account|authentication)|authentication required|rate-limit reached or login required/i, 'AUTH_REQUIRED'],
+  [/login required|log ?in to|sign ?in to (view|watch|access|see)|requires (an )?(login|account|authentication)|authentication (is )?required|only works when logged[- ]in|rate-limit reached or login required/i, 'AUTH_REQUIRED'],
   [/available in your (country|region)|geo[- ]?restrict|blocked in your (country|region)|not available from your location|not available in this (country|region)/i, 'GEO_RESTRICTED'],
   [/live event will begin|Premieres in|is a live stream|currently live|is_live|this live (stream|event)|live broadcast/i, 'LIVE_NOT_SUPPORTED'],
   [/HTTP Error 429|Too Many Requests|rate[- ]?limit/i, 'SOURCE_RATE_LIMITED'],

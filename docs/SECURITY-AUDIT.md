@@ -43,7 +43,7 @@
 |---|---|---|---|
 | T1 | **SSRF via submitted URL** (`http://127.0.0.1:6379`, `http://169.254.169.254/latest/meta-data`) | URL guard: `http/https` only, no userinfo, port allowlist (80, 443, 8080, 8443). **Egress guard proxy** resolves the host and rejects any address whose range is not public unicast before connecting. | `server/test/security/egress.test.js`, `integration/api.test.js` |
 | T2 | **Alternative IP encodings** (`127.1`, `0x7f.0.0.1`, `2130706433`, `[::ffff:127.0.0.1]`, `[::1]`, `0.0.0.0`) | WHATWG URL normalization (canonical dotted IPv4); `ipaddr.js` classification; IPv4-mapped IPv6 unwrapped; NAT64/6to4/Teredo (embedded IPv4) rejected. | `security/ip.test.js`, `shared/test/url.test.js` |
-| T3 | **DNS rebinding** (public at check time, private at fetch time) | The proxy performs the only resolution and connects to the validated, pinned IP. API-side fetches use a custom `lookup` that validates every connection. | `security/egress.test.js` (rebinding + mixed-answer resolvers, pinned-IP check) |
+| T3 | **DNS rebinding** (public at check time, private at fetch time) | The proxy performs the only resolution and connects to the validated, pinned IP. API-side fetches use a custom `lookup` that validates every connection. IPv4 and IPv6 are resolved separately (a family that never answers — measured: 15 s AAAA timeouts for a TikTok CDN — no longer stalls the other) and answers are reused for 60 s; every connection still goes to an IP checked on that call. A failed lookup is a network error for the job, never a "blocked destination". | `security/egress.test.js` (rebinding + mixed-answer resolvers, pinned-IP check) |
 | T4 | **Malicious redirects** (public → private) | Each hop is a new proxied connection → re-validated. Guarded fetch follows ≤ 5 redirects manually, re-validating each. | `security/egress.test.js`; `integration/api.test.js` (redirect inside yt-dlp) |
 | T5 | **Non-HTTP protocols** (rtmp, ftp, file, gopher via engines) | URL guard rejects them; planner keeps only formats whose protocol is `http(s)`, `m3u8(_native)`, `http_dash_segments`; yt-dlp uses the native downloader; FFmpeg runs with `-protocol_whitelist file,pipe`. | `unit/ytdlp-args.test.js`, `unit/normalize.test.js` |
 | T6 | **Command / shell injection** | `spawn(file, argv, { shell: false })` everywhere; no string commands. URL passed after `--`. All other argv values come from enums or server-generated paths. Windows: `.bat/.cmd` launchers refused; engines resolved to `.exe`. | `unit/process.test.js`, `unit/ytdlp-args.test.js` |
@@ -66,8 +66,8 @@
 | T23 | **ReDoS** in URL patterns | Patterns are anchored and linear; inputs length-capped at 2 048; tested with adversarial long inputs. | `shared/test/url.test.js`, `shared/test/catalog.test.js` |
 | T24 | **Policy bypass** (attestation skipped, blocked platform via redirect/shortener) | Policy checked at probe **and** at job creation; job creation requires `attest` when needed; the extractor-reported final domain is re-checked against the registry after probing (catches shorteners/embeds that resolve to a blocked platform). | `unit/policy-logging.test.js`, `integration/api.test.js`, `shared/test/catalog.test.js` |
 | T25 | **Engine supply chain** | yt-dlp and gallery-dl pinned in the image (gallery-dl in its own venv, without yt-dlp); Docker build installs from PyPI over TLS; no runtime remote code (`--remote-components` unused, bundled `yt-dlp-ejs`); no `curl_cffi`/impersonation; gallery-dl's browser imitation off. | Deployment review |
-| T26 | **Gallery engine reaching what Ferry would refuse** (gallery-dl following an embed into YouTube via `ytdl:`, crawling links to other sites, loading config/cookies) | Image items only (`http(s)` + image extension); `ytdl:`/`text:`/video items counted, never offered; download mode uses `--child-filter False` and `-o downloader.ytdl.enabled=false`; child links followed once, only when the registry maps them to the **same** platform; `--config-ignore`, no cookies/logins; all traffic through the per-job egress proxy. | `unit/gallerydl-engine.test.js`, `unit/gallerydl-adapter.test.js`, `integration/gallery.test.js` |
-| T27 | **Hostile images** (HTML or polyglots named `.jpg`, decompression bombs, EXIF/GPS leaks) | Magic-byte sniff (JPEG/PNG/GIF/WebP/AVIF only) **and** ffprobe decoder must agree; one image stream, no audio; ≤ `MAX_IMAGE_MEGAPIXELS` and 30 000 px per side before decoding; per-file `--filesize-max`; re-encoded by FFmpeg built-in encoders with `-map_metadata -1` (EXIF, comments, text chunks removed); output re-probed. | `unit/gallery-media.test.js`, `integration/gallery.test.js` |
+| T26 | **Gallery engine reaching what Ferry would refuse** (gallery-dl following an embed into YouTube via `ytdl:`, crawling links to other sites, files on a protected platform's servers, loading config/cookies) | Image items only (`http(s)` + image extension); `ytdl:`/`text:`/video items counted, never offered; items whose host belongs to a platform that may not be downloaded from are dropped; download mode uses `--child-filter False` and `-o downloader.ytdl.enabled=false`; child links followed once, only when the registry maps them to the **same** platform; policy re-applied when a job starts; `--config-ignore`, no cookies/logins; all traffic through the per-job egress proxy. | `unit/gallerydl-engine.test.js`, `unit/gallerydl-adapter.test.js`, `integration/gallery.test.js` |
+| T27 | **Hostile images** (HTML or polyglots named `.jpg`, decompression bombs, many-frame animations, EXIF/GPS leaks) | Magic-byte sniff (JPEG/PNG/GIF/WebP/AVIF only) **and** ffprobe decoder must agree; one image stream, no audio; ≤ `MAX_IMAGE_MEGAPIXELS` and 30 000 px per side before decoding; animations ≤ 2 Gpx decoded in total and converted with per-frame palettes (constant memory — a whole-file palette buffered every frame: 782 MB for a 12 KB GIF); per-file size cap checked on disk; re-encoded by FFmpeg built-in encoders with `-map_metadata -1` (EXIF, comments, text chunks removed); output re-probed. | `unit/gallery-media.test.js`, `integration/gallery.test.js` |
 
 ---
 
@@ -95,12 +95,12 @@ Never used: `--exec`, `--cookies`, `--cookies-from-browser`, `--username`,
 ```
 --config-ignore --no-input --no-colors
 --proxy http://<random-user>:<random-pass>@127.0.0.1:<egress-port> -o proxy-env=false
--o browser=false -o extractor.imgur.mp4=false
+-o browser=false -o tls12=true -o extractor.imgur.mp4=false
 --cache-file <job tmp>/gallery-dl-cache.sqlite3 --http-timeout 30 -R 3 --no-mtime
 probe:    --no-postprocessors -j --range 1-<MAX_GALLERY_ITEMS+1>
-download: --range <chosen indexes> --child-filter False -o downloader.ytdl.enabled=false
+download: --range <chosen indexes> --filter True --child-filter False -o downloader.ytdl.enabled=false
           -D <job tmp>/gallery --restrict-filenames ascii --filesize-max <MAX_IMAGE_MB>
-          --Print "prepare:FERRY_GDL_FILE {_url!q}"
+          --Print "prepare:FERRY_GDL_FILE -"
 -- <http(s) URL, or mastodon:<URL> for federated posts>
 ```
 

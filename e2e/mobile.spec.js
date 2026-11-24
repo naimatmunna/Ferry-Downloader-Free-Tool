@@ -8,7 +8,7 @@ test('mobile: bottom navigation, sticky download bar, one-handed flow', async ({
   await expect(tabBar.getByRole('link', { name: 'Downloads' })).toBeVisible();
 
   await analyze(page, `${FIXTURES}/portrait.mp4`);
-  await expect(page.getByText('720p HD', { exact: true })).toBeVisible(); // vertical video labelled by its class
+  await expect(page.getByRole('radio', { name: /^720p HD/ })).toBeVisible(); // vertical video labelled by its class
   await confirmRights(page);
 
   // The primary action is pinned above the tab bar.

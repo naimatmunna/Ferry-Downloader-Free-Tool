@@ -4,6 +4,7 @@
  */
 import http from 'node:http';
 import { mkdir } from 'node:fs/promises';
+import { canProbe } from '@ferry/shared/platforms/policy';
 import { createRegistry } from '@ferry/shared/platforms/registry';
 import { createApp } from './app.js';
 import { createAdapters } from './adapters/index.js';
@@ -60,6 +61,12 @@ export async function createFerry(config, opts = {}) {
   for (const [name, s] of Object.entries(engineStatus)) {
     if (!s.ok) logger.warn({ engine: name, path: s.path }, 'engine unavailable — related features are disabled');
   }
+  if (!ffmpeg.ok || !ffprobe.ok) {
+    logger.error(
+      { ffmpeg: ffmpeg.path, ffprobe: ffprobe.path },
+      'FFmpeg/ffprobe not found: every link is refused until they are installed. Install FFmpeg, or set FFMPEG_PATH and FFPROBE_PATH (then restart).',
+    );
+  }
 
   const registry = createRegistry(catalog);
   const guard = createDestinationGuard({ allowedPorts: config.egress.allowedPorts, allowHosts: config.egress.allowHosts });
@@ -98,11 +105,18 @@ export async function createFerry(config, opts = {}) {
       const d = registry.detect(url, { allowLocal: true, allowedPorts });
       return d.ok ? d.platform.id : null;
     },
+    // Files an engine lists on a *known* platform's servers inherit that platform's policy.
+    policyAllows: (url) => {
+      const d = registry.detect(url, { allowLocal: true, allowedPorts });
+      if (!d.ok) return false;
+      if (d.platform.id === 'generic' || d.platform.id === 'direct') return true;
+      return canProbe(policies.effective(d.platform).status);
+    },
   });
   const storage = createJobStorage({ jobsDir: config.jobsDir, limits: config.limits, logger });
   await storage.init();
   const store = new MemoryJobStore();
-  const probeService = createProbeService({ config, registry, policies, adapters, signer, logger, metrics, urlHash: hash });
+  const probeService = createProbeService({ config, registry, policies, adapters, signer, logger, metrics, urlHash: hash, processingReady: () => ffmpeg.ok && ffprobe.ok });
   const pipeline = createPipeline({ config, storage, adapters, fetch, engines: { ffmpeg: ffmpeg.path, ffprobe: ffprobe.path }, logger });
   const jobs = createJobService({ config, store, probeCache: probeService.cache, registry, policies, probeService, pipeline, storage, logger, metrics, urlHash: hash });
 

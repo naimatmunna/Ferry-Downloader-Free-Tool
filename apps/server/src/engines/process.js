@@ -220,7 +220,9 @@ export function runProcess(file, args, opts = {}) {
       settled = true;
       cleanup();
       const code = /** @type {any} */ (e).code;
-      reject(new FerryError('INTERNAL_ERROR', { internal: `${file}: ${code === 'ENOENT' ? 'executable not found' : e.message}` }));
+      // A missing engine is an operator-fixable state, worth naming (not a bare "server error").
+      if (code === 'ENOENT') reject(new FerryError('ENGINE_UNAVAILABLE', { internal: `${file}: executable not found` }));
+      else reject(new FerryError('INTERNAL_ERROR', { internal: `${file}: ${e.message}` }));
     });
     child.on('close', (code, sig) => {
       if (settled) return;

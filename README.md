@@ -15,12 +15,14 @@ and one ZIP.
   within the hour (or right after saving).
 * **Secure:** every engine connection goes through an egress guard (no SSRF, no DNS rebinding,
   per-job byte caps), no shell execution, hardened yt-dlp/gallery-dl/FFmpeg profiles.
-* **Mobile-first:** one-handed layout, Android share-to-Ferry, resumable native downloads, iOS
-  Home-Screen workaround, English/Spanish/Arabic (RTL), light/dark.
+* **See where it works:** real site logos, grouped by what Ferry can do with each site (download
+  directly, official download only, protected), with live status dots from recent downloads.
+* **Mobile-first:** one-handed layout with bottom tabs, Android share-to-Ferry, resumable native
+  downloads, iOS Home-Screen workaround, light/dark. English only.
 
 ## Quick start (development)
 
-Requirements: Node 22.12+ (24 recommended), Python 3.11+, FFmpeg/ffprobe on `PATH`.
+Requirements: Node 22.12+ (24 recommended), Python 3.11+, FFmpeg/ffprobe (found on `PATH`, or on Windows in winget/Chocolatey/Scoop folders even when the shell predates the install; otherwise set `FFMPEG_PATH`/`FFPROBE_PATH`). Without them Ferry refuses links with a clear "engine unavailable" error.
 
 ```bash
 npm run setup          # everything: finds Python, creates .venv with pinned yt-dlp + gallery-dl,
@@ -107,4 +109,6 @@ use, a rights-holder contact and takedown process, and take their own counsel.
 Third-party software: yt-dlp (Unlicense), gallery-dl (GPL-2.0-only; run as a separate program, never
 imported), FFmpeg (LGPL/GPL depending on build — the Debian build in the Docker image is GPL;
 distributing the image triggers GPL obligations), React, Express and other
-npm packages (MIT/ISC/Apache-2.0), Overpass and Noto Kufi Arabic fonts (SIL OFL 1.1).
+npm packages (MIT/ISC/Apache-2.0), the Archivo typeface (SIL OFL 1.1). Site logos come from
+Simple Icons (CC0, vendored by `scripts/make-brand-icons.mjs`); they are trademarks of their owners
+and appear only to name each site.

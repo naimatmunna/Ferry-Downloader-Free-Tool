@@ -1,15 +1,28 @@
 /** Playlist and batch panels — loaded on demand after an analysis returns. */
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
-import { AlertTriangle, Check, Download, ListChecks, Loader2, Trash2 } from 'lucide-react';
+import { AlertTriangle, Check, ListChecks, Loader2, Trash2 } from 'lucide-react';
 import { useI18n, errorText } from '../../lib/i18n/index.jsx';
 import { duration } from '../../lib/format.js';
+import { siteStatus } from '../../lib/siteStatus.js';
 import { initialSelection, jobBody, useAnalysis } from '../../state/analysis.js';
 import { useDownloads } from '../../state/downloads.js';
 import { toast } from '../../state/toasts.js';
-import { Button, Checkbox, PolicyBadge, cx } from '../../components/ui.jsx';
+import { SiteIcon } from '../../components/SiteIcon.jsx';
+import { StatusPill } from '../../components/StatusPill.jsx';
+import { Button, Checkbox, cx } from '../../components/ui.jsx';
 import { FormatPicker, outputLabel } from './Picker.jsx';
 import { AttestBox } from './Workspace.jsx';
+
+const statusOf = (source) => siteStatus({ id: source.platform.id, policy: source.policy.status, available: true });
+
+function Card({ children, className, ...props }) {
+  return (
+    <section className={cx('rounded-[var(--radius-card)] bg-paper p-5 shadow-card sm:p-6', className)} {...props}>
+      {children}
+    </section>
+  );
+}
 
 /** Playlists and multi-item pages: choose items, one format for all. */
 export function PlaylistPanel() {
@@ -40,16 +53,20 @@ export function PlaylistPanel() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-12">
-      <section aria-labelledby="pl-title">
-        <h2 id="pl-title" className="text-2xl font-bold">
-          {media.title}
-        </h2>
-        <p className="mt-1 flex flex-wrap items-center gap-3 text-sm text-ink-2">
-          <span>{t('playlist.title', { count: media.entryCount ?? media.entries.length })}</span>
-          <span className="font-semibold text-ink">{source.platform.name}</span>
-          <PolicyBadge policy={source.policy.status} label={t(`policy.${source.policy.status}`)} />
-        </p>
+    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-6">
+      <Card aria-labelledby="pl-title">
+        <div className="flex items-center gap-3">
+          <SiteIcon id={source.platform.id} name={source.platform.name} size={44} />
+          <div className="min-w-0">
+            <h2 id="pl-title" className="heading truncate text-[22px]">
+              {media.title}
+            </h2>
+            <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-ink-2">
+              <span>{t('playlist.title', { count: media.entryCount ?? media.entries.length })}</span>
+              <StatusPill status={statusOf(source)} mini />
+            </p>
+          </div>
+        </div>
         <div className="mt-4 flex gap-2">
           <Button size="sm" icon={ListChecks} onClick={() => setPicks(media.entries.map((e) => e.id))}>
             {t('playlist.selectAll')}
@@ -71,15 +88,15 @@ export function PlaylistPanel() {
           ))}
         </ul>
         {media.entryCount > media.entries.length && <p className="mt-2 text-sm text-ink-2">{t('playlist.more', { count: media.entries.length })}</p>}
-      </section>
-      <section className="flex flex-col gap-6">
+      </Card>
+      <Card className="flex flex-col gap-5">
+        <h2 className="heading text-[22px]">{t('picker.title')}</h2>
         <FormatPicker media={null} selection={selection} onChange={setSelection} limits={limits} />
-        <p className="text-sm text-ink-2">{t('playlist.note')}</p>
         {needsAttest && <AttestBox source={source} checked={attest} onChange={setAttest} />}
-        <Button variant="primary" size="lg" icon={Download} disabled={!picks.length || (needsAttest && !attest)} onClick={start}>
+        <Button variant="primary" size="lg" className="h-[62px] w-full rounded-[18px] text-[17px]" disabled={!picks.length || (needsAttest && !attest)} onClick={start}>
           {t('playlist.download', { count: picks.length })}
         </Button>
-      </section>
+      </Card>
     </div>
   );
 }
@@ -113,54 +130,54 @@ export function BatchPanel() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-12">
-      <section aria-labelledby="batch-title">
-        <h2 id="batch-title" className="text-2xl font-bold">
+    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-6">
+      <Card aria-labelledby="batch-title">
+        <h2 id="batch-title" className="heading text-[22px]">
           {t('batch.title')}
         </h2>
         <ul className="mt-3 divide-y divide-line">
           {batch.map((b) => (
-            <li key={b.url} className="flex items-start gap-3 py-3">
-              <span className="mt-1 shrink-0">
-                {b.status === 'probing' || b.status === 'pending' ? (
-                  <Loader2 className={cx('size-5 text-ink-2', b.status === 'probing' && 'animate-spin motion-reduce:animate-none')} aria-hidden="true" />
-                ) : b.status === 'ready' ? (
-                  <Check className="size-5 text-kelp" aria-hidden="true" />
-                ) : (
-                  <AlertTriangle className="size-5 text-buoy" aria-hidden="true" />
-                )}
-              </span>
+            <li key={b.url} className="flex items-center gap-3 py-3">
+              {b.result ? (
+                <SiteIcon id={b.result.source.platform.id} name={b.result.source.platform.name} size={36} />
+              ) : (
+                <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-field">
+                  {b.status === 'error' ? <AlertTriangle className="size-5 text-bad" aria-hidden="true" /> : <Loader2 className={cx('size-5 text-ink-2', b.status === 'probing' && 'animate-spin motion-reduce:animate-none')} aria-hidden="true" />}
+                </span>
+              )}
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{b.result?.media?.title ?? b.url}</p>
+                <p className="truncate font-semibold">{b.result?.media?.title ?? b.url}</p>
                 <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-ink-2">
                   {b.status === 'error' ? (
-                    <span className="text-buoy">{errorText(t, b.error)}</span>
+                    <span className="text-bad">{errorText(t, b.error)}</span>
                   ) : b.result ? (
                     <>
                       <span>{b.result.source.platform.name}</span>
-                      <PolicyBadge policy={b.result.source.policy.status} label={t(`policy.${b.result.source.policy.status}`)} />
+                      <StatusPill status={statusOf(b.result.source)} mini />
                       {b.result.media.durationSec != null && <span className="tabular-nums">{duration(b.result.media.durationSec)}</span>}
+                      <Check className="size-4 text-ok" aria-hidden="true" />
                     </>
                   ) : (
                     <span>{t(`batch.status.${b.status}`)}</span>
                   )}
                 </p>
               </div>
-              <button type="button" aria-label={t('batch.remove', { title: b.result?.media?.title ?? b.url })} className="rounded p-2 text-ink-2 hover:bg-surface-2 hover:text-ink" onClick={() => remove(b.url)}>
+              <button type="button" aria-label={t('batch.remove', { title: b.result?.media?.title ?? b.url })} className="rounded-lg p-2 text-ink-2 hover:bg-field hover:text-ink" onClick={() => remove(b.url)}>
                 <Trash2 className="size-4" aria-hidden="true" />
               </button>
             </li>
           ))}
         </ul>
-      </section>
-      <section className="flex flex-col gap-6">
+      </Card>
+      <Card className="flex flex-col gap-5">
+        <h2 className="heading text-[22px]">{t('picker.title')}</h2>
         <FormatPicker media={null} selection={selection} onChange={setSelection} limits={{ maxFileSizeBytes: Infinity }} />
         <p className="text-sm text-ink-2">{t('batch.note')}</p>
         {attestItem && <AttestBox source={attestItem.result.source} checked={attest} onChange={setAttest} />}
-        <Button variant="primary" size="lg" icon={Download} disabled={!ready.length || (attestItem && !attest)} onClick={start}>
+        <Button variant="primary" size="lg" className="h-[62px] w-full rounded-[18px] text-[17px]" disabled={!ready.length || (attestItem && !attest)} onClick={start}>
           {t('batch.download', { count: ready.length })}
         </Button>
-      </section>
+      </Card>
     </div>
   );
 }

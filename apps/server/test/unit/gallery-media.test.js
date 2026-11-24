@@ -157,6 +157,17 @@ test('output formats follow the source: PNG, GIF (animation kept), JPEG for loss
   }
 });
 
+test('animations are converted frame by frame (memory stays flat) within a frame budget', () => {
+  const gif = plan('image/gif', probe({ rawCodec: 'gif', pixFmt: 'bgra', width: 800, height: 800, frames: 300 }));
+  const graph = after(gif.args, '-filter_complex');
+  // One palette per frame: the whole-file palette made FFmpeg hold every decoded frame
+  // (measured 79 MB → 782 MB for 20 → 300 frames of an 800×800 GIF of 12 KB).
+  assert.match(graph, /palettegen=[^;[]*stats_mode=single/);
+  assert.match(graph, /paletteuse=[^;[]*new=1/);
+  assert.equal(Number(after(gif.args, '-frames:v')), Math.floor(2e9 / (800 * 800)), 'unknown-length animations stop at the budget');
+  assert.throws(() => plan('image/gif', probe({ rawCodec: 'gif', width: 800, height: 800, frames: 4000 })), { code: 'FILE_TOO_LARGE' }, 'known to exceed the budget');
+});
+
 test('anything that is not really a single image is refused before FFmpeg runs', () => {
   assert.throws(() => plan(null, probe({ rawCodec: 'mjpeg' })), { code: 'NO_MEDIA_FOUND' }, 'unknown magic bytes');
   assert.throws(() => plan('image/jpeg', probe({ rawCodec: 'png' })), { code: 'NO_MEDIA_FOUND' }, 'magic bytes and decoder disagree');

@@ -12,8 +12,8 @@ const jobs = [
   ['icon-192.png', 'scale=192:192'],
   ['icon-512.png', 'scale=512:512'],
   ['apple-touch-icon.png', 'scale=180:180'],
-  // Maskable: shrink the artwork into the 80% safe zone on the brand colour.
-  ['icon-maskable-512.png', 'scale=400:400,pad=512:512:56:56:color=0x0B4F5C'],
+  // Maskable: shrink the artwork into the 80% safe zone on the mark's ink colour.
+  ['icon-maskable-512.png', 'scale=400:400,pad=512:512:56:56:color=0x14161A'],
 ];
 for (const [name, vf] of jobs) {
   const r = spawnSync(ffmpeg, ['-y', '-hide_banner', '-loglevel', 'error', '-i', svg, '-vf', vf, '-frames:v', '1', path.join(dir, name)], { stdio: 'inherit', shell: false });

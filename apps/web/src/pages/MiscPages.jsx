@@ -1,8 +1,11 @@
 import { useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
+import { Loader2 } from 'lucide-react';
 import { extractUrls } from '@ferry/shared/url';
 import { useI18n } from '../lib/i18n/index.jsx';
 import { useAnalysis } from '../state/analysis.js';
+
+const HOME_LINK = 'mt-6 inline-flex h-12 items-center rounded-[var(--radius-control)] bg-primary px-5 font-bold text-primary-ink hover:bg-primary-hover';
 
 /** PWA share target (Android): /share?title=&text=&url= */
 export function SharePage() {
@@ -24,12 +27,13 @@ export function SharePage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6">
-      <p role="status" className="text-lg font-semibold">
+    <div className="mx-auto max-w-[960px] px-4 pt-10 sm:px-8">
+      <p role="status" className="flex items-center gap-2.5 text-lg font-bold">
+        {links.length > 0 && <Loader2 className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />}
         {links.length ? t('share.reading') : t('share.none')}
       </p>
       {!links.length && (
-        <Link to="/" className="mt-4 inline-block font-semibold text-hull underline underline-offset-4 dark:text-signal">
+        <Link to="/" className={HOME_LINK}>
           {t('notFound.home')}
         </Link>
       )}
@@ -40,10 +44,10 @@ export function SharePage() {
 export function NotFoundPage() {
   const { t } = useI18n();
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6">
-      <h1 className="text-3xl font-extrabold tracking-tight">{t('notFound.title')}</h1>
-      <p className="mt-2 text-ink-2">{t('notFound.body')}</p>
-      <Link to="/" className="mt-6 inline-flex h-11 items-center rounded-[var(--radius-control)] bg-signal px-4 font-semibold text-signal-ink hover:bg-signal-hover">
+    <div className="mx-auto max-w-[960px] px-4 pt-10 sm:px-8">
+      <h1 className="display text-[2.15rem] sm:text-[2.75rem]">{t('notFound.title')}</h1>
+      <p className="mt-3 text-ink-2">{t('notFound.body')}</p>
+      <Link to="/" className={HOME_LINK}>
         {t('notFound.home')}
       </Link>
     </div>

@@ -45,6 +45,7 @@ test('hardened base profile: no config, no cookies or logins, no browser imitati
   assert.equal(base[base.indexOf('--cache-file') + 1], '/tmp/job/gdl-cache.sqlite3');
   const options = base.flatMap((a, i) => (a === '-o' ? [base[i + 1]] : []));
   assert.ok(options.includes('browser=false'), 'browser emulation must be off');
+  assert.ok(options.includes('tls12=true'), 'the standard TLS handshake, not a TLS 1.3-only fingerprint');
   assert.ok(options.includes('proxy-env=false'), 'only the explicit proxy may be used');
   for (const forbidden of ['--exec', '--exec-after', '-C', '--cookies', '--cookies-from-browser', '-u', '--username', '-p', '--password', '--netrc',
     '-c', '--config', '--config-json', '--config-yaml', '--config-toml', '-X', '--extractors', '--no-check-certificate', '--xff', '-U', '--update',
@@ -68,7 +69,11 @@ test('download selects exactly the chosen indexes and never spawns child extract
   assert.equal(args[args.indexOf('-D') + 1], '/job/tmp/gallery');
   assert.equal(args[args.indexOf('--restrict-filenames') + 1], 'ascii');
   assert.equal(args[args.indexOf('--filesize-max') + 1], '5000000');
-  assert.equal(args[args.indexOf('--Print') + 1], `prepare:${GDL_FILE_MARKER} {_url!q}`);
+  // A file filter turns off extractor fast-forwarding (e.g. DeviantArt skips posts, not files),
+  // so "--range 5,7" counts files exactly like the probe's "--range 1-N".
+  assert.equal(args[args.indexOf('--filter') + 1], 'True');
+  // A constant marker: a remote-controlled URL can never push it out of the line buffer.
+  assert.equal(args[args.indexOf('--Print') + 1], `prepare:${GDL_FILE_MARKER} -`);
   const options = args.flatMap((a, i) => (a === '-o' ? [args[i + 1]] : []));
   assert.ok(options.includes('downloader.ytdl.enabled=false'));
   assert.ok(!args.includes('--no-postprocessors'), 'the marker hook is a post-processor');
@@ -175,4 +180,10 @@ test('gallery-dl failures map to Ferry error codes', () => {
   assert.equal(c([], "[gallery-dl][error] Unsupported URL 'https://example.com/'", 64), 'UNSUPPORTED_PLATFORM');
   assert.equal(c([], "ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 403 Ferry Blocked Destination'))", 128), 'BLOCKED_DESTINATION');
   assert.equal(c([{ name: 'AbortExtraction', message: 'None' }]), 'EXTRACTION_FAILED');
+  // ArtStation, live: a Cloudflare bot check (403) is followed by "user could not be found".
+  // The page was not missing, the site refused this server.
+  assert.equal(
+    c([{ name: 'NotFoundError', message: 'Requested user could not be found' }], "[artstation][warning] Cloudflare challenge\n[artstation][warning] Cloudflare challenge (403 Forbidden) for 'https://www.artstation.com/x'"),
+    'SOURCE_RATE_LIMITED',
+  );
 });

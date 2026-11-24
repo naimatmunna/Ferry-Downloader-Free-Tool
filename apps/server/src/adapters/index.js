@@ -18,6 +18,7 @@ import { createYtDlpAdapter } from './ytdlp.js';
  * @property {{ ytdlp: string, ffmpeg: string, ffprobe: string, galleryDl?: string }} engines
  * @property {() => string[]} excludedExtractors
  * @property {(url: string) => string|null} [platformOf]  registry platform id of a URL found by an engine
+ * @property {(url: string) => boolean} [policyAllows]    false when a URL is on a platform that may not be downloaded from
  *
  * @typedef {object} DownloadContext
  * @property {object} job

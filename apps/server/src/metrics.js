@@ -1,16 +1,21 @@
 /**
- * Minimal Prometheus-style metrics and a rolling 24-hour platform health
- * window (aggregate counts only — no URLs, no IPs).
+ * Minimal Prometheus-style metrics and per-site live status (aggregate counts
+ * only — no URLs, no IPs). Outcomes go into 5-minute buckets kept for 24 hours;
+ * a site's status comes from the last 60 minutes when they hold at least 3
+ * attempts, otherwise from the last 24 hours.
  */
 
-const HOUR = 3600_000;
+const BUCKET_MS = 5 * 60_000;
+const HOUR_MS = 3600_000;
+const DAY_MS = 24 * HOUR_MS;
+const MIN_ATTEMPTS = 3;
 
-export function createMetrics() {
+export function createMetrics({ now = () => Date.now() } = {}) {
   const counters = new Map(); // name{labels} -> value
   const histograms = new Map();
-  /** @type {Map<string, { hour: number, ok: number, failed: number, codes: Record<string, number> }[]>} */
+  /** @type {Map<string, { slot: number, ok: number, failed: number, codes: Record<string, number> }[]>} */
   const health = new Map();
-  const startedAt = Date.now();
+  const startedAt = now();
 
   const key = (name, labels = {}) => {
     const l = Object.entries(labels)
@@ -37,11 +42,12 @@ export function createMetrics() {
 
   /** Record an outcome for the public status page. */
   function recordOutcome(platformId, ok, code = null) {
-    const hour = Math.floor(Date.now() / HOUR);
+    const t = now();
+    const slot = Math.floor(t / BUCKET_MS);
     const list = health.get(platformId) ?? [];
     let bucket = list[list.length - 1];
-    if (!bucket || bucket.hour !== hour) {
-      bucket = { hour, ok: 0, failed: 0, codes: {} };
+    if (!bucket || bucket.slot !== slot) {
+      bucket = { slot, ok: 0, failed: 0, codes: {} };
       list.push(bucket);
     }
     if (ok) bucket.ok += 1;
@@ -49,42 +55,51 @@ export function createMetrics() {
       bucket.failed += 1;
       if (code) bucket.codes[code] = (bucket.codes[code] ?? 0) + 1;
     }
-    while (list.length && list[0].hour <= hour - 24) list.shift();
+    while (list.length && (list[0].slot + 1) * BUCKET_MS <= t - DAY_MS) list.shift();
     health.set(platformId, list);
   }
 
   /** Source-side failures count against a platform; user-side ones (limits, policy) don't. */
   const SOURCE_CODES = new Set(['EXTRACTION_FAILED', 'NETWORK_ERROR', 'DOWNLOAD_INTERRUPTED', 'SOURCE_RATE_LIMITED', 'TIMEOUT', 'CONVERSION_FAILED']);
 
+  /** ok / source-failure totals of the buckets that end after `since`. */
+  function tally(list, since) {
+    let ok = 0;
+    let failed = 0;
+    const codes = {};
+    for (const b of list) {
+      if ((b.slot + 1) * BUCKET_MS <= since) continue;
+      ok += b.ok;
+      for (const [c, n] of Object.entries(b.codes)) {
+        codes[c] = (codes[c] ?? 0) + n;
+        if (SOURCE_CODES.has(c)) failed += n;
+      }
+    }
+    return { ok, total: ok + failed, codes };
+  }
+
   function platformHealth() {
-    const hourNow = Math.floor(Date.now() / HOUR);
+    const t = now();
     const out = {};
     for (const [id, list] of health) {
-      let ok = 0;
-      let failed = 0;
-      const codes = {};
-      for (const b of list) {
-        if (b.hour <= hourNow - 24) continue;
-        ok += b.ok;
-        for (const [c, n] of Object.entries(b.codes)) {
-          codes[c] = (codes[c] ?? 0) + n;
-          if (SOURCE_CODES.has(c)) failed += n;
-        }
-      }
-      const total = ok + failed;
-      if (!total) continue;
+      const day = tally(list, t - DAY_MS);
+      if (!day.total) continue;
+      const hour = tally(list, t - HOUR_MS);
+      const win = hour.total >= MIN_ATTEMPTS ? hour : day;
+      const rate = win.ok / win.total;
       out[id] = {
-        attempts: total,
-        successRate: Math.round((ok / total) * 1000) / 10,
-        status: total < 3 ? 'unknown' : ok / total >= 0.9 ? 'operational' : ok / total >= 0.5 ? 'degraded' : 'failing',
-        topErrors: Object.entries(codes).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([code, count]) => ({ code, count })),
+        window: win === hour ? '1h' : '24h',
+        attempts: win.total,
+        successRate: Math.round(rate * 1000) / 10,
+        status: win.total < MIN_ATTEMPTS ? 'unknown' : rate >= 0.9 ? 'operational' : rate >= 0.5 ? 'degraded' : 'failing',
+        topErrors: Object.entries(day.codes).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([code, count]) => ({ code, count })),
       };
     }
     return out;
   }
 
   function prometheus(gauges = {}) {
-    const lines = ['# Ferry metrics', `ferry_uptime_seconds ${Math.round((Date.now() - startedAt) / 1000)}`];
+    const lines = ['# Ferry metrics', `ferry_uptime_seconds ${Math.round((now() - startedAt) / 1000)}`];
     for (const [k, v] of counters) lines.push(`${k} ${v}`);
     for (const [name, value] of Object.entries(gauges)) lines.push(`${name} ${value}`);
     for (const [name, h] of histograms) {

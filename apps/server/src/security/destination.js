@@ -11,14 +11,21 @@ import { classifyIp, isIpLiteral } from './ip.js';
 
 /**
  * @typedef {{ address: string, family: 4|6 }} ResolvedAddress
- * @typedef {(host: string) => Promise<ResolvedAddress[]>} Resolver
+ * @typedef {(host: string, family: 4|6) => Promise<ResolvedAddress[]>} Resolver
  */
 
+/** The operating system's resolver (hosts file, search domains…), one address family at a time. */
 /** @type {Resolver} */
-export const systemResolver = async (host) => {
-  const res = await dns.promises.lookup(host, { all: true, verbatim: true });
+export const systemResolver = async (host, family) => {
+  const res = await dns.promises.lookup(host, { family, all: true, verbatim: true });
   return res.map((r) => ({ address: r.address, family: r.family }));
 };
+
+/** How long to wait for the second address family once the first has answered. */
+const FAMILY_GRACE_MS = 150;
+/** Validated answers are reused this long (each connection still goes to a checked IP). */
+const CACHE_TTL_MS = 60_000;
+const CACHE_MAX = 1000;
 
 function blocked(reason, host) {
   return new FerryError('BLOCKED_DESTINATION', { internal: `${reason}: ${host}` });
@@ -29,6 +36,51 @@ function blocked(reason, host) {
  */
 export function createDestinationGuard({ allowedPorts, allowHosts = [], resolver = systemResolver, timeoutMs = 10_000 }) {
   const allow = new Set(allowHosts.map((h) => h.toLowerCase()));
+  /** @type {Map<string, { addresses: ResolvedAddress[], expires: number }>} */
+  const cache = new Map();
+
+  /**
+   * Resolve IPv4 and IPv6 separately. Some networks never answer one family
+   * (measured: AAAA for a TikTok CDN host timed out after 15 s while A took
+   * 50 ms), and a combined lookup waits for the slower one. The first family
+   * with addresses wins, after a short grace period for the other; every
+   * address that did arrive is validated by the caller. IPv4 is listed first.
+   * @param {string} host
+   * @returns {Promise<ResolvedAddress[]>}
+   */
+  async function resolveHost(host) {
+    const hit = cache.get(host);
+    if (hit && hit.expires > Date.now()) return hit.addresses;
+    /** @type {({ list: ResolvedAddress[] } | { err: any } | null)[]} */
+    const results = [null, null];
+    await new Promise((resolve) => {
+      let grace = null;
+      const done = () => {
+        clearTimeout(grace);
+        resolve(undefined);
+      };
+      const check = () => {
+        if (results.every(Boolean)) done();
+        else if (!grace && results.some((r) => r?.list?.length)) grace = setTimeout(done, FAMILY_GRACE_MS);
+      };
+      [4, 6].forEach((family, i) => {
+        withTimeout(Promise.resolve().then(() => resolver(host, family)), timeoutMs, host)
+          .then((list) => (results[i] = { list: Array.isArray(list) ? list : [] }), (err) => (results[i] = { err }))
+          .then(check);
+      });
+    });
+    const seen = new Set();
+    const addresses = results.flatMap((r) => r?.list ?? []).filter((a) => a && !seen.has(a.address) && seen.add(a.address));
+    if (!addresses.length) {
+      const err = results.find((r) => r?.err)?.err;
+      if (err instanceof FerryError) throw err;
+      throw new FerryError('NETWORK_ERROR', { internal: `DNS lookup failed for ${host}: ${err?.code ?? err?.message ?? 'no addresses'}` });
+    }
+    cache.delete(host);
+    cache.set(host, { addresses, expires: Date.now() + CACHE_TTL_MS });
+    while (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
+    return addresses;
+  }
 
   /**
    * Resolve and validate. Throws BLOCKED_DESTINATION (or NETWORK_ERROR when
@@ -50,12 +102,7 @@ export function createDestinationGuard({ allowedPorts, allowHosts = [], resolver
     } else {
       // Hostnames must look like DNS names (no spaces/controls/odd chars).
       if (!/^[a-z0-9._-]+$/.test(host) || host.length > 253) throw blocked('invalid hostname', host);
-      try {
-        addresses = await withTimeout(resolver(host), timeoutMs);
-      } catch (err) {
-        if (err instanceof FerryError) throw err;
-        throw new FerryError('NETWORK_ERROR', { internal: `DNS lookup failed for ${host}: ${err?.code ?? err?.message}` });
-      }
+      addresses = await resolveHost(host);
     }
     if (!addresses?.length) throw new FerryError('NETWORK_ERROR', { internal: `No addresses for ${host}` });
     if (!allowlisted) {
@@ -88,12 +135,12 @@ export function createDestinationGuard({ allowedPorts, allowHosts = [], resolver
   return { resolveDestination, lookupFor };
 }
 
-function withTimeout(promise, ms) {
+function withTimeout(promise, ms, host) {
   let t;
   return Promise.race([
     promise.finally(() => clearTimeout(t)),
     new Promise((_, reject) => {
-      t = setTimeout(() => reject(new FerryError('NETWORK_ERROR', { internal: 'DNS timeout' })), ms);
+      t = setTimeout(() => reject(new FerryError('NETWORK_ERROR', { internal: `DNS timeout: ${host}` })), ms);
     }),
   ]);
 }

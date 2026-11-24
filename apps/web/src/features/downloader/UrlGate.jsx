@@ -4,8 +4,12 @@ import { extractUrls, hasPlaylistParam } from '@ferry/shared/url';
 import { useI18n } from '../../lib/i18n/index.jsx';
 import { canReadClipboard } from '../../lib/env.js';
 import { detect, usePlatforms } from '../../lib/registry.js';
+import { shelfOf, siteStatus } from '../../lib/siteStatus.js';
 import { useAnalysis } from '../../state/analysis.js';
-import { Button, PolicyBadge, cx } from '../../components/ui.jsx';
+import { useLiveDot } from '../../state/liveStatus.js';
+import { SiteIcon } from '../../components/SiteIcon.jsx';
+import { LivePill, StatusPill } from '../../components/StatusPill.jsx';
+import { Button, cx } from '../../components/ui.jsx';
 
 /** Debounced value (the error hint waits until typing pauses). */
 function useSettled(value, ms) {
@@ -17,6 +21,34 @@ function useSettled(value, ms) {
   return v;
 }
 
+/** What the current input is: several links, one detected site, or an invalid link. */
+export function useDetection() {
+  const input = useAnalysis((s) => s.input);
+  const registry = usePlatforms((s) => s.registry);
+  return useMemo(() => {
+    void registry; // re-run when the registry arrives
+    const links = extractUrls(input, { max: 100 });
+    const text = input.trim();
+    const detection = text && links.length <= 1 ? detect(text) : null;
+    return { links, multiple: links.length > 1, detection };
+  }, [input, registry]);
+}
+
+function Detected({ platform }) {
+  const { t } = useI18n();
+  const status = siteStatus(platform);
+  // Live status only for sites Ferry downloads from: a green "Working" next to "Turned off here" would mislead.
+  const live = useLiveDot(shelfOf(status) === 'direct' ? platform.id : null);
+  return (
+    <p className="flex flex-wrap items-center gap-x-2.5 gap-y-2">
+      {status !== 'any' && <span className="text-[15.5px] font-bold text-hero-ink">{platform.name}</span>}
+      <StatusPill status={status} onHero />
+      <LivePill live={live} />
+      <span className="text-hero-ink-2">{t(`status.say.${status}`, { name: platform.name })}</span>
+    </p>
+  );
+}
+
 export function UrlGate() {
   const { t } = useI18n();
   const input = useAnalysis((s) => s.input);
@@ -24,21 +56,15 @@ export function UrlGate() {
   const analyze = useAnalysis((s) => s.analyze);
   const reset = useAnalysis((s) => s.reset);
   const status = useAnalysis((s) => s.status);
-  const registry = usePlatforms((s) => s.registry);
+  const { links, multiple, detection } = useDetection();
   const [notice, setNotice] = useState(null);
   const [wholePlaylist, setWholePlaylist] = useState(false);
   const ref = useRef(null);
   const settled = useSettled(input, 600);
 
-  const links = useMemo(() => extractUrls(input, { max: 100 }), [input]);
-  const multiple = links.length > 1;
-  const detection = useMemo(() => {
-    void registry; // re-run when the registry arrives
-    const text = input.trim();
-    return text && !multiple ? detect(text) : null;
-  }, [input, multiple, registry]);
   const showReason = detection && !detection.ok && detection.reason !== 'empty' && settled === input;
   const playlistParam = detection?.ok && hasPlaylistParam(detection.url);
+  const site = detection?.ok ? detection.platform : null;
 
   // Auto-grow the field so several pasted links stay readable.
   useEffect(() => {
@@ -76,7 +102,15 @@ export function UrlGate() {
     }
   }
 
-  const policyLabel = detection?.ok ? (detection.platform.available === false ? t('policy.unavailable') : t(`policy.${detection.platform.policy}`)) : null;
+  const main = input ? (
+    <Button type="submit" variant="primary" size="lg" disabled={status === 'probing'}>
+      {multiple ? t('gate.findAll') : t('gate.submit')}
+    </Button>
+  ) : (
+    <Button variant="primary" size="lg" icon={ClipboardPaste} onClick={paste}>
+      {t('gate.paste')}
+    </Button>
+  );
 
   return (
     <form
@@ -86,86 +120,72 @@ export function UrlGate() {
         submit();
       }}
     >
-      <div className="flex flex-col gap-2 rounded-[var(--radius-gate)] bg-surface p-2 text-ink shadow-lift sm:flex-row sm:items-start">
-        {/* Links are always left-to-right, even in Arabic: keep the whole field group LTR. */}
-        <div className="relative min-w-0 flex-1" dir="ltr">
-          <Link2 aria-hidden="true" className="pointer-events-none absolute start-4 top-4 size-6 text-ink-2" />
-          <label htmlFor="gate-input" className="sr-only">
-            {t('gate.label')}
-          </label>
-          <textarea
-            id="gate-input"
-            ref={ref}
-            rows={1}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onPaste={(e) => {
-              const text = e.clipboardData?.getData('text');
-              if (text?.trim() && !input.trim()) {
-                e.preventDefault();
-                setInput(text.trim());
-                submit(text.trim());
-              }
+      <div className="dock flex items-start gap-2.5 rounded-[22px] p-1.5 text-ink sm:p-2">
+        <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-field text-ink-2 sm:size-14">
+          {site ? <SiteIcon key={site.id} id={site.id} name={site.name} size={56} pop className="max-sm:size-12!" /> : <Link2 aria-hidden="true" className="size-6" />}
+        </span>
+        <label htmlFor="gate-input" className="sr-only">
+          {t('gate.label')}
+        </label>
+        <textarea
+          id="gate-input"
+          ref={ref}
+          rows={1}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onPaste={(e) => {
+            const text = e.clipboardData?.getData('text');
+            if (text?.trim() && !input.trim()) {
+              e.preventDefault();
+              setInput(text.trim());
+              submit(text.trim());
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              submit();
+            }
+          }}
+          placeholder={t('gate.placeholder')}
+          inputMode="url"
+          enterKeyHint="go"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          aria-describedby="gate-status"
+          className="block min-h-12 min-w-0 flex-1 resize-none bg-transparent py-3 text-base leading-6 placeholder:text-ink-3 focus:outline-none sm:min-h-14 sm:py-4 sm:text-[17px]"
+        />
+        {input && (
+          <button
+            type="button"
+            aria-label={t('gate.clear')}
+            title={t('gate.clear')}
+            onClick={() => {
+              setInput('');
+              reset();
+              ref.current?.focus();
             }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                submit();
-              }
-            }}
-            placeholder={t('gate.placeholder')}
-            inputMode="url"
-            dir="ltr"
-            enterKeyHint="go"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            aria-describedby="gate-status"
-            className="block min-h-14 w-full resize-none bg-transparent py-3.5 ps-13 pe-28 text-lg leading-7 placeholder:text-ink-2/60 focus:outline-none"
-          />
-          <div className="absolute end-2 top-2 flex items-center gap-1">
-            {input && (
-              <button
-                type="button"
-                aria-label={t('gate.clear')}
-                title={t('gate.clear')}
-                onClick={() => {
-                  setInput('');
-                  reset();
-                  ref.current?.focus();
-                }}
-                className="flex size-10 items-center justify-center rounded-[var(--radius-control)] text-ink-2 hover:bg-surface-2 hover:text-ink"
-              >
-                <X className="size-5" aria-hidden="true" />
-              </button>
-            )}
-            {!input && (
-              <button type="button" onClick={paste} className="flex h-10 items-center gap-1.5 rounded-[var(--radius-control)] px-3 font-semibold text-hull hover:bg-surface-2 dark:text-signal">
-                <ClipboardPaste className="size-5" aria-hidden="true" />
-                {t('gate.paste')}
-              </button>
-            )}
-          </div>
-        </div>
-        <Button type="submit" variant="primary" size="lg" className="sm:min-w-40" disabled={status === 'probing'}>
-          {multiple ? t('gate.findAll') : t('gate.submit')}
-        </Button>
-      </div>
-
-      <div id="gate-status" aria-live="polite" className="mt-3 min-h-8 text-sm">
-        {multiple && <p className="font-semibold text-hull-ink">{t('gate.links', { count: links.length })}</p>}
-        {detection?.ok && (
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="font-semibold text-hull-ink">{detection.platform.name}</span>
-            <PolicyBadge policy={detection.platform.available === false ? 'disabled' : detection.platform.policy} label={policyLabel} />
-          </p>
+            className="mt-1 grid size-10 shrink-0 place-items-center rounded-xl text-ink-2 hover:bg-field hover:text-ink sm:mt-2"
+          >
+            <X className="size-5" aria-hidden="true" />
+          </button>
         )}
-        {showReason && <p className="font-semibold text-signal">{t(`reasons.${detection.reason}`)}</p>}
-        {notice && <p className="text-hull-ink-2">{notice}</p>}
+        <div className="hidden shrink-0 sm:block">{main}</div>
+      </div>
+      {/* Phone: the main action is a full-width button under the thumb. */}
+      <div className="mt-3 sm:hidden [&>button]:w-full">{input ? main : <Button variant="primary" size="lg" icon={ClipboardPaste} onClick={paste}>{t('gate.pasteLink')}</Button>}</div>
+
+      <div id="gate-status" aria-live="polite" className="mt-4 min-h-8 text-[14.5px]">
+        {multiple && <p className="font-bold text-hero-ink">{t('gate.links', { count: links.length })}</p>}
+        {site && <Detected platform={site} />}
+        {!input && <p className="text-hero-ink-2">{t('gate.hint')}</p>}
+        {showReason && <p className="font-bold text-hero-ink">{t(`reasons.${detection.reason}`)}</p>}
+        {notice && <p className={cx('text-hero-ink-2', site && 'mt-2')}>{notice}</p>}
         {playlistParam && (
-          <label className={cx('mt-2 flex items-center gap-2 text-hull-ink-2')}>
-            <input type="checkbox" className="size-4 accent-[var(--signal)]" checked={wholePlaylist} onChange={(e) => setWholePlaylist(e.target.checked)} />
+          <label className="mt-2 flex items-center gap-2 text-hero-ink">
+            <input type="checkbox" className="size-4 accent-[var(--primary)]" checked={wholePlaylist} onChange={(e) => setWholePlaylist(e.target.checked)} />
             {t('gate.wholePlaylist')}
           </label>
         )}

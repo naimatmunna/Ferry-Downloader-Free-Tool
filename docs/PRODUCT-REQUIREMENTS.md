@@ -49,7 +49,7 @@ pop-unders, bundled installers and misleading quality labels (see
 * As a user, I can find, filter and re-download past items, or delete my
   history entirely.
 * As a user, I set defaults once (format, quality, audio format, file naming,
-  theme, language).
+  theme).
 * As an Android user, I share a link from another app straight into Ferry.
 * As an operator, I can disable or restrict a platform instantly without
   redeploying.
@@ -117,8 +117,8 @@ pop-unders, bundled installers and misleading quality labels (see
 | ID | Requirement |
 |---|---|
 | FR-32 | History: search, filter by platform and status, details sheet, re-download with the same options (if the policy still allows), delete one, clear all. |
-| FR-33 | Settings: default mode, container, quality, audio format, bitrate, metadata; file naming; theme (system/light/dark); language (English, Español, العربية); simultaneous downloads; auto-save; privacy (save history, save source links, delete from server after saving); storage info and "clear local data". |
-| FR-34 | A searchable **Platforms** page lists every registry entry with its policy class, content types, reliability, and official routes. |
+| FR-33 | Settings: default mode, container, quality, audio format, bitrate, metadata; file naming; theme (system/light/dark); simultaneous downloads; auto-save; privacy (save history, save source links, delete from server after saving); storage info and "clear local data". |
+| FR-34 | A searchable **Sites** page lists every registry entry with its logo, status in plain words, content types, reliability, live status and official routes. Home shows the best-known sites as a logo wall grouped by status (download directly, official download only, protected). |
 
 ## 5. Non-functional requirements
 
@@ -130,7 +130,7 @@ pop-unders, bundled installers and misleading quality labels (see
 | Privacy | No third-party requests from the client (fonts and thumbnails served from our origin); no analytics. |
 | Security | See `SECURITY-AUDIT.md`. |
 | Reliability | Retryable failures retry at most 3 times on request; no silent failures; every error has a code and plain copy. |
-| i18n | All UI copy externalized; RTL layout for Arabic. |
+| Copy | English only (decided 2026-11-24). All UI copy lives in one dictionary (`apps/web/src/lib/i18n/en.js`) so the same thing is always called the same. |
 | Browsers | Last 2 versions of Chrome, Edge, Firefox, Safari; iOS Safari 16.4+; Samsung Internet. |
 
 ## 6. Error and edge states
@@ -166,7 +166,7 @@ overrides · probe via yt-dlp and official APIs (Internet Archive, PeerTube) ·
 direct media files · three modes · 5 video containers · 7 audio formats ·
 quality ladder · thumbnails · subtitles · metadata · naming templates ·
 trim · compression · playlists · batch · ZIP · download manager with
-pause/resume/cancel/retry · history · settings · platforms page · EN/ES/AR ·
+pause/resume/cancel/retry · history · settings · Sites page with logos and live status · English only ·
 light/dark · PWA manifest + share target · security hardening · tests.
 
 ### Future
@@ -175,7 +175,7 @@ Streamlink livestream recording ·
 aspect-ratio conversion · BullMQ/Redis + S3 scale-out drivers · MongoDB audit
 & policy store · optional accounts with encrypted history sync · official API
 exports (e.g. a user's own YouTube channel via OAuth + YouTube's download
-features) · browser extension · native share extensions (iOS) · more languages.
+features) · browser extension · native share extensions (iOS).
 
 ### Anti-goals
 

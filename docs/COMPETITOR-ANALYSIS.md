@@ -275,7 +275,7 @@ and need product sign-off; the rest come from `PRODUCT-REQUIREMENTS.md` §8.
 ### 2. Failures that explain themselves
 * **User problem:** opaque failures ("error 3037"), misleading messages and week-long support waits.
 * **Evidence:** [Trustpilot: SnapDownloader](https://www.trustpilot.com/review/snapdownloader.com); [yt-dlp wiki](https://github.com/yt-dlp/yt-dlp/wiki/Extractors); cobalt announced its YouTube outage only in a changelog ([11.2](https://github.com/imputnet/cobalt/blob/main/web/changelogs/11.2.md)).
-* **Ferry's response:** every failure maps to a coded, plain-language state with a next step (rate-limited, sign-in required, protected, export-only, expired, too large); a live Platforms status page shows each platform's policy, reliability and any operator override with its reason, so users learn *before* pasting.
+* **Ferry's response:** every failure maps to a coded, plain-language state with a next step (rate-limited, sign-in required, protected, export-only, expired, too large); the Sites page and the Home logo wall show each site's policy, reliability and any operator override with its reason, so users learn *before* pasting.
 * **Measure:** failures ending in the catch-all `EXTRACTION_FAILED` < 10% of failures (*proposed*); retry offered only on retryable codes (tested); override visible to clients without a redeploy (ETag refresh).
 
 ### 3. Honest media labels

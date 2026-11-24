@@ -179,6 +179,7 @@ export function createPipeline({ config, storage, adapters, fetch, engines, logg
    * @param {{ images: { index: number, path: string }[], requested: number }} dl
    */
   async function finishGallery(job, dl, { jobDir, signal, onProgress }) {
+    if (!Array.isArray(dl?.images)) throw new FerryError('FORMAT_UNAVAILABLE', { internal: `gallery job on adapter ${job.internal.adapterId}` });
     const images = [...dl.images].sort((a, b) => a.index - b.index);
     const vars = {
       title: job.source.title,
@@ -189,7 +190,9 @@ export function createPipeline({ config, storage, adapters, fetch, engines, logg
       date: job.internal.uploadDate,
     };
     const base = buildDownloadName({ template: job.request.filename?.template, vars, ext: '' });
-    const digits = Math.max(2, String(Math.max(...job.request.gallery.items)).length);
+    // Same width as the numbers on the picker's tiles (all items, not just the chosen ones).
+    const allIndexes = job.internal.media?.gallery?.items?.map((i) => i.index) ?? job.request.gallery.items;
+    const digits = Math.max(2, String(Math.max(...allIndexes)).length);
     const files = [];
     let lastError = null;
     for (const [n, img] of images.entries()) {

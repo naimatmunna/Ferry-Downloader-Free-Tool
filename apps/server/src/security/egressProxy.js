@@ -84,9 +84,18 @@ export async function startEgressProxy({ guard, logger, maxConnections = 256, id
     }
   }
 
-  function recordBlock(session, host, err) {
-    stats.blocked += 1;
+  /**
+   * A destination could not be used. Only refusals (private address, port not
+   * allowed…) are recorded against the job: engines report a "blocked destination"
+   * from that list, so a DNS hiccup must stay an ordinary network error.
+   */
+  function recordFailure(session, host, err) {
     const reason = err?.internal ?? err?.message ?? 'blocked';
+    if (err?.code !== 'BLOCKED_DESTINATION') {
+      logger?.info({ tag: session?.tag, host, reason }, 'egress: destination unreachable');
+      return;
+    }
+    stats.blocked += 1;
     if (session) session.blocked.push({ host, reason });
     logger?.info({ tag: session?.tag, host, reason }, 'egress: destination blocked');
   }
@@ -116,7 +125,7 @@ export async function startEgressProxy({ guard, logger, maxConnections = 256, id
     try {
       resolved = await guard.resolveDestination(target.host, target.port);
     } catch (err) {
-      recordBlock(session, target.host, err);
+      recordFailure(session, target.host, err);
       const phrase = err?.code === 'BLOCKED_DESTINATION' ? BLOCK_REASON_PHRASE : 'Bad Gateway';
       const code = err?.code === 'BLOCKED_DESTINATION' ? 403 : 502;
       clientSocket.end(`HTTP/1.1 ${code} ${phrase}\r\nContent-Length: 0\r\n\r\n`);
@@ -193,7 +202,7 @@ export async function startEgressProxy({ guard, logger, maxConnections = 256, id
     try {
       resolved = await guard.resolveDestination(target.hostname, port);
     } catch (err) {
-      recordBlock(session, target.hostname, err);
+      recordFailure(session, target.hostname, err);
       res.writeHead(err?.code === 'BLOCKED_DESTINATION' ? 403 : 502, err?.code === 'BLOCKED_DESTINATION' ? BLOCK_REASON_PHRASE : 'Bad Gateway').end();
       return;
     }

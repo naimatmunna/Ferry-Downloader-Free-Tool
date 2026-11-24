@@ -66,16 +66,20 @@ Key engineering facts that shaped the code:
   * `-j` reports extractor failures inside the JSON as `[-1, {error, message}]`
     with exit code 0; Ferry classifies those.
   * `--range` indexes count every file message, so the probe and the download
-    select the same files.
+    select the same files, provided a file filter is set. Without one,
+    gallery-dl lets extractors fast-forward to the first chosen index, and
+    DeviantArt counts posts there, not files. So downloads also pass
+    `--filter True`.
   * `--child-filter False` stops child extractors when downloading.
   * `-o downloader.ytdl.enabled=false` blocks the `ytdl:` hand-off that some
     extractors use for embeds (Behance, ArtStation and VSCO emit
     `ytdl:<YouTube/Vimeo/HLS URL>`). In the probe, those items count as videos
     and are never offered.
-  * `-o browser=false` turns off the Firefox header and TLS-cipher imitation
-    that the ArtStation, Behance and VSCO extractors switch on by default. This
-    applies the same no-impersonation rule as yt-dlp's missing `curl_cffi`, so
-    those three sites may refuse requests.
+  * `-o browser=false -o tls12=true` turns off the Firefox header and
+    TLS-cipher imitation, and the TLS 1.3-only handshake, that the ArtStation,
+    Behance and VSCO extractors switch on by default. This applies the same
+    no-impersonation rule as yt-dlp's missing `curl_cffi`, so those three
+    sites may refuse requests.
   * No extractor sets an `X-Forwarded-For` geo-bypass by default, and Ferry
     passes no `--xff`.
   * Federated Mastodon posts need gallery-dl's `mastodon:<url>` instance prefix.

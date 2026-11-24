@@ -10,22 +10,23 @@ export function cx(...parts) {
 }
 
 const BUTTON = {
-  base: 'inline-flex items-center justify-center gap-2 font-semibold select-none transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] disabled:opacity-45 disabled:active:scale-100',
+  base: 'inline-flex items-center justify-center gap-2 font-bold whitespace-nowrap select-none transition-[background-color,box-shadow,color,transform] duration-150 active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100',
   size: {
-    sm: 'h-9 px-3 text-sm rounded-[var(--radius-control)]',
-    md: 'h-11 px-4 text-[0.95rem] rounded-[var(--radius-control)]',
-    lg: 'h-14 px-6 text-base rounded-[var(--radius-control)]',
+    sm: 'h-[38px] px-3.5 text-sm rounded-[11px]',
+    md: 'h-12 px-5 text-[15.5px] rounded-[var(--radius-control)]',
+    lg: 'h-14 px-6 text-base rounded-2xl',
   },
   variant: {
-    primary: 'bg-signal text-signal-ink hover:bg-signal-hover',
-    secondary: 'bg-surface text-ink border border-line hover:border-line-strong',
-    ghost: 'text-ink-2 hover:text-ink hover:bg-surface-2',
-    danger: 'text-buoy hover:bg-buoy-soft',
-    hull: 'bg-hull-2 text-hull-ink hover:bg-white/15 border border-white/20',
+    primary: 'bg-primary text-primary-ink hover:bg-primary-hover',
+    soft: 'bg-field text-ink hover:bg-line',
+    line: 'bg-transparent text-ink shadow-[inset_0_0_0_1.5px_var(--line-2)] hover:bg-field',
+    ghost: 'text-ink-2 hover:bg-field hover:text-ink',
+    danger: 'text-bad hover:bg-bad-soft',
+    hero: 'bg-hero-chip text-hero-ink hover:bg-hero-chip-hover',
   },
 };
 
-export const Button = forwardRef(function Button({ variant = 'secondary', size = 'md', icon: Icon, iconEnd: IconEnd, className, children, ...props }, ref) {
+export const Button = forwardRef(function Button({ variant = 'soft', size = 'md', icon: Icon, iconEnd: IconEnd, className, children, ...props }, ref) {
   return (
     <button ref={ref} type="button" className={cx(BUTTON.base, BUTTON.size[size], BUTTON.variant[variant], className)} {...props}>
       {Icon && <Icon aria-hidden="true" className="size-[1.15em] shrink-0" />}
@@ -35,7 +36,7 @@ export const Button = forwardRef(function Button({ variant = 'secondary', size =
   );
 });
 
-export function LinkButton({ variant = 'secondary', size = 'md', icon: Icon, className, children, ...props }) {
+export function LinkButton({ variant = 'soft', size = 'md', icon: Icon, className, children, ...props }) {
   return (
     <a className={cx(BUTTON.base, BUTTON.size[size], BUTTON.variant[variant], className)} {...props}>
       {Icon && <Icon aria-hidden="true" className="size-[1.15em] shrink-0" />}
@@ -45,9 +46,9 @@ export function LinkButton({ variant = 'secondary', size = 'md', icon: Icon, cla
 }
 
 export function IconButton({ label, icon: Icon, className, size = 'md', variant = 'ghost', ...props }) {
-  const dims = size === 'sm' ? 'size-9' : 'size-11';
+  const dims = size === 'sm' ? 'size-9 rounded-[11px]' : 'size-10 rounded-xl';
   return (
-    <button type="button" aria-label={label} title={label} className={cx('inline-flex items-center justify-center rounded-[var(--radius-control)] transition-colors', dims, BUTTON.variant[variant], className)} {...props}>
+    <button type="button" aria-label={label} title={label} className={cx('inline-flex shrink-0 items-center justify-center transition-colors', dims, BUTTON.variant[variant], className)} {...props}>
       <Icon aria-hidden="true" className="size-5" />
     </button>
   );
@@ -57,11 +58,11 @@ export function IconButton({ label, icon: Icon, className, size = 'md', variant 
  * Single choice from a few options, rendered as a segmented control. Built on
  * radio inputs: arrow keys, labels and screen readers work natively.
  */
-export function Segmented({ legend, name, value, onChange, options, className }) {
+export function Segmented({ legend, name, value, onChange, options, className, legendClassName }) {
   return (
     <fieldset className={className}>
-      <legend className="mb-2 text-sm font-semibold text-ink-2">{legend}</legend>
-      <div className="grid gap-1 rounded-[calc(var(--radius-control)+4px)] bg-surface-2 p-1" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
+      <legend className={cx('mb-2 text-[15px] font-bold', legendClassName)}>{legend}</legend>
+      <div className="grid gap-1 rounded-2xl bg-field p-1" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
         {options.map((o) => {
           const Icon = o.icon;
           const checked = value === o.value;
@@ -69,9 +70,9 @@ export function Segmented({ legend, name, value, onChange, options, className })
             <label
               key={o.value}
               className={cx(
-                'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-[var(--radius-control)] px-2 py-2 text-center text-sm font-semibold transition-colors has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--focus-ring)]',
-                checked ? 'bg-surface text-ink shadow-[0_1px_0_var(--line),0_6px_16px_-12px_rgb(0_0_0/0.5)]' : 'text-ink-2 hover:text-ink',
-                o.disabled && 'cursor-not-allowed opacity-45',
+                'relative flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-2 text-center text-sm font-bold transition-colors has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--focus-ring)]',
+                checked ? 'bg-paper text-ink shadow-[0_1px_2px_rgb(0_0_0/0.12)]' : 'text-ink-2 hover:text-ink',
+                o.disabled && 'cursor-not-allowed opacity-40',
               )}
             >
               <input type="radio" className="sr-only" name={name} value={o.value} checked={checked} disabled={o.disabled} onChange={() => onChange(o.value)} />
@@ -85,11 +86,11 @@ export function Segmented({ legend, name, value, onChange, options, className })
   );
 }
 
-/** Pill choices (qualities, formats). Same radio foundation as Segmented. */
+/** Pill choices. Same radio foundation as Segmented. */
 export function ChoiceChips({ legend, name, value, onChange, options, hint }) {
   return (
     <fieldset>
-      <legend className="mb-2 text-sm font-semibold text-ink-2">{legend}</legend>
+      <legend className="mb-2 text-[15px] font-bold">{legend}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => {
           const checked = value === o.value;
@@ -97,14 +98,14 @@ export function ChoiceChips({ legend, name, value, onChange, options, hint }) {
             <label
               key={String(o.value)}
               className={cx(
-                'flex min-h-11 items-center gap-2 rounded-full border px-4 py-1.5 text-sm transition-colors has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--focus-ring)]',
-                checked ? 'border-hull bg-hull text-hull-ink' : 'border-line bg-surface text-ink hover:border-line-strong',
-                o.disabled && 'cursor-not-allowed opacity-45',
+                'flex min-h-11 flex-col justify-center rounded-[var(--radius-control)] px-3.5 py-1.5 text-sm transition-colors has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--focus-ring)]',
+                checked ? 'bg-primary text-primary-ink' : 'bg-paper text-ink shadow-[inset_0_0_0_1.5px_var(--line)] hover:shadow-[inset_0_0_0_1.5px_var(--line-2)]',
+                o.disabled && 'cursor-not-allowed opacity-40',
               )}
             >
               <input type="radio" className="sr-only" name={name} value={String(o.value)} checked={checked} disabled={o.disabled} onChange={() => onChange(o.value)} />
-              <span className="font-semibold">{o.label}</span>
-              {o.sub && <span className={cx('tabular-nums', checked ? 'text-hull-ink-2' : 'text-ink-2')}>{o.sub}</span>}
+              <span className="font-bold">{o.label}</span>
+              {o.sub && <span className={cx('text-xs tabular-nums', checked ? 'opacity-80' : 'text-ink-2')}>{o.sub}</span>}
             </label>
           );
         })}
@@ -117,7 +118,7 @@ export function ChoiceChips({ legend, name, value, onChange, options, hint }) {
 export function Switch({ checked, onChange, label, help, disabled }) {
   const id = useId();
   return (
-    <div className="flex items-start justify-between gap-4 py-2">
+    <div className="flex items-start justify-between gap-4 py-2.5">
       <label htmlFor={id} className={cx('min-w-0', disabled && 'opacity-50')}>
         <span className="block font-medium">{label}</span>
         {help && <span className="mt-0.5 block text-sm text-ink-2">{help}</span>}
@@ -129,7 +130,7 @@ export function Switch({ checked, onChange, label, help, disabled }) {
         checked={checked}
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
-        className="peer relative mt-0.5 h-7 w-12 shrink-0 cursor-pointer appearance-none rounded-full bg-[var(--switch-off)] transition-colors checked:bg-[var(--switch-on)] disabled:cursor-not-allowed before:absolute before:start-1 before:top-1 before:size-5 before:rounded-full before:bg-white before:shadow before:transition-transform checked:before:translate-x-5 rtl:checked:before:-translate-x-5"
+        className="relative mt-0.5 h-[26px] w-11 shrink-0 cursor-pointer appearance-none rounded-full bg-[var(--switch-off)] transition-colors checked:bg-[var(--switch-on)] disabled:cursor-not-allowed before:absolute before:start-[3px] before:top-[3px] before:size-5 before:rounded-full before:bg-[var(--knob)] before:shadow before:transition-transform checked:before:translate-x-[18px]"
       />
     </div>
   );
@@ -138,25 +139,22 @@ export function Switch({ checked, onChange, label, help, disabled }) {
 export function Checkbox({ checked, onChange, children, className }) {
   return (
     <label className={cx('flex items-start gap-3 py-1.5', className)}>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-1 size-5 shrink-0 accent-[var(--hull)]" />
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 size-5 shrink-0 accent-[var(--perm)]" />
       <span className="min-w-0">{children}</span>
     </label>
   );
 }
 
+const FIELD = 'h-12 w-full rounded-xl bg-paper px-3.5 text-ink shadow-[inset_0_0_0_1.5px_var(--line)] outline-none focus:shadow-[inset_0_0_0_2px_var(--ink)]';
+
 export function Select({ label, value, onChange, options, className }) {
   const id = useId();
   return (
     <div className={className}>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-ink-2">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-bold">
         {label}
       </label>
-      <select
-        id={id}
-        value={String(value)}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-11 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3 text-ink"
-      >
+      <select id={id} value={String(value)} onChange={(e) => onChange(e.target.value)} className={FIELD}>
         {options.map((o) => (
           <option key={String(o.value)} value={String(o.value)}>
             {o.label}
@@ -172,49 +170,22 @@ export function TextField({ label, hint, error, className, inputClassName, ...pr
   const hintId = `${id}-hint`;
   return (
     <div className={className}>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-ink-2">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-bold">
         {label}
       </label>
       <input
         id={id}
         aria-describedby={hint || error ? hintId : undefined}
         aria-invalid={error ? 'true' : undefined}
-        className={cx('h-11 w-full rounded-[var(--radius-control)] border bg-surface px-3 text-ink placeholder:text-ink-2/70', error ? 'border-buoy' : 'border-line', inputClassName)}
+        className={cx(FIELD, 'placeholder:text-ink-3', error && 'shadow-[inset_0_0_0_2px_var(--bad)]', inputClassName)}
         {...props}
       />
       {(error || hint) && (
-        <p id={hintId} className={cx('mt-1.5 text-sm', error ? 'text-buoy' : 'text-ink-2')}>
+        <p id={hintId} className={cx('mt-1.5 text-sm', error ? 'font-semibold text-bad' : 'text-ink-2')}>
           {error || hint}
         </p>
       )}
     </div>
-  );
-}
-
-const POLICY_STYLE = {
-  allowed: 'bg-kelp-soft text-kelp',
-  attestation: 'bg-amber-soft text-amber',
-  export_only: 'bg-sea-soft text-sea',
-  blocked: 'bg-buoy-soft text-buoy',
-  disabled: 'bg-surface-2 text-ink-2',
-};
-const POLICY_SHAPE = {
-  allowed: <circle cx="5" cy="5" r="4" />,
-  attestation: <path d="M5 1 9 9H1z" />,
-  export_only: <rect x="1.5" y="1.5" width="7" height="7" rx="1" />,
-  blocked: <path d="M2 2l6 6M8 2 2 8" strokeWidth="2" stroke="currentColor" />,
-  disabled: <rect x="1" y="4" width="8" height="2" />,
-};
-
-/** Policy badge: colour + shape + words (never colour alone). */
-export function PolicyBadge({ policy, label, className }) {
-  return (
-    <span className={cx('inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.8125rem] font-semibold', POLICY_STYLE[policy] ?? POLICY_STYLE.disabled, className)}>
-      <svg viewBox="0 0 10 10" className="size-2.5 fill-current" aria-hidden="true">
-        {POLICY_SHAPE[policy] ?? POLICY_SHAPE.disabled}
-      </svg>
-      {label}
-    </span>
   );
 }
 
@@ -223,8 +194,9 @@ export function Skeleton({ className }) {
 }
 
 /** Modal sheet on <dialog>: bottom sheet on phones, centred dialog on larger screens. */
-export function Sheet({ open, onClose, title, children, closeLabel = 'Close' }) {
+export function Sheet({ open, onClose, title, children, closeLabel = 'Close', wide = false }) {
   const ref = useRef(null);
+  const titleId = useId();
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
@@ -234,14 +206,18 @@ export function Sheet({ open, onClose, title, children, closeLabel = 'Close' }) 
   return (
     <dialog
       ref={ref}
+      aria-labelledby={titleId}
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
-      className="m-0 mt-auto w-full max-w-none rounded-t-[var(--radius-panel)] bg-surface p-0 text-ink backdrop:bg-black/50 sm:m-auto sm:max-w-lg sm:rounded-[var(--radius-panel)]"
+      className={cx('m-0 mt-auto w-full max-w-none rounded-t-[28px] bg-paper p-0 text-ink backdrop:bg-black/50 sm:m-auto sm:rounded-[var(--radius-card)]', wide ? 'sm:max-w-2xl' : 'sm:max-w-lg')}
     >
       <div className="safe-bottom max-h-[85dvh] overflow-y-auto p-5 sm:p-6">
+        <div className="mx-auto -mt-2 mb-3 h-[5px] w-10 rounded-full bg-line-2 sm:hidden" aria-hidden="true" />
         <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 className="text-lg font-bold">{title}</h2>
-          <IconButton label={closeLabel} icon={X} size="sm" onClick={onClose} />
+          <h2 id={titleId} className="heading text-xl">
+            {title}
+          </h2>
+          <IconButton label={closeLabel} icon={X} size="sm" variant="soft" onClick={onClose} />
         </div>
         {children}
       </div>
@@ -251,9 +227,13 @@ export function Sheet({ open, onClose, title, children, closeLabel = 'Close' }) 
 
 export function EmptyState({ icon: Icon, title, body, action }) {
   return (
-    <div className="flex flex-col items-start gap-3 py-14">
-      {Icon && <Icon aria-hidden="true" className="size-8 text-ink-2" />}
-      <h2 className="text-xl font-bold">{title}</h2>
+    <div className="flex flex-col items-start gap-3 rounded-[var(--radius-card)] bg-paper p-8 shadow-card sm:p-10">
+      {Icon && (
+        <span className="grid size-12 place-items-center rounded-2xl bg-sun text-sun-ink">
+          <Icon aria-hidden="true" className="size-6" />
+        </span>
+      )}
+      <h2 className="heading text-2xl">{title}</h2>
       {body && <p className="max-w-[46ch] text-ink-2">{body}</p>}
       {action}
     </div>

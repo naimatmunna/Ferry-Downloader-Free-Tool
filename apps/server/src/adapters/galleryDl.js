@@ -33,15 +33,15 @@ export function createGalleryDlAdapter(deps) {
   const run = deps.runProcess ?? runProcess;
   const profile = (proxyUrl, home) => baseArgs({ proxyUrl, cacheFile: path.join(home, 'gallery-dl-cache.sqlite3') });
 
-  /** One `-j` listing of a gallery-dl input. */
-  async function list({ input, home, signal, tag }) {
+  /** One `-j` listing of a gallery-dl input, within the probe's overall deadline. */
+  async function list({ input, home, signal, tag, deadline }) {
     const cred = deps.egress.issue({ tag: `probe:${tag}`, maxBytes: 64 * MiB });
     let r;
     try {
       r = await run(deps.engines.galleryDl, probeArgs({ base: profile(cred.url, home), input, maxItems: config.limits.maxGalleryItems }), {
         cwd: home,
         env: engineEnv({ proxyUrl: cred.url, homeDir: home }),
-        timeoutMs: config.limits.probeTimeoutMs,
+        timeoutMs: Math.max(1000, deadline - Date.now()),
         signal,
         collectStdout: true,
         maxStdoutBytes: config.limits.maxProbeOutputBytes,
@@ -69,16 +69,18 @@ export function createGalleryDlAdapter(deps) {
 
     async probe({ url, platform, signal, tag }) {
       const home = await mkdtemp(path.join(config.cacheDir, 'gdl-'));
+      // One deadline for both listings, so a slow first one ends as TIMEOUT, not as an outer abort.
+      const deadline = Date.now() + config.limits.probeTimeoutMs;
       try {
         let input = galleryInput(url, platform?.id);
-        let result = await list({ input, home, signal, tag });
+        let result = await list({ input, home, signal, tag, deadline });
         if (!result.messages.files.length && !result.messages.errors.length && platform) {
           // A page that only points at one album of the same platform (Imgur /gallery/<id> → /a/<id>).
           // Links to other sites are never followed: their policies were not checked.
           const same = result.messages.children.filter((c) => /^https?:\/\//i.test(c.url) && deps.platformOf?.(c.url) === platform.id);
           if (same.length === 1) {
             input = galleryInput(same[0].url, platform.id);
-            result = await list({ input, home, signal, tag });
+            result = await list({ input, home, signal, tag, deadline });
           }
         }
         const { messages } = result;
@@ -89,6 +91,14 @@ export function createGalleryDlAdapter(deps) {
           throw new FerryError('NO_MEDIA_FOUND', { internal: `gallery-dl listed no files (${messages.children.length} links)` });
         }
         const info = buildGallery({ messages, pageUrl: url, maxItems: config.limits.maxGalleryItems, fallbackTitle: `${platform?.name ?? 'Image'} gallery` });
+        // A post can point at files on another platform's servers: never offer files from a
+        // platform whose policy does not allow downloads (protected, export-only, turned off).
+        if (deps.policyAllows) {
+          const allowed = info.gallery.items.filter((i) => deps.policyAllows(i.url));
+          info.gallery.skipped.other += info.gallery.items.length - allowed.length;
+          info.gallery.items = allowed;
+          info.thumbnail = allowed[0]?.preview ?? null;
+        }
         info.gallery.input = input;
         return info;
       } finally {
@@ -170,7 +180,8 @@ export function createGalleryDlAdapter(deps) {
         const full = path.join(outDir, name);
         if (path.dirname(full) !== outDir) continue; // only files gallery-dl wrote into this folder
         const st = await stat(full).catch(() => null);
-        if (st?.isFile() && st.size > 0) images.push({ index, path: full });
+        // --filesize-max only works when the server sends Content-Length: check the real size too.
+        if (st?.isFile() && st.size > 0 && st.size <= config.limits.maxImageBytes) images.push({ index, path: full });
       }
       if (!images.length) {
         if (cred.session.blocked.length) throw new FerryError('BLOCKED_DESTINATION', { internal: cred.session.blocked[0].reason });

@@ -88,6 +88,10 @@ export function createJobService({ config, store, probeCache, registry, policies
   async function create({ probeId, entryId = null, request, attest = false, clientKey }) {
     const probe = probeCache.get(probeId);
     if (!probe || probe.clientKey !== clientKey) throw new FerryError('PROBE_EXPIRED');
+    // Gallery mode belongs to gallery probes only (never a playlist entry or a video).
+    if ((request.mode === 'gallery') !== (probe.media.kind === 'gallery')) {
+      throw new FerryError('FORMAT_UNAVAILABLE', { message: 'That download mode is not available for this media.' });
+    }
     let platform = registry.get(probe.platformId);
     let policy = policyFor(platform, attest);
 
@@ -198,6 +202,10 @@ export function createJobService({ config, store, probeCache, registry, policies
     };
 
     try {
+      // Policies can change while a job waits (queued, paused, retried): apply the current one.
+      const platform = registry.get(job.source.platformId);
+      if (!platform) throw new FerryError('PLATFORM_DISABLED', { internal: `unknown platform ${job.source.platformId}` });
+      policyFor(platform, job.source.attested);
       const { files, notes, archiveName = null } = await pipeline.run(store.get(id), { signal, onProgress, onPhase });
       if (timer) clearTimeout(timer);
       const now = Date.now();
@@ -359,6 +367,7 @@ export function createJobService({ config, store, probeCache, registry, policies
         ? {
             files: files.map(({ diskName, ...f }) => ({ ...f, url: `/api/v1/jobs/${job.id}/files/${f.id}` })),
             archiveUrl: files.length > 1 ? `/api/v1/jobs/${job.id}/archive` : null,
+            archiveName: files.length > 1 ? job.output?.archiveName ?? null : null,
             notes: job.output?.notes ?? [],
           }
         : null,
@@ -375,9 +384,22 @@ export function createJobService({ config, store, probeCache, registry, policies
     if (!job.expiresAt || at < job.expiresAt) store.update(id, { expiresAt: at });
   }
 
+  /**
+   * A gallery image was delivered in full. Once every image of the job has
+   * been, the gallery counts as downloaded (same as its ZIP).
+   */
+  function markDelivered(id, fileId, delayMs) {
+    const job = store.get(id);
+    if (!job || job.status !== 'ready') return;
+    const delivered = new Set([...(job.internal.delivered ?? []), fileId]);
+    store.update(id, { internal: { ...job.internal, delivered: [...delivered] } });
+    if (job.output.files.filter((f) => f.kind === 'image').every((f) => delivered.has(f.id))) scheduleRemoval(id, delayMs);
+  }
+
   return {
     create,
     scheduleRemoval,
+    markDelivered,
     authorize,
     cancel,
     pause,

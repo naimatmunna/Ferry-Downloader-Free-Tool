@@ -116,7 +116,8 @@ test('refuses batch files and reports missing executables', async () => {
   assert.throws(() => runProcess('C:\\evil\\run.bat', []), { code: 'INTERNAL_ERROR' });
   assert.throws(() => runProcess('run.CMD', []), { code: 'INTERNAL_ERROR' });
   assert.throws(() => runProcess(NODE, ['ok', 'bad\0arg']), { code: 'INTERNAL_ERROR' });
-  await assert.rejects(runProcess('ferry-definitely-missing-binary', [], { env: env() }), { code: 'INTERNAL_ERROR' });
+  // A missing engine is a clear, operator-fixable state, not a generic "server error".
+  await assert.rejects(runProcess('ferry-definitely-missing-binary', [], { env: env() }), { code: 'ENGINE_UNAVAILABLE' });
 });
 
 test('which finds executables on PATH', async () => {

@@ -61,7 +61,10 @@ export function baseArgs({ proxyUrl, cacheFile }) {
     '--no-colors',
     '--proxy', proxyUrl,
     '-o', 'proxy-env=false',
+    // No browser imitation: neither Firefox headers/ciphers nor the TLS 1.3-only
+    // handshake some extractors (ArtStation, Behance, VSCO) use against bot checks.
     '-o', 'browser=false',
+    '-o', 'tls12=true',
     // Imgur animations as GIF images rather than MP4 videos (which galleries skip).
     '-o', 'extractor.imgur.mp4=false',
     '--cache-file', cacheFile,
@@ -113,18 +116,25 @@ export function rangeSpec(indexes) {
  * Download exactly the chosen files into `outDir`. The `--Print` hook writes
  * a marker line before each file; gallery-dl prints the saved path after each
  * success (see createDownloadTracker).
+ *
+ * `--filter True` matters: without a file filter gallery-dl lets extractors
+ * fast-forward to the first chosen index, and some count posts rather than
+ * files there (DeviantArt), which would shift every index. With it, files are
+ * counted one by one, exactly as in the probe's `--range 1-N`.
  * @param {{ base: string[], input: string, indexes: number[], outDir: string, maxFileBytes: number }} p
  */
 export function downloadArgs({ base, input, indexes, outDir, maxFileBytes }) {
   return [
     ...base,
     '--range', rangeSpec(indexes),
+    '--filter', 'True',
     '--child-filter', 'False',
     '-o', 'downloader.ytdl.enabled=false',
     '-D', outDir,
     '--restrict-filenames', 'ascii',
     '--filesize-max', String(Math.floor(maxFileBytes)),
-    '--Print', `prepare:${GDL_FILE_MARKER} {_url!q}`,
+    // A constant line (the space keeps gallery-dl from reading it as a field name).
+    '--Print', `prepare:${GDL_FILE_MARKER} -`,
     '--', input,
   ];
 }
@@ -355,6 +365,8 @@ export function classifyGalleryError({ errors = [], stderr = '', exitCode = null
   // The egress proxy's own verdicts are the most specific (and security-relevant).
   if (text.includes(BLOCK_REASON_PHRASE)) return 'BLOCKED_DESTINATION';
   if (text.includes(LIMIT_REASON_PHRASE)) return 'FILE_TOO_LARGE';
+  // A bot check refused this server; whatever gallery-dl concluded next ("user not found"…) is a symptom.
+  if (/Cloudflare challenge|ChallengeError/i.test(text)) return 'SOURCE_RATE_LIMITED';
   for (const e of errors) {
     if (ERROR_NAMES[e.name]) return ERROR_NAMES[e.name];
     const code = classifyEngineError(`${e.name}: ${e.message}`, '');

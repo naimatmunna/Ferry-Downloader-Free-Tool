@@ -336,8 +336,8 @@ minimal environment, hard timeout and stall watchdog.
 
 **Hardened profile (every run):** `--config-ignore` (no config files),
 `--no-input`, `--proxy <per-job egress credentials>` with
-`-o proxy-env=false`, `-o browser=false` (no browser header/TLS imitation —
-the same no-impersonation rule as yt-dlp), `--cache-file` inside the job's
+`-o proxy-env=false`, `-o browser=false -o tls12=true` (no browser header/TLS
+imitation — the same no-impersonation rule as yt-dlp), `--cache-file` inside the job's
 temp directory, `--http-timeout 30 -R 3`. Never `--exec`, cookies,
 `--username`/`--password`, `--netrc`, `-c`/`--config*` or post-processors
 other than the stdout marker below.
@@ -362,22 +362,27 @@ other than the stdout marker below.
    `index` is the file's 1-based position in gallery-dl's output; preview
    images go through the signed thumbnail proxy. Item URLs stay server-side.
 
-Policy handling is identical to the yt-dlp path: the effective policy is
-checked before gallery-dl runs, re-checked against the post's canonical URL
-after extraction, and `attestation` platforms need the user's confirmation
-when the job is created.
+Policy handling matches the yt-dlp path: the effective policy is checked
+before gallery-dl runs, `attestation` platforms need the user's confirmation
+when the job is created, and the policy is applied again when a job starts
+(queued, paused or retried jobs follow runtime overrides). gallery-dl only runs
+the platform's own extractor (no links to other sites), and files hosted on a
+platform whose policy does not allow downloads are never offered.
 
 **Job request** — `{ mode: 'gallery', gallery: { items: [1, 3, 4] } }`; every
 index must exist in the probe.
 
 **Download** — the same input (the followed child URL when step 2 applied)
-with `--range 1,3,4`, `--child-filter False` (no child extractors),
+with `--range 1,3,4`, `--filter True` (any file filter stops extractors from
+fast-forwarding by *posts* — DeviantArt does — so indexes count files exactly as in
+the probe), `--child-filter False` (no child extractors),
 `-o downloader.ytdl.enabled=false`, `-D <tmp>/gallery`,
 `--restrict-filenames ascii`, `--filesize-max <MAX_IMAGE_MB>` and
-`--Print "prepare:FERRY_GDL_FILE {_url!q}"`. gallery-dl downloads in index
+`--Print "prepare:FERRY_GDL_FILE -"` (a constant line). gallery-dl downloads in index
 order and prints the marker before each file and the saved path after each
 success, so marker *k* belongs to the *k*-th selected index; a missing path
-line means that file failed. The egress proxy enforces the job's byte cap.
+line means that file failed. The egress proxy enforces the job's byte cap, and a file larger than
+`MAX_IMAGE_MB` is dropped even when the server sent no `Content-Length`.
 
 **Finalize (per image)** — magic-byte sniff (`adapters/http.js#sniffImage`;
 anything that is not JPEG/PNG/GIF/WebP/AVIF is rejected), ffprobe (one image
@@ -388,11 +393,13 @@ stream, at most `MAX_IMAGE_MEGAPIXELS`), then an FFmpeg re-encode with
 |---|---|
 | JPEG | JPEG (`-q:v 2`), turned upright from its EXIF orientation |
 | PNG, lossless WebP, any image with alpha | PNG |
-| GIF (still or animated) | GIF (palettegen/paletteuse) |
+| GIF (still or animated) | GIF (a palette per frame, so memory stays flat) |
 | Lossy WebP, AVIF (no alpha) | JPEG |
 | Animated WebP / APNG | GIF |
 
-The output is probed again before it is offered. Files are named
+Animations are limited to 2 Gpx decoded in total (frames × width × height):
+longer GIFs are refused, and APNG/WebP animations stop there. The output is
+probed again before it is offered. Files are named
 `<template> - 01.jpg`, `<template> - 02.png`… (the number is the item's
 position in the gallery) and the existing `/archive` route streams them as
 `<template>.zip`. Some images failing is not fatal (note `gallery-partial`);
@@ -468,7 +475,8 @@ continues from where it stopped (yt-dlp `--continue`).
 ## 12. Frontend architecture
 
 * **Routes:** `/` (downloader), `/downloads`, `/history`, `/settings`,
-  `/platforms`, `/share` (PWA share-target entry), `*` (not found).
+  `/sites` (`/platforms` redirects there), `/share` (PWA share-target entry),
+  `*` (not found).
 * **Data flow:** detection runs on every keystroke with no network: the client
   builds the `@ferry/shared` registry from `GET /api/v1/platforms` (effective
   policies, path/pattern rules as regex sources), cached in local storage with its
@@ -482,15 +490,30 @@ continues from where it stopped (yt-dlp `--continue`).
 * **Stores:** `settings` (persisted), `history` (persisted, capped at 500
   entries, opt-out in Settings), `downloads` (active jobs + tokens, persisted so
   a reload re-attaches to running jobs).
-* **Design system:** CSS variables for colour/spacing/radius/type in
-  `styles/tokens.css`, consumed by Tailwind v4 `@theme`. Light/dark/system
-  themes; RTL support via logical properties.
-* **i18n:** dictionary-based (`en`, `es`, `ar`), `dir` switches for Arabic. English
-  ships in the main bundle; other languages load before first paint (no flash).
-  URL fields stay left-to-right inside RTL layouts.
-* **Code splitting:** the analysis workspace, playlist/batch panels and secondary
-  screens are separate chunks, prefetched as soon as a link is typed (initial JS
-  130 KB gzip, see `PERFORMANCE.md`).
+* **Design system:** the approved mockups are `design/ferry-redesign-mockups.html`.
+  CSS variables in `styles/index.css` (sun yellow `#FFD43B` for "start here",
+  ink, paper, canvas, four status colours), consumed by Tailwind v4
+  `@theme inline`; Archivo variable font (width axis for the wide headings).
+  Light/dark/system themes.
+* **Site statuses:** `lib/siteStatus.js` maps each site's *effective* policy to one
+  plain status (free to save, your own or with permission, official download
+  only, protected, any other site, turned off here, not on this server yet) and
+  groups them into the Home shelves. Statuses never come from extractor
+  reliability: a reachable site is not an allowed one.
+* **Site logos:** `scripts/make-brand-icons.mjs` vendors path data from Simple
+  Icons (CC0) into `lib/brands/featured.js` (sites on Home, main bundle) and
+  `lib/brands/all.js` (the rest, loaded on demand); sites without a logo get a
+  letter tile. No icon package ships as a dependency and builds never touch the
+  network.
+* **Live status:** `state/liveStatus.js` reads `GET /api/v1/status` (at most every
+  30 s, failures silent) and shows a dot only when the server has data: green
+  working, orange some links fail, red failing; the copy names the real window
+  (last hour, or last 24 hours when the last hour is quiet).
+* **Copy:** English only. Every string lives in `lib/i18n/en.js`, read through
+  `t()`, so the same thing is always called the same.
+* **Code splitting:** the analysis workspace, playlist/batch/gallery panels and
+  secondary screens are separate chunks, prefetched as soon as a link is typed
+  (initial JS 145 KB gzip including the Home logos, see `PERFORMANCE.md`).
 * **PWA:** web manifest with a share target (Android), a small service worker
   that caches the app shell only (never API responses or media).
 
