@@ -81,6 +81,8 @@ test('engine errors map to specific, user-meaningful codes', () => {
     // Live wording (2026-11-24): sign-in walls Ferry will never pass, so "the site may have changed" would mislead.
     ['ERROR: [Reddit] 6rrwyj: Account authentication is required. Use --cookies-from-browser or --cookies for the authentication.', 'AUTH_REQUIRED'],
     ['ERROR: [vimeo] 33951933: The web client only works when logged-in. Use --cookies, --cookies-from-browser, --username and --password', 'AUTH_REQUIRED'],
+    // Extractors that only work while posing as a browser: Ferry never impersonates, so retrying can't help.
+    ['ERROR: [Bandcamp] youtube-dl-test-song: The extractor is attempting impersonation, but no impersonate target is available. See  https://github.com/yt-dlp/yt-dlp#impersonation  for information on installing the required dependencies', 'UNSUPPORTED_PLATFORM'],
   ];
   for (const [stderr, code] of cases) assert.equal(classifyEngineError(stderr), code, stderr);
   assert.equal(classifyEngineError('weird'), 'EXTRACTION_FAILED');

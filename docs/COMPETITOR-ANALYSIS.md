@@ -249,8 +249,12 @@ downloaders from being featured
   (Developer Policies III.E.1), and two courts treated solving its cipher as
   circumvention ([ToS](https://www.youtube.com/static?template=terms&hl=en&gl=US);
   [Developer Policies](https://developers.google.com/youtube/terms/developer-policies)).
-  Ferry therefore defaults YouTube to **official export only** (Studio, Takeout,
-  Premium offline).
+  Ferry first defaulted YouTube to **official export only**. On 2026-11-24 the
+  owner moved it to **your own or with permission** (attestation): people confirm
+  they uploaded the video, it carries a Creative Commons licence, or the rights
+  holder allowed it. Ferry still never solves the signature cipher (no JS
+  runtime), so formats behind it stay unavailable, and the official routes
+  (Studio, Takeout, Premium offline) stay listed.
 * Ferry ships no PO-token, cookie, impersonation, IP-rotation or DRM capability,
   avoids music-ripping marketing, and uses only self-made or openly licensed
   test media — the exact signals rights holders cite.

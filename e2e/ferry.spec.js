@@ -9,6 +9,9 @@ test.beforeEach(async ({ page }) => {
 test('paste a link: platform and policy are detected before anything is fetched', async ({ page }) => {
   await page.getByLabel('Link to a video, song or post').fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
   await expect(page.locator('#gate-status')).toContainText('YouTube');
+  await expect(page.locator('#gate-status')).toContainText('Your own or with permission');
+  await page.getByLabel('Link to a video, song or post').fill('https://www.threads.com/@ferry/post/C3abcDEF123');
+  await expect(page.locator('#gate-status')).toContainText('Threads');
   await expect(page.locator('#gate-status')).toContainText('Official download only');
   await page.getByLabel('Link to a video, song or post').fill('not a link at all');
   await expect(page.locator('#gate-status')).toContainText("That doesn't look like a link yet.");
@@ -24,17 +27,22 @@ function shelfOfPlatform(p) {
 
 test('home shows where Ferry works, grouped by what each site allows', async ({ page, request }) => {
   const { platforms } = await (await request.get('/api/v1/platforms')).json();
-  const count = (shelf) => platforms.filter((p) => shelfOfPlatform(p) === shelf).length;
+  const count = (shelf) => {
+    const n = platforms.filter((p) => shelfOfPlatform(p) === shelf).length;
+    return n === 1 ? '1 site' : `${n} sites`;
+  };
   const where = page.getByRole('region', { name: 'Where Ferry works' });
   const direct = where.getByRole('group', { name: 'Download directly' });
   const official = where.getByRole('group', { name: 'Official download only' });
   const protectedSites = where.getByRole('group', { name: 'Protected' });
   await expect(direct.getByRole('link', { name: /^TikTok/ })).toBeVisible();
-  await expect(direct).toContainText(`${count('direct')} sites`);
-  await expect(official.getByRole('link', { name: /^YouTube/ })).toBeVisible();
-  await expect(official).toContainText(`${count('official')} sites`);
+  await expect(direct).toContainText(count('direct'));
+  // The best-known sites lead the "Download directly" shelf (YouTube, Facebook and SoundCloud need a permission tick).
+  for (const name of [/^YouTube:/, /^Facebook:/, /^SoundCloud:/]) await expect(direct.getByRole('link', { name })).toBeVisible();
+  await expect(official.getByRole('link', { name: /^Threads/ })).toBeVisible();
+  await expect(official).toContainText(count('official'));
   await expect(protectedSites.getByRole('link', { name: /^Netflix/ })).toBeVisible();
-  await expect(protectedSites).toContainText(`${count('protected')} sites`);
+  await expect(protectedSites).toContainText(count('protected'));
   await direct.getByRole('link', { name: /^TikTok/ }).click();
   await expect(page).toHaveURL(/\/sites\?site=tiktok$/);
 });
@@ -47,7 +55,7 @@ test('live status dots come from the server and say what they mean', async ({ pa
           tiktok: { status: 'operational', window: '1h', attempts: 12, successRate: 91.7 },
           reddit: { status: 'failing', window: '24h', attempts: 5, successRate: 20 },
           vimeo: { status: 'unknown', window: '24h', attempts: 1, successRate: 100 },
-          youtube: { status: 'operational', window: '1h', attempts: 9, successRate: 100 },
+          threads: { status: 'operational', window: '1h', attempts: 9, successRate: 100 },
         },
       },
     }),
@@ -59,11 +67,11 @@ test('live status dots come from the server and say what they mean', async ({ pa
   await expect(where.getByRole('link', { name: /^Reddit.*Failing, last 24 hours/ })).toBeVisible();
   await expect(where.getByRole('link', { name: /^Vimeo/ })).not.toHaveAccessibleName(/Working|Failing|Some links fail/);
   // Official-only and protected sites never get a dot: Ferry doesn't download from them.
-  await expect(where.getByRole('link', { name: /^YouTube:/ })).not.toHaveAccessibleName(/Working/);
+  await expect(where.getByRole('link', { name: /^Threads:/ })).not.toHaveAccessibleName(/Working/);
   const field = page.getByLabel('Link to a video, song or post');
   await field.fill('https://www.tiktok.com/@harborlight/video/7431982044417805611');
   await expect(page.locator('#gate-status')).toContainText('Working, last hour');
-  await field.fill('https://www.youtube.com/watch?v=Xb3kP9qLm2c');
+  await field.fill('https://www.threads.com/@ferry/post/C3abcDEF123');
   await expect(page.locator('#gate-status')).toContainText('Official download only');
   await expect(page.locator('#gate-status')).not.toContainText('Working');
 });
@@ -88,8 +96,8 @@ test('protected and export-only platforms explain the official route', async ({ 
   await analyze(page, 'https://www.netflix.com/title/80057281');
   const alert = page.getByRole('alert');
   await expect(alert).toContainText('protects its media');
-  await analyze(page, 'https://youtu.be/dQw4w9WgXcQ');
-  await expect(page.getByRole('alert')).toContainText('YouTube Studio');
+  await analyze(page, 'https://www.threads.com/@ferry/post/C3abcDEF123');
+  await expect(page.getByRole('alert')).toContainText('Download your information');
 });
 
 test('video with sound: preview, real qualities, MP4 delivered intact', async ({ page }) => {
@@ -224,7 +232,7 @@ test('sites: search, filter, logos and official routes', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Sites', level: 1 })).toBeVisible();
   const search = page.getByRole('searchbox', { name: 'Search sites' });
   await search.fill('youtu');
-  await page.getByRole('button', { name: /^YouTube Official download only/ }).click();
+  await page.getByRole('button', { name: /^YouTube Your own or with permission/ }).click();
   const detail = page.getByRole('region', { name: 'YouTube' });
   // Keyboard users land on the detail right away instead of tabbing past every card.
   await expect(detail.getByRole('heading', { name: 'YouTube', level: 2 })).toBeFocused();
@@ -236,7 +244,7 @@ test('sites: search, filter, logos and official routes', async ({ page }) => {
   // A site without a logo in Simple Icons gets a letter tile, never an empty square.
   await page.getByRole('button', { name: /^All \d+/ }).click();
   await search.fill('linkedin');
-  await expect(page.getByRole('button', { name: /^LinkedIn Official download only/ }).locator('[data-monogram]')).toHaveText('L');
+  await expect(page.getByRole('button', { name: /^LinkedIn Your own or with permission/ }).locator('[data-monogram]')).toHaveText('L');
 });
 
 test('sites: a Home logo opens that site on the Sites page', async ({ page }) => {
@@ -253,7 +261,7 @@ test('sites: a Home logo opens that site on the Sites page', async ({ page }) =>
 
 test('a video with extra files (the thumbnail) can be saved as one ZIP', async ({ page }) => {
   await analyze(page, `${FIXTURES}/page.html`);
-  await expect(page.getByRole('heading', { name: 'Your file' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your file' })).toBeVisible({ timeout: 90_000 }); // reading a whole page can take a while
   await confirmRights(page);
   await page.getByText('More options').first().click();
   await page.getByRole('switch', { name: 'Save the thumbnail image too' }).check();

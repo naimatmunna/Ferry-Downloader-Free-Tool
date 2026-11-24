@@ -174,15 +174,15 @@ Supports `If-None-Match` (`304`).
       "id": "youtube", "name": "YouTube", "kind": "video",
       "hosts": ["youtube.com", "youtu.be", "youtube-nocookie.com"],
       "paths": [], "patterns": [],
-      "content": ["video", "audio", "playlist", "subtitles"],
-      "category": 2, "policy": "export_only", "overridden": false, "reason": null,
-      "attestation": null,
+      "content": ["video", "audio", "live", "playlist", "subtitles"],
+      "category": 4, "policy": "attestation", "overridden": false, "reason": null,
+      "attestation": "YouTube's terms allow downloading only through YouTube's own features. Only download videos you uploaded, that carry a Creative Commons licence, or that the rights holder has allowed you to save.",
       "routes": [
-        { "label": "Your own uploads: YouTube Studio download", "url": "https://studio.youtube.com" },
-        { "label": "Google Takeout (your channel's videos)", "url": "https://takeout.google.com" }
+        { "label": "Your own uploads: YouTube Studio > Content > Download", "url": "https://support.google.com/youtube/answer/56100?hl=en" },
+        { "label": "All your uploads: Google Takeout (YouTube and YouTube Music)", "url": "https://takeout.google.com/" }
       ],
-      "restrictions": "YouTube's terms and API policies prohibit downloading except through YouTube's own features.",
-      "auth": "none", "officialApi": "YouTube Data API (metadata only)", "reliability": "unsupported",
+      "restrictions": "YouTube's terms and API policies forbid downloading outside YouTube's own features, and courts in the US and Germany have treated its signature cipher as copy protection, so Ferry never solves it and some formats may be missing.",
+      "auth": "sometimes", "officialApi": "YouTube Data API v3 (metadata only)", "reliability": "experimental",
       "available": true, "lastChecked": "2026-11-24"
     },
     {

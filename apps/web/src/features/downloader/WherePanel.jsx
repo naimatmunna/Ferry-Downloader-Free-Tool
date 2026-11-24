@@ -16,9 +16,10 @@ import { cx } from '../../components/ui.jsx';
 
 /** Shown first, in this order, in whichever shelf their current policy puts them. */
 export const FEATURED = [
-  'tiktok', 'instagram', 'x', 'vimeo', 'twitch', 'reddit', 'pinterest', 'bluesky', 'dailymotion', 'tumblr', 'internet-archive',
-  'peertube', 'flickr', 'imgur', 'kick', 'rumble', 'bilibili', 'mastodon', 'ted', 'nasa', 'wikimedia-commons',
-  'youtube', 'facebook', 'soundcloud', 'bandcamp', 'threads', 'snapchat', 'vk',
+  // The sites people paste most come first (phones show the first 7 of a shelf, wider screens 13).
+  'tiktok', 'youtube', 'instagram', 'facebook', 'x', 'soundcloud', 'vimeo', 'twitch', 'reddit', 'pinterest', 'bluesky', 'internet-archive', 'dailymotion',
+  'tumblr', 'vk', 'peertube', 'flickr', 'imgur', 'kick', 'rumble', 'bilibili', 'mastodon', 'ted', 'nasa', 'wikimedia-commons', 'snapchat', 'bandcamp',
+  'threads',
   'netflix', 'spotify', 'apple-music', 'tidal', 'deezer', 'hbo-max',
 ];
 

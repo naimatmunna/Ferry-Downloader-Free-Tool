@@ -21,7 +21,8 @@ const RULES = [
   [/HTTP Error 429|Too Many Requests|rate[- ]?limit/i, 'SOURCE_RATE_LIMITED'],
   [/Requested format is not available|requested formats? (is|are) not available/i, 'FORMAT_UNAVAILABLE'],
   [/HTTP Error 404|404: Not Found|HTTP Error 410|Video unavailable|video is unavailable|has been removed|no longer available|does not exist|was deleted|not found/i, 'CONTENT_UNAVAILABLE'],
-  [/Unsupported URL/i, 'UNSUPPORTED_PLATFORM'],
+  // An extractor that only works while posing as a browser: Ferry never impersonates.
+  [/Unsupported URL|attempting impersonation, but no impersonate target/i, 'UNSUPPORTED_PLATFORM'],
   [/No video formats found|no suitable formats|There'?s no video|no media found|No playable/i, 'NO_MEDIA_FOUND'],
   [/timed out|Read timed out|Connection (reset|refused|aborted)|Temporary failure in name resolution|getaddrinfo|Network is unreachable|Unable to connect|RemoteDisconnected|IncompleteRead|Tunnel connection failed: 50[23]|SSL: |EOF occurred|Remote end closed/i, 'NETWORK_ERROR'],
   [/Postprocessing|Conversion failed|ffmpeg (exited|error)|Error opening output|Invalid data found when processing input|moov atom not found|Could not find codec parameters/i, 'CONVERSION_FAILED'],

@@ -10,7 +10,8 @@ and one ZIP.
   warnings when a conversion can't add quality; "copied" vs "converted" stated on every file.
 * **Rules built in:** a registry of 249 platforms in five permission categories, enforced before
   anything is fetched and changeable at runtime. Protected and paid content stays protected;
-  YouTube is official-export-only by default (see [docs/RESEARCH.md](docs/RESEARCH.md)).
+  YouTube, Facebook, SoundCloud and other sites whose terms restrict downloading ask the user to
+  confirm they own the media or have permission (see [docs/RESEARCH.md](docs/RESEARCH.md)).
 * **Private:** no accounts, ads or trackers; history stays on the device; files leave the server
   within the hour (or right after saving).
 * **Secure:** every engine connection goes through an egress guard (no SSRF, no DNS rebinding,

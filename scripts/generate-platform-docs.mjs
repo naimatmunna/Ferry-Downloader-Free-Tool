@@ -82,9 +82,11 @@ ${[1, 2, 3, 4, 5].map((c) => `| ${c} | ${CATEGORIES[c].label} | ${POLICY_TEXT[CA
 
 Being technically extractable never makes a platform "authorized": category 4 platforms require the
 user to confirm they own the content or have the rights holder's permission, and their official
-routes are always shown. YouTube is category 2 by default (official export routes only) because its
-terms and API policies prohibit downloading and courts in the US and Germany have treated its
-signature cipher as a technical protection measure — see \`RESEARCH.md\`.
+routes are always shown. By the operator's decision of 2026-11-24, YouTube, YouTube Music, Facebook,
+SoundCloud, Bandcamp, Snapchat, LinkedIn and VK, previously official-export-only, are category 4 too.
+Ferry still never solves YouTube's JavaScript challenges (courts in the US and Germany have treated
+its signature cipher as a technical protection measure), so some YouTube formats may be missing —
+see \`RESEARCH.md\`.
 
 ## Reliability scale
 

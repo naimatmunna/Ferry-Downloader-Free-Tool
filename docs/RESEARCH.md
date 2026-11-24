@@ -91,10 +91,10 @@ Ferry's registry holds **249 distinct platforms** (aliases folded) plus the
 
 | Category | Count | Default behaviour |
 |---|---|---|
-| 1. Officially supported downloads | 22 | Allowed (Internet Archive, PeerTube, podcast RSS…); SoundCloud/Bandcamp hand off to their own buttons |
-| 2. Authorized user-owned exports | 7 | Official export only (YouTube Studio/Takeout, Meta "Download your information", …) |
+| 1. Officially supported downloads | 20 | Allowed (Internet Archive, PeerTube, podcast RSS…) |
+| 2. Authorized user-owned exports | 1 | Official export only (Threads, which no engine supports) |
 | 3. Openly licensed media | 12 | Allowed (Wikimedia Commons, NASA, LibriVox, Jamendo…) |
-| 4. Permission-restricted | 138 | User confirms ownership/permission; official routes shown |
+| 4. Permission-restricted | 146 | User confirms ownership/permission; official routes shown (YouTube, Facebook, SoundCloud, Bandcamp and others joined on 2026-11-24, see below) |
 | 5. Protected | 70 | Refused (DRM, paywalls, sign-in walls, dead services) |
 
 Machine-readable permission signals exist for only ~15 platforms; Ferry uses
@@ -108,11 +108,21 @@ and Restrictions"), the YouTube API Services Terms (§16.3 grants no rights to
 the audiovisual content), and the Developer Policies (III.E.1 prohibits
 downloading, caching and offline storage; III.I.14 prohibits retrieving data
 outside the API). A Creative Commons label is permission from the uploader, not
-from YouTube. **Decision:** YouTube is category 2 (official export only) by
-default; yt-dlp's YouTube extractors are excluded at the engine level
-(`--use-extractors default,-youtube(:.*)?,…`) so embeds and redirects cannot
-reach them either. Operators can change the policy; the report sets out the
-least-exposed configuration and its risks.
+from YouTube. **Original decision:** YouTube was category 2 (official export
+only), with yt-dlp's YouTube extractors excluded at the engine level.
+
+**Owner's decision (2026-11-24), replacing it:** every platform with a working
+engine downloads once the user confirms they own the media or have permission
+(category 4). This moved YouTube, YouTube Music, Facebook, SoundCloud,
+Bandcamp, Snapchat, LinkedIn and VK out of export-only; their official routes
+stay listed, and DRM and paid sign-in-only services stay blocked. Ferry still
+runs yt-dlp **without** a JavaScript runtime, so it never solves YouTube's
+signature or "n" challenges, the step the courts in §4 treated as
+circumvention. YouTube then offers only the formats its JS-free clients return
+(checked live on 2026-11-24: a 4K Creative Commons video listed 144p–2160p and
+"Me at the zoo" downloaded, with yt-dlp warning that some formats may be
+missing). The legal risks in §4 stay with the operator, who can change
+any policy at runtime.
 
 ## 4. Legal landscape (see `legal_landscape.md`)
 
@@ -165,7 +175,7 @@ compliance-first scope.
 |---|---|
 | Permission registry with five categories and runtime overrides | `packages/shared/src/platforms/*`, `apps/server/src/policy/policies.js` |
 | Policy checked before any fetch, re-checked against the extractor actually used and the final URL | `apps/server/src/media/probeService.js` |
-| YouTube extraction off by design; no JS runtime, cookies, impersonation, PO tokens | `apps/server/src/engines/ytdlp.js` |
+| YouTube downloads once the user confirms permission (owner's decision, 2026-11-24); still no JS runtime, cookies, impersonation or PO tokens | `packages/shared/src/platforms/catalog.js`, `apps/server/src/engines/ytdlp.js` |
 | DRM as a hard stop (`has_drm` true or maybe) | `apps/server/src/media/normalize.js` |
 | Official APIs first (Internet Archive, PeerTube) | `apps/server/src/adapters/` |
 | Image galleries through gallery-dl (allowlisted entries only, images only, no cookies/logins/impersonation, every image re-encoded) | `apps/server/src/adapters/galleryDl.js`, `apps/server/src/engines/galleryDl.js`, `apps/server/src/media/gallery.js` |
