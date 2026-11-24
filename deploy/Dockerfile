@@ -18,6 +18,7 @@ RUN npm run build \
 # ---------- runtime ----------
 FROM node:24-trixie-slim AS runtime
 ARG YTDLP_VERSION=2026.11.23
+ARG GALLERYDL_VERSION=1.32.21
 
 # FFmpeg and Python from Debian's signed repositories. tini reaps zombie engine processes.
 RUN apt-get update \
@@ -29,6 +30,12 @@ RUN python3 -m venv /opt/yt-dlp \
  && /opt/yt-dlp/bin/pip install --no-cache-dir "yt-dlp[default]==${YTDLP_VERSION}" \
  && (/opt/yt-dlp/bin/pip uninstall -y curl_cffi curl-cffi >/dev/null 2>&1 || true) \
  && ! /opt/yt-dlp/bin/python -c "import curl_cffi" 2>/dev/null
+
+# gallery-dl (GPL-2.0-only, run as a separate program) pinned, in its own venv so it can
+# never import yt-dlp (its `ytdl:` hand-off is also disabled per run). Image galleries only.
+RUN python3 -m venv /opt/gallery-dl \
+ && /opt/gallery-dl/bin/pip install --no-cache-dir "gallery-dl==${GALLERYDL_VERSION}" \
+ && ! /opt/gallery-dl/bin/python -c "import yt_dlp" 2>/dev/null
 
 RUN useradd --system --uid 10001 --home-dir /data --shell /usr/sbin/nologin ferry \
  && mkdir -p /data && chown ferry:ferry /data
@@ -45,6 +52,7 @@ ENV NODE_ENV=production \
     PORT=8787 \
     DATA_DIR=/data \
     YTDLP_PATH=/opt/yt-dlp/bin/yt-dlp \
+    GALLERYDL_PATH=/opt/gallery-dl/bin/gallery-dl \
     FFMPEG_PATH=/usr/bin/ffmpeg \
     FFPROBE_PATH=/usr/bin/ffprobe \
     PYTHONDONTWRITEBYTECODE=1

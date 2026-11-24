@@ -23,19 +23,21 @@ const ENGINE_TEXT = {
   'yt-dlp': 'yt-dlp',
   'internet-archive-api': 'Internet Archive Metadata API',
   'peertube-api': 'PeerTube REST API',
-  'gallery-dl': 'gallery-dl (planned adapter)',
+  'gallery-dl': 'gallery-dl',
   streamlink: 'Streamlink (planned adapter)',
   direct: 'Direct HTTP',
   none: '—',
 };
 const VIDEO_OUT = 'MP4, WebM, MKV, MOV, AVI';
 const AUDIO_OUT = 'MP3, M4A, AAC, WAV, FLAC, Opus, OGG';
+const IMAGE_OUT = 'Images: JPEG, PNG, GIF (re-encoded, metadata removed; several as one ZIP)';
 
 const esc = (s) => String(s ?? '').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
 
 function outputs(p) {
   if (!['allowed', 'attestation'].includes(p.policy)) return '—';
-  if (['gallery-dl', 'streamlink', 'none'].includes(p.engine)) return '— (engine not installed)';
+  if (p.engine === 'gallery-dl') return p.auth === 'always' ? '— (needs a sign-in)' : IMAGE_OUT;
+  if (['streamlink', 'none'].includes(p.engine)) return '— (engine not installed)';
   const parts = [];
   if (p.content.includes('video')) parts.push(`${VIDEO_OUT}; audio: ${AUDIO_OUT}`);
   else if (p.content.includes('audio')) parts.push(AUDIO_OUT);

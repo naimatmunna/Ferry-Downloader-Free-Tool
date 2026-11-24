@@ -36,7 +36,7 @@ with compliance bolted on.
 |---|---|---|---|
 | yt-dlp | 2026.11.23 (+ yt-dlp-ejs 0.8.0) | Unlicense | **Primary extractor.** Python ≥ 3.11. 13 security advisories in 3 years, all fixed by 2026.07.04; never self-update in production. |
 | FFmpeg | 9.0.2 local (9.1 latest, 2026-11-20) | LGPL/GPL by build | **Processing.** Local-files only; MOV rejects VP9/AV1/Opus, WebM accepts only VP8/VP9/AV1 + Opus/Vorbis (verified). |
-| gallery-dl | 1.32.21 | GPL-2.0-only | Planned adapter for image galleries (~358 sites/instances). |
+| gallery-dl | **1.32.21** (pinned; installed 2026-11-24) | GPL-2.0-only | **Image galleries and carousels** for registry entries with `engine: 'gallery-dl'` (~358 sites/instances upstream; Ferry enables only its allowlisted entries). Runs only as a separate program, never imported. |
 | Streamlink | 8.6.3 | BSD-2-Clause | Optional future live recording; Twitch/Kick plugins rely on browser anti-bot flows → excluded. |
 | Cobalt | — | AGPL-3.0 API, CC-BY-NC-SA web | **Rejected**: dormant since 2026-04-06, hosted instances off-limits, uses PO-token generation and IP rotation. |
 | you-get, lux, aria2 | stale | various | Rejected (unmaintained; aria2 has unpatched 2026 CVEs). |
@@ -52,6 +52,33 @@ Key engineering facts that shaped the code:
 * `--max-filesize` is not enforced for HLS/DASH → the egress proxy enforces a
   per-job byte cap.
 * yt-dlp flags DRM as `has_drm: true|'maybe'`; Ferry drops both.
+* **gallery-dl 1.32.21** (`pip install "gallery-dl==1.32.21"`; its only dependency
+  is `requests`). Local development: the project `.venv` (found automatically, or
+  `GALLERYDL_PATH`). Docker: its own venv at `/opt/gallery-dl`, so it cannot import
+  yt-dlp. **Licence:** GPL-2.0-only. Ferry runs it as a subprocess (mere
+  aggregation) and never imports or modifies it. Anyone distributing an image
+  that contains it must meet the GPLv2 terms for gallery-dl itself: keep its
+  licence notices (the wheel ships them, and its Python source). This is not
+  legal advice.
+* gallery-dl hardening, verified against the 1.32.21 source:
+  * `--config-ignore` skips `%APPDATA%\gallery-dl\config.json`,
+    `~/.config/gallery-dl/…` and `/etc/gallery-dl.conf`.
+  * `-j` reports extractor failures inside the JSON as `[-1, {error, message}]`
+    with exit code 0; Ferry classifies those.
+  * `--range` indexes count every file message, so the probe and the download
+    select the same files.
+  * `--child-filter False` stops child extractors when downloading.
+  * `-o downloader.ytdl.enabled=false` blocks the `ytdl:` hand-off that some
+    extractors use for embeds (Behance, ArtStation and VSCO emit
+    `ytdl:<YouTube/Vimeo/HLS URL>`). In the probe, those items count as videos
+    and are never offered.
+  * `-o browser=false` turns off the Firefox header and TLS-cipher imitation
+    that the ArtStation, Behance and VSCO extractors switch on by default. This
+    applies the same no-impersonation rule as yt-dlp's missing `curl_cffi`, so
+    those three sites may refuse requests.
+  * No extractor sets an `X-Forwarded-For` geo-bypass by default, and Ferry
+    passes no `--xff`.
+  * Federated Mastodon posts need gallery-dl's `mastodon:<url>` instance prefix.
 
 ## 3. Platforms and permission (see `PLATFORM-COMPATIBILITY.md`)
 
@@ -137,6 +164,7 @@ compliance-first scope.
 | YouTube extraction off by design; no JS runtime, cookies, impersonation, PO tokens | `apps/server/src/engines/ytdlp.js` |
 | DRM as a hard stop (`has_drm` true or maybe) | `apps/server/src/media/normalize.js` |
 | Official APIs first (Internet Archive, PeerTube) | `apps/server/src/adapters/` |
+| Image galleries through gallery-dl (allowlisted entries only, images only, no cookies/logins/impersonation, every image re-encoded) | `apps/server/src/adapters/galleryDl.js`, `apps/server/src/engines/galleryDl.js`, `apps/server/src/media/gallery.js` |
 | Egress guard proxy (SSRF, DNS rebinding, byte caps) | `apps/server/src/security/egressProxy.js` |
 | Remux first, transcode only incompatible streams, honest labels | `apps/server/src/media/finalize.js`, `packages/shared/src/formats.js` |
 | No IPs in logs, on-device history, no trackers | `apps/server/src/logger.js`, `apps/web/src/state/history.js` |

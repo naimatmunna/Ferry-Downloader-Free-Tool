@@ -4,6 +4,7 @@
  * planner, finalizer and UI do not change.
  */
 import { createDirectAdapter } from './direct.js';
+import { createGalleryDlAdapter } from './galleryDl.js';
 import { createInternetArchiveAdapter } from './internetArchive.js';
 import { createPeerTubeAdapter } from './peertube.js';
 import { createYtDlpAdapter } from './ytdlp.js';
@@ -14,8 +15,9 @@ import { createYtDlpAdapter } from './ytdlp.js';
  * @property {import('pino').Logger} logger
  * @property {{ issue: Function }} egress
  * @property {Function} fetch                 guarded fetch
- * @property {{ ytdlp: string, ffmpeg: string, ffprobe: string }} engines
+ * @property {{ ytdlp: string, ffmpeg: string, ffprobe: string, galleryDl?: string }} engines
  * @property {() => string[]} excludedExtractors
+ * @property {(url: string) => string|null} [platformOf]  registry platform id of a URL found by an engine
  *
  * @typedef {object} DownloadContext
  * @property {object} job
@@ -31,7 +33,9 @@ import { createYtDlpAdapter } from './ytdlp.js';
 
 /** @param {AdapterDeps} deps */
 export function createAdapters(deps) {
-  const list = [createInternetArchiveAdapter(deps), createPeerTubeAdapter(deps), createDirectAdapter(deps), createYtDlpAdapter(deps)];
+  // Order matters: gallery-dl platforms keep their page and image links, while
+  // direct video/audio files on any host still go to the direct adapter.
+  const list = [createInternetArchiveAdapter(deps), createPeerTubeAdapter(deps), createGalleryDlAdapter(deps), createDirectAdapter(deps), createYtDlpAdapter(deps)];
   return {
     list,
     /**

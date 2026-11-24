@@ -205,6 +205,8 @@ export function normalizeInfo(info, { maxPlaylistItems = 50 } = {}) {
     id: str(String(info.id ?? ''), 80),
   };
 
+  if (info._type === 'gallery') return normalizeGallery(info, base);
+
   if (info._type === 'playlist' || info._type === 'multi_video') {
     const entries = (Array.isArray(info.entries) ? info.entries : [])
       .filter(Boolean)
@@ -263,12 +265,60 @@ export function normalizeInfo(info, { maxPlaylistItems = 50 } = {}) {
   };
 }
 
-/** Public projection (no raw formats, no internal URLs). */
-export function publicMedia(media, { thumbnailUrl = null } = {}) {
-  const { raw, thumbnailSource, entries, ...rest } = media;
+const count = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
+
+/**
+ * Image galleries from the gallery-dl adapter. Item URLs and the gallery-dl
+ * input go to `raw` (server-only); the public part keeps what the picker shows.
+ */
+function normalizeGallery(info, base) {
+  const g = info.gallery && typeof info.gallery === 'object' ? info.gallery : {};
+  const items = [];
+  const urls = {};
+  for (const i of Array.isArray(g.items) ? g.items : []) {
+    if (!i || !Number.isInteger(i.index) || i.index < 1 || !isHttpUrl(i.url) || urls[i.index]) continue;
+    urls[i.index] = i.url;
+    items.push({
+      index: i.index,
+      ext: str(i.ext, 5),
+      width: num(i.width),
+      height: num(i.height),
+      sizeBytes: num(i.filesize),
+      previewSource: isHttpUrl(i.preview) ? i.preview : null,
+    });
+  }
+  if (!items.length) throw new FerryError('NO_MEDIA_FOUND', { internal: 'gallery has no images' });
+  const skipped = g.skipped ?? {};
+  return {
+    kind: 'gallery',
+    ...base,
+    durationSec: null,
+    isLive: false,
+    entryCount: items.length,
+    entries: null,
+    gallery: { items, truncated: g.truncated === true, skipped: { videos: count(skipped.videos), other: count(skipped.other), links: count(skipped.links) } },
+    video: { qualities: [], unknown: false },
+    audio: { tracks: [], best: null },
+    subtitles: [],
+    capabilities: { modes: ['gallery'], containers: [], audioFormats: [], trim: false },
+    raw: { formats: [], gallery: { input: str(g.input, 4096), urls } },
+  };
+}
+
+/**
+ * Public projection (no raw formats, no internal URLs). Gallery previews go
+ * through the signed thumbnail proxy (`previewUrl`).
+ * @param {any} media
+ * @param {{ thumbnailUrl?: string|null, previewUrl?: (remote: string) => string|null }} [opts]
+ */
+export function publicMedia(media, { thumbnailUrl = null, previewUrl = () => null } = {}) {
+  const { raw, thumbnailSource, entries, gallery, ...rest } = media;
   return {
     ...rest,
     thumbnailUrl,
     entries: entries ? entries.map(({ url, thumbnailSource: _t, ...e }) => ({ ...e, hasUrl: Boolean(url) })) : null,
+    ...(gallery
+      ? { gallery: { ...gallery, items: gallery.items.map(({ previewSource, ...i }) => ({ ...i, previewUrl: previewSource ? previewUrl(previewSource) : null })) } }
+      : {}),
   };
 }

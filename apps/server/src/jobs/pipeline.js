@@ -1,15 +1,37 @@
 /**
  * The media pipeline for one job attempt:
  *   download (adapter) → ffprobe → finalize (ffmpeg) → verify → extras → cleanup
+ * Galleries: download (gallery-dl) → per image: sniff → ffprobe → re-encode → verify → cleanup
  */
-import { readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { open, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { FerryError } from '@ferry/shared/errors';
 import { buildDownloadName } from '@ferry/shared/filename';
 import { formatDuration, qualityClass } from '@ferry/shared/formats';
 import { ffprobe, runFfmpeg, SAFE_INPUT } from '../engines/ffmpeg.js';
 import { buildFinalizePlan, verifyOutput } from '../media/finalize.js';
-import { fetchImage } from '../adapters/http.js';
+import { planImage, verifyImage } from '../media/gallery.js';
+import { fetchImage, sniffImage } from '../adapters/http.js';
+
+/** First bytes of a file (magic bytes, EXIF orientation, WebP header). */
+async function readHead(file, bytes = 256 * 1024) {
+  const fh = await open(file, 'r');
+  try {
+    const buf = Buffer.alloc(bytes);
+    const { bytesRead } = await fh.read(buf, 0, bytes, 0);
+    return buf.subarray(0, bytesRead);
+  } finally {
+    await fh.close();
+  }
+}
+
+/** Delete everything in a job directory that is not a deliverable. */
+async function keepOnly(jobDir, files) {
+  const keep = new Set(files.map((f) => f.diskName));
+  for (const name of await readdir(jobDir)) {
+    if (!keep.has(name)) await rm(path.join(jobDir, name), { recursive: true, force: true }).catch(() => {});
+  }
+}
 
 /**
  * @param {{ config: import('../config.js').Config, storage: any, adapters: any, fetch: Function,
@@ -40,6 +62,7 @@ export function createPipeline({ config, storage, adapters, fetch, engines, logg
     if (signal.aborted) throw new FerryError('CANCELLED');
 
     onPhase('processing');
+    if (job.request.mode === 'gallery') return finishGallery(job, dl, { jobDir, signal, onProgress });
     onProgress({ phase: 'processing', stage: null, percent: 0, speedBps: null, etaSec: null });
     const srcProbe = await ffprobe({ bin: engines.ffprobe, file: dl.srcFile, cwd: jobDir, signal });
     if (srcProbe.durationSec && srcProbe.durationSec > config.limits.maxDurationSec + 5) {
@@ -145,11 +168,76 @@ export function createPipeline({ config, storage, adapters, fetch, engines, logg
     }
 
     // Remove everything that is not a deliverable.
-    const keep = new Set(files.map((f) => f.diskName));
-    for (const name of await readdir(jobDir)) {
-      if (!keep.has(name)) await rm(path.join(jobDir, name), { recursive: true, force: true }).catch(() => {});
-    }
+    await keepOnly(jobDir, files);
     return { files, notes: plan.notes };
+  }
+
+  /**
+   * Prove and re-encode every downloaded gallery file. Files that fail are
+   * dropped (note `gallery-partial`); none surviving fails the job.
+   * @param {any} job
+   * @param {{ images: { index: number, path: string }[], requested: number }} dl
+   */
+  async function finishGallery(job, dl, { jobDir, signal, onProgress }) {
+    const images = [...dl.images].sort((a, b) => a.index - b.index);
+    const vars = {
+      title: job.source.title,
+      uploader: job.source.uploader,
+      platform: job.source.platformName,
+      id: job.internal.mediaId,
+      quality: null,
+      date: job.internal.uploadDate,
+    };
+    const base = buildDownloadName({ template: job.request.filename?.template, vars, ext: '' });
+    const digits = Math.max(2, String(Math.max(...job.request.gallery.items)).length);
+    const files = [];
+    let lastError = null;
+    for (const [n, img] of images.entries()) {
+      if (signal.aborted) throw new FerryError('CANCELLED');
+      onProgress({ phase: 'processing', stage: 'images', percent: (n / images.length) * 100, itemsDone: n, itemsTotal: images.length, speedBps: null, etaSec: null });
+      try {
+        const head = await readHead(img.path);
+        const sniffed = sniffImage(head);
+        // ffprobe only ever sees files whose magic bytes are an image.
+        const srcProbe = sniffed ? await ffprobe({ bin: engines.ffprobe, file: img.path, cwd: jobDir, signal }) : null;
+        const plan = planImage({
+          src: img.path,
+          sniffed,
+          head,
+          probe: srcProbe,
+          outDir: jobDir,
+          name: `img-${String(img.index).padStart(4, '0')}`,
+          maxPixels: config.limits.maxImagePixels,
+          threads: config.engines.threads,
+        });
+        await runFfmpeg({ bin: engines.ffmpeg, args: plan.args, cwd: jobDir, durationSec: null, timeoutMs: 120_000, stallTimeoutMs: config.limits.stallTimeoutMs, signal });
+        const out = await ffprobe({ bin: engines.ffprobe, file: plan.outputFile, cwd: jobDir, signal });
+        const { width, height } = verifyImage(out, plan);
+        const { size } = await stat(plan.outputFile);
+        files.push({
+          id: `f${files.length}`,
+          kind: 'image',
+          diskName: path.basename(plan.outputFile),
+          name: `${base} - ${String(img.index).padStart(digits, '0')}.${plan.ext}`,
+          sizeBytes: size,
+          mime: plan.mime,
+          container: plan.ext,
+          width,
+          height,
+          index: img.index,
+          converted: plan.converted,
+        });
+      } catch (err) {
+        if (signal.aborted || err?.code === 'CANCELLED') throw err;
+        lastError = err;
+        logger.warn({ jobId: job.id, index: img.index, code: err?.code, internal: err?.internal }, 'gallery image rejected');
+      }
+    }
+    if (!files.length) throw lastError ?? new FerryError('NO_MEDIA_FOUND', { internal: 'no gallery image survived' });
+    onProgress({ phase: 'finalizing', percent: null });
+    await keepOnly(jobDir, files);
+    const notes = files.length < dl.requested ? ['gallery-partial'] : [];
+    return { files, notes, archiveName: `${base}.zip` };
   }
 
   return { run };

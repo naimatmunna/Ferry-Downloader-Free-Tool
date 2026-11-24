@@ -2,7 +2,9 @@
 
 **Paste a link. Keep the file.** Ferry is a self-hostable media downloader that turns a link into
 a clean file — video with sound, video without sound, or audio only — in the format and quality you
-choose, and is upfront about what each platform allows.
+choose, and is upfront about what each platform allows. Image posts, albums and carousels (Imgur,
+Flickr, Mastodon, …) open as a picture grid: choose the images, get clean copies (metadata removed)
+and one ZIP.
 
 * **Honest:** only qualities the source really has; sizes only when known; no upscaling; bitrate
   warnings when a conversion can't add quality; "copied" vs "converted" stated on every file.
@@ -12,7 +14,7 @@ choose, and is upfront about what each platform allows.
 * **Private:** no accounts, ads or trackers; history stays on the device; files leave the server
   within the hour (or right after saving).
 * **Secure:** every engine connection goes through an egress guard (no SSRF, no DNS rebinding,
-  per-job byte caps), no shell execution, hardened yt-dlp/FFmpeg profiles.
+  per-job byte caps), no shell execution, hardened yt-dlp/gallery-dl/FFmpeg profiles.
 * **Mobile-first:** one-handed layout, Android share-to-Ferry, resumable native downloads, iOS
   Home-Screen workaround, English/Spanish/Arabic (RTL), light/dark.
 
@@ -21,21 +23,27 @@ choose, and is upfront about what each platform allows.
 Requirements: Node 22.12+ (24 recommended), Python 3.11+, FFmpeg/ffprobe on `PATH`.
 
 ```bash
-npm install
-python -m venv .venv && .venv/Scripts/pip install "yt-dlp[default]==2026.11.23"   # Windows
-# python3 -m venv .venv && .venv/bin/pip install "yt-dlp[default]==2026.11.23"   # macOS/Linux
-npm run build          # build the web app (served by the API)
+npm run setup          # everything: finds Python, creates .venv with pinned yt-dlp + gallery-dl,
+                       # npm install, test media, web build (Windows, macOS, Linux)
 npm start              # http://127.0.0.1:8787
+npm run dev            # API + Vite with hot reload → http://127.0.0.1:5173
 ```
 
-For UI work with hot reload run `npm run dev:server` and `npm run dev:web` (Vite on :5173 proxies
-`/api` to :8787).
+`npm run setup` options: `--skip-build`, `--skip-fixtures`, `--recreate-venv`. To force a specific
+interpreter: `PYTHON=/path/to/python npm run setup` (PowerShell: `$env:PYTHON="C:\…\python.exe"; npm run setup`).
+
+**Windows: "Python was not found; run without arguments to install from the Microsoft Store".**
+That message comes from Windows' *App execution aliases* (fake `python.exe`/`python3.exe` that open
+the Store), not from Python. `npm run setup` avoids them by using the `py` launcher that the
+python.org installer adds. To fix the `python` command itself: *Settings → Apps → Advanced app
+settings → App execution aliases*, turn off **python.exe** and **python3.exe**, then open a new
+terminal (PATH changes only apply to terminals opened afterwards).
 
 ## Tests
 
 ```bash
 npm run fixtures       # generate self-authored test media with FFmpeg (once)
-npm test               # unit + integration (real yt-dlp and FFmpeg, local fixtures only)
+npm test               # unit + integration (real yt-dlp, gallery-dl and FFmpeg, local fixtures only)
 npm run build && npm run test:e2e   # Playwright E2E in the installed Microsoft Edge (PW_CHANNEL=chrome for Chrome)
 node scripts/perf.mjs  # performance measurements → docs/PERFORMANCE.md
 ```
@@ -96,6 +104,7 @@ shows each platform's rules and official routes, and asks users to confirm they 
 licensed to save restricted content. This is not legal advice: operators should publish terms of
 use, a rights-holder contact and takedown process, and take their own counsel.
 
-Third-party software: yt-dlp (Unlicense), FFmpeg (LGPL/GPL depending on build — the Debian build in
-the Docker image is GPL; distributing the image triggers GPL obligations), React, Express and other
+Third-party software: yt-dlp (Unlicense), gallery-dl (GPL-2.0-only; run as a separate program, never
+imported), FFmpeg (LGPL/GPL depending on build — the Debian build in the Docker image is GPL;
+distributing the image triggers GPL obligations), React, Express and other
 npm packages (MIT/ISC/Apache-2.0), Overpass and Noto Kufi Arabic fonts (SIL OFL 1.1).

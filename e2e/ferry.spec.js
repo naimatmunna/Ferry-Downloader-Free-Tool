@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
-import { FIXTURES, analyze, confirmRights, freshApp, saveAndProbe, waitReady } from './helpers.js';
+import { FIXTURES, analyze, confirmRights, freshApp, saveAndProbe, waitReady, zipEntryNames } from './helpers.js';
 
 test.beforeEach(async ({ page }) => {
   await freshApp(page);
@@ -61,6 +62,38 @@ test('audio only: MP3 at a chosen bitrate, with honest quality notes', async ({ 
   const out = await saveAndProbe(page);
   expect(out.name).toBe('clip-vp9-opus.mp3');
   expect(out.streams).toEqual([['audio', 'mp3']]);
+});
+
+test('image gallery: preview grid, pick images, one ZIP of re-encoded files', async ({ page }) => {
+  // A Mastodon post (fixture API) with four images and a video.
+  await analyze(page, `${FIXTURES}/@ferry/111111111`);
+  await expect(page.getByRole('heading', { name: 'Harbour pictures & a clip' })).toBeVisible();
+  await expect(page.getByText('1 video in this post isn’t included.')).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: /^Image \d+,/ })).toHaveCount(4);
+  // Previews come through Ferry's signed thumbnail proxy and really load.
+  const firstPreview = page.locator('label', { has: page.getByRole('checkbox', { name: /^Image 1,/ }) }).locator('img');
+  await expect.poll(() => firstPreview.evaluate((img) => (img.complete ? img.naturalWidth : 0))).toBeGreaterThan(0);
+
+  await page.getByRole('button', { name: 'Clear selection' }).click();
+  await expect(page.getByRole('button', { name: 'Download 0 images' }).first()).toBeDisabled();
+  await page.getByRole('button', { name: 'Select all' }).click();
+  await page.getByRole('checkbox', { name: /^Image 2,/ }).uncheck();
+  const download = page.getByRole('button', { name: 'Download 3 images' }).first();
+  await expect(download).toBeDisabled(); // rights not yet confirmed
+  await confirmRights(page);
+  await download.click();
+  await expect(page.getByText('Added to Downloads')).toBeVisible();
+
+  await waitReady(page);
+  const main = page.getByRole('main');
+  await expect(main.getByRole('button', { name: 'Image 1' })).toBeVisible();
+  const [zip] = await Promise.all([page.waitForEvent('download'), main.getByRole('button', { name: 'Save all as ZIP' }).click()]);
+  expect(zip.suggestedFilename()).toBe('Harbour pictures & a clip.zip');
+  expect(zipEntryNames(readFileSync(await zip.path()))).toEqual([
+    'Harbour pictures & a clip - 01.jpg',
+    'Harbour pictures & a clip - 03.gif',
+    'Harbour pictures & a clip - 05.jpg',
+  ]);
 });
 
 test('a failed download can be retried', async ({ page }) => {

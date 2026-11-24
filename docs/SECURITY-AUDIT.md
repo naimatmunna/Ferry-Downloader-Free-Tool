@@ -65,7 +65,9 @@
 | T22 | **Platform spoofing** (`youtube.com.evil.example`, IDN homographs) | Suffix matching on label boundaries only; hostnames are punycode-normalized by the URL parser, so homographs never match a registry host. | `shared/test/url.test.js`, `shared/test/catalog.test.js` |
 | T23 | **ReDoS** in URL patterns | Patterns are anchored and linear; inputs length-capped at 2 048; tested with adversarial long inputs. | `shared/test/url.test.js`, `shared/test/catalog.test.js` |
 | T24 | **Policy bypass** (attestation skipped, blocked platform via redirect/shortener) | Policy checked at probe **and** at job creation; job creation requires `attest` when needed; the extractor-reported final domain is re-checked against the registry after probing (catches shorteners/embeds that resolve to a blocked platform). | `unit/policy-logging.test.js`, `integration/api.test.js`, `shared/test/catalog.test.js` |
-| T25 | **Engine supply chain** | yt-dlp pinned in the image; Docker build installs from PyPI over TLS; no runtime remote code (`--remote-components` unused, bundled `yt-dlp-ejs`); no `curl_cffi`/impersonation. | Deployment review |
+| T25 | **Engine supply chain** | yt-dlp and gallery-dl pinned in the image (gallery-dl in its own venv, without yt-dlp); Docker build installs from PyPI over TLS; no runtime remote code (`--remote-components` unused, bundled `yt-dlp-ejs`); no `curl_cffi`/impersonation; gallery-dl's browser imitation off. | Deployment review |
+| T26 | **Gallery engine reaching what Ferry would refuse** (gallery-dl following an embed into YouTube via `ytdl:`, crawling links to other sites, loading config/cookies) | Image items only (`http(s)` + image extension); `ytdl:`/`text:`/video items counted, never offered; download mode uses `--child-filter False` and `-o downloader.ytdl.enabled=false`; child links followed once, only when the registry maps them to the **same** platform; `--config-ignore`, no cookies/logins; all traffic through the per-job egress proxy. | `unit/gallerydl-engine.test.js`, `unit/gallerydl-adapter.test.js`, `integration/gallery.test.js` |
+| T27 | **Hostile images** (HTML or polyglots named `.jpg`, decompression bombs, EXIF/GPS leaks) | Magic-byte sniff (JPEG/PNG/GIF/WebP/AVIF only) **and** ffprobe decoder must agree; one image stream, no audio; ≤ `MAX_IMAGE_MEGAPIXELS` and 30 000 px per side before decoding; per-file `--filesize-max`; re-encoded by FFmpeg built-in encoders with `-map_metadata -1` (EXIF, comments, text chunks removed); output re-probed. | `unit/gallery-media.test.js`, `integration/gallery.test.js` |
 
 ---
 
@@ -87,6 +89,24 @@
 Never used: `--exec`, `--cookies`, `--cookies-from-browser`, `--username`,
 `--password`, `--netrc`, `--impersonate`, `--load-info-json`, `--config-locations`,
 `--plugin-dirs`, `--remote-components`, `--no-check-certificates`.
+
+**gallery-dl** (always; image galleries only):
+
+```
+--config-ignore --no-input --no-colors
+--proxy http://<random-user>:<random-pass>@127.0.0.1:<egress-port> -o proxy-env=false
+-o browser=false -o extractor.imgur.mp4=false
+--cache-file <job tmp>/gallery-dl-cache.sqlite3 --http-timeout 30 -R 3 --no-mtime
+probe:    --no-postprocessors -j --range 1-<MAX_GALLERY_ITEMS+1>
+download: --range <chosen indexes> --child-filter False -o downloader.ytdl.enabled=false
+          -D <job tmp>/gallery --restrict-filenames ascii --filesize-max <MAX_IMAGE_MB>
+          --Print "prepare:FERRY_GDL_FILE {_url!q}"
+-- <http(s) URL, or mastodon:<URL> for federated posts>
+```
+
+Never used: `--exec`, `--exec-after`, `-C`/`--cookies`, `--cookies-from-browser`,
+`-u`/`--username`, `-p`/`--password`, `--netrc`, `-c`/`--config*`, `-X`/`--extractors`,
+`-i`/`--input-file`, `-J`/`--resolve-json`, `--xff`, `-U`/`--update`, `--no-check-certificate`.
 
 **FFmpeg / ffprobe** (always): `-nostdin -hide_banner -protocol_whitelist file,pipe`,
 inputs and outputs are server-generated paths inside the job directory,

@@ -12,7 +12,8 @@ import { mkdir, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { canProbe, effectivePolicy, isPolicy } from '@ferry/shared/platforms/policy';
 
-const AVAILABLE_ENGINES = new Set(['yt-dlp', 'internet-archive-api', 'peertube-api', 'direct']);
+/** Engines Ferry has adapters for. bootstrap.js narrows this to the binaries found at startup. */
+const AVAILABLE_ENGINES = new Set(['yt-dlp', 'internet-archive-api', 'peertube-api', 'direct', 'gallery-dl']);
 
 function parseOverrides(text) {
   const json = JSON.parse(text);
@@ -97,6 +98,8 @@ export function createPolicyService({ file, registry, catalogVersion, logger, wa
     events,
     effective,
     isAvailable,
+    /** Whether an engine's binaries were found at startup (e.g. 'gallery-dl'). */
+    engineReady: (engine) => engineAvailable(engine),
     get version() {
       return version;
     },

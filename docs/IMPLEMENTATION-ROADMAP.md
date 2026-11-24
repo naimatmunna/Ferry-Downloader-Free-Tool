@@ -31,7 +31,7 @@ used in tests.
 ## Post-MVP roadmap
 
 1. **Scale-out drivers** — BullMQ/Redis job queue + store, S3-compatible output storage with presigned URLs, MongoDB policy/audit store.
-2. **gallery-dl adapter** — image galleries and carousels (license review: GPL-2.0, subprocess use).
+2. ~~**gallery-dl adapter**~~ — **done** (gallery-dl 1.32.21, GPL-2.0, subprocess only; see SYSTEM-ARCHITECTURE.md §8.5).
 3. **Streamlink adapter** — authorized livestream recording with duration caps.
 4. **Official export integrations** — OAuth flows that use platform-provided download features for a user's *own* content.
 5. **Aspect-ratio tools** — crop/pad presets for social formats.
@@ -56,8 +56,10 @@ used in tests.
 ### Known limitations (honest list)
 
 * Single-node only: `ROLE=api|worker` split needs the BullMQ/Redis + S3 drivers (designed, not implemented).
-* Image galleries (gallery-dl) and livestream recording (Streamlink) are listed in the registry as
-  "not on this server yet" until those adapters exist.
+* Livestream recording (Streamlink) is listed in the registry as "not on this server yet" until
+  that adapter exists. Image galleries need gallery-dl on the server (otherwise the same notice).
+* Galleries are image-only: videos inside a post are counted and left out, and ArtStation, Behance
+  and VSCO may refuse requests because Ferry turns off gallery-dl's browser imitation.
 * Live third-party sites were not exercised by the automated suites (fixtures only), so per-platform
   reliability comes from upstream engine status and will be refined by the live status page.
 * yt-dlp probes take 2–4 s on this Windows machine (Python start-up); direct and official-API probes ~0.1 s.

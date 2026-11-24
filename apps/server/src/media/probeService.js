@@ -137,7 +137,7 @@ export function createProbeService({ config, registry, policies, adapters, signe
       const timeout = AbortSignal.timeout(config.limits.probeTimeoutMs + 5000);
       const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
       try {
-        info = await adapter.probe({ url: detection.href, playlist, signal: combined, tag: urlHash(detection.href) });
+        info = await adapter.probe({ url: detection.href, playlist, signal: combined, tag: urlHash(detection.href), platform });
       } catch (err) {
         if (!(err instanceof NotThisPlatform)) throw err;
         // Looked federated but isn't: treat as an ordinary website.
@@ -187,7 +187,7 @@ export function createProbeService({ config, registry, policies, adapters, signe
         platform: { id: platform.id, name: platform.name, kind: platform.kind },
         policy: { status: policy.status, category: policy.category, attestation: policy.attestation, reason: policy.reason, routes: platform.routes ?? [] },
       },
-      media: publicMedia(media, { thumbnailUrl }),
+      media: publicMedia(media, { thumbnailUrl, previewUrl: (remote) => signer.thumbnailUrl(remote) }),
       limits: { maxFileSizeBytes: config.limits.maxFileSizeBytes, maxDurationSec: config.limits.maxDurationSec },
     };
   }
