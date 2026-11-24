@@ -64,8 +64,11 @@ test('extractor patterns compile, have no commas, and only the generic entry cla
 
 test('key platforms are classified as decided (see RESEARCH.md)', () => {
   const expect = [
-    ['https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'youtube', 'export_only'],
-    ['https://youtu.be/dQw4w9WgXcQ', 'youtube', 'export_only'],
+    // Owner's decision (2026-11-24): every platform with a working engine is downloadable once the
+    // user confirms they own the media or have permission; only protected services stay blocked.
+    ['https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'youtube', 'attestation'],
+    ['https://youtu.be/dQw4w9WgXcQ', 'youtube', 'attestation'],
+    ['https://music.youtube.com/watch?v=dQw4w9WgXcQ', 'youtube-music', 'attestation'],
     ['https://www.netflix.com/title/80057281', 'netflix', 'blocked'],
     ['https://open.spotify.com/track/1', 'spotify', 'blocked'],
     ['https://archive.org/details/night_of_the_living_dead', 'internet-archive', 'allowed'],
@@ -75,8 +78,9 @@ test('key platforms are classified as decided (see RESEARCH.md)', () => {
     ['https://www.tiktok.com/@a/video/1', 'tiktok', 'attestation'],
     ['https://x.com/a/status/1', 'x', 'attestation'],
     ['https://twitter.com/a/status/1', 'x', 'attestation'],
-    ['https://soundcloud.com/artist/track', 'soundcloud', 'export_only'],
-    ['https://www.facebook.com/watch?v=1', 'facebook', 'export_only'],
+    ['https://soundcloud.com/artist/track', 'soundcloud', 'attestation'],
+    ['https://www.facebook.com/watch?v=1', 'facebook', 'attestation'],
+    ['https://artist.bandcamp.com/track/song', 'bandcamp', 'attestation'],
     ['https://podcasts.apple.com/us/podcast/x/id1', 'apple-podcasts', 'allowed'],
     ['https://music.apple.com/us/album/x/1', 'apple-music', 'blocked'],
     ['https://commons.wikimedia.org/wiki/File:Example.webm', 'wikimedia-commons', 'allowed'],
@@ -91,12 +95,18 @@ test('key platforms are classified as decided (see RESEARCH.md)', () => {
   }
 });
 
-test('YouTube extractors are excluded from yt-dlp by default; open platforms are not', () => {
+test('protected services stay excluded from yt-dlp; platforms users may confirm are not', () => {
   const excluded = registry.excludedExtractors((p) => !canProbe(effectivePolicy(p).status));
-  assert.ok(excluded.some((e) => new RegExp(`^(?:${e})$`, 'i').test('youtube')), 'youtube must be excluded');
-  assert.ok(excluded.some((e) => new RegExp(`^(?:${e})$`, 'i').test('youtube:tab')), 'youtube:tab must be excluded');
-  assert.ok(!excluded.some((e) => new RegExp(`^(?:${e})$`, 'i').test('vimeo')), 'vimeo is attestation, not excluded');
+  const isExcluded = (name) => excluded.some((e) => new RegExp(`^(?:${e})$`, 'i').test(name));
+  assert.ok(isExcluded('nebula:video'), 'paid, sign-in-only service');
+  assert.ok(isExcluded('udemy'), 'paid courses');
+  for (const name of ['youtube', 'youtube:tab', 'vimeo', 'soundcloud', 'facebook']) assert.ok(!isExcluded(name), `${name} runs once the user confirms`);
   assert.equal(registry.byExtractor('youtube').id, 'youtube');
+});
+
+test('no platform with a working engine is held back as export-only', () => {
+  const held = CATALOG.filter((p) => p.policy === 'export_only' && p.engine !== 'none').map((p) => p.id);
+  assert.deepEqual(held, []);
 });
 
 test('detection is fast enough to run on every keystroke', () => {

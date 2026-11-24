@@ -40,11 +40,12 @@
  *
  * Categories describe what Ferry itself may do, and map to default policies:
  *   1 Officially supported downloads .................... allowed
- *     (SoundCloud and Bandcamp are category 1 but export_only: their downloads must go
- *     through the platform's own Download button.)
  *   2 Authorized user-owned content exports ............. export_only
  *   3 Public media with permitted downloading ........... allowed
  *   4 Technically supported, permission-restricted ...... attestation
+ *     (Owner's decision, 2026-11-24: YouTube, Facebook, SoundCloud, Bandcamp, Snapchat,
+ *     LinkedIn and VK moved here from export-only — downloadable once the user confirms
+ *     they own the media or have permission; their official routes stay listed.)
  *   5 Unsupported or protected (DRM, paywall, login, dead) blocked
  */
 
@@ -114,13 +115,14 @@ export const CATALOG = Object.freeze([
     hosts: ['facebook.com', 'fb.watch', 'fb.com', 'fb.me', 'fbcdn.net', 'facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd.onion'],
     extractors: ['facebook(:.*)?', 'FacebookPluginsVideo', 'FacebookRedirectURL'],
     content: ['video', 'live', 'image'],
-    engine: 'yt-dlp', category: 2, policy: 'export_only', auth: 'sometimes',
+    engine: 'yt-dlp', category: 4, policy: 'attestation', auth: 'sometimes',
     officialApi: 'Meta Graph API (your own Pages and videos)',
     routes: [
       { label: 'Download your information (Accounts Center)', url: 'https://www.facebook.com/help/212802592074644' },
       { label: 'Download a reel you posted (Facebook app: Profile > Reels > Options > Download)', url: 'https://www.facebook.com/help/android-app/1005944300373812' },
     ],
     restrictions: "Facebook only lets you download reels and videos you posted yourself, and its terms ban automated collection, so Ferry points to Facebook's own export tools.",
+    attestation: "Meta's terms bar downloading other people's videos. Only download videos you posted or have the owner's permission to save.",
     reliability: 'experimental', lastChecked: '2026-11-24',
     notes: 'Recurring "Cannot parse data" failures and login walls through 2026.',
     sources: ['https://www.facebook.com/terms.php', 'https://www.facebook.com/help/android-app/1005944300373812', 'https://github.com/yt-dlp/yt-dlp/issues/18016'],
@@ -186,10 +188,11 @@ export const CATALOG = Object.freeze([
     hosts: ['snapchat.com', 'sc-cdn.net'],
     extractors: ['SnapchatSpotlight'],
     content: ['video'],
-    engine: 'yt-dlp', category: 2, policy: 'export_only', auth: 'none',
+    engine: 'yt-dlp', category: 4, policy: 'attestation', auth: 'none',
     officialApi: 'Snap Kit and Public Profile API (no media export)',
     routes: [{ label: 'My Data export of your Memories (accounts.snapchat.com)', url: 'https://accounts.snapchat.com/' }],
     restrictions: "Snap's terms prohibit downloading or archiving content outside the app's intended features, so only your own data through My Data is supported.",
+    attestation: "Snapchat's terms bar downloading other people's content. Only download Snaps you posted or have the creator's permission to save.",
     reliability: 'verified', lastChecked: '2026-11-24',
     notes: 'yt-dlp only matches Spotlight URLs.',
     sources: ['https://snap.com/en-US/terms', 'https://techcrunch.com/2025/10/03/snapchat-is-planning-to-charge-for-storage-heres-how-to-save-your-memories-for-free'],
@@ -199,10 +202,11 @@ export const CATALOG = Object.freeze([
     hosts: ['linkedin.com', 'media.licdn.com', 'dms.licdn.com'],
     extractors: ['linkedin', 'linkedin:events'],
     content: ['video', 'live', 'image'],
-    engine: 'yt-dlp', category: 2, policy: 'export_only', auth: 'none',
+    engine: 'yt-dlp', category: 4, policy: 'attestation', auth: 'none',
     officialApi: 'LinkedIn Marketing and Community Management APIs (partners)',
     routes: [{ label: 'Get a copy of your data (Settings & Privacy > Data privacy)', url: 'https://www.linkedin.com/help/linkedin/answer/50191' }],
     restrictions: "LinkedIn's User Agreement bans scraping tools and copying content without the owner's consent, so only your own data export is supported.",
+    attestation: "LinkedIn's terms bar scraping and downloading. Only download videos you posted or have the owner's permission to save.",
     reliability: 'verified', lastChecked: '2026-11-24',
     notes: 'lnkd.in short links wrap any URL, so they are resolved through the generic flow instead.',
     sources: ['https://www.linkedin.com/legal/user-agreement', 'https://www.linkedin.com/help/linkedin/answer/50191'],
@@ -308,7 +312,7 @@ export const CATALOG = Object.freeze([
     ],
     extractors: ['youtube(:.*)?', 'YoutubeYtBe', 'YoutubeLivestreamEmbed'],
     content: ['video', 'audio', 'live', 'playlist', 'subtitles'],
-    engine: 'yt-dlp', category: 2, policy: 'export_only', auth: 'sometimes',
+    engine: 'yt-dlp', category: 4, policy: 'attestation', auth: 'sometimes',
     officialApi: 'YouTube Data API v3 (metadata only; Developer Policies III.E.1 forbid downloading)',
     routes: [
       { label: 'Your own uploads: YouTube Studio > Content > Download', url: 'https://support.google.com/youtube/answer/56100?hl=en' },
@@ -316,6 +320,7 @@ export const CATALOG = Object.freeze([
       { label: 'Offline viewing with YouTube Premium (inside the YouTube app)', url: 'https://support.google.com/youtube/answer/11977233?hl=en' },
     ],
     restrictions: "YouTube's terms and API policies forbid downloading outside YouTube's own features, and courts in the US and Germany have treated its signature cipher as copy protection, so Ferry only links to YouTube's official options.",
+    attestation: "YouTube's terms allow downloading only through YouTube's own features. Only download videos you uploaded, that carry a Creative Commons licence, or that the rights holder has allowed you to save.",
     reliability: 'experimental', lastChecked: '2026-11-24',
     notes: "Covers Shorts, Live and YouTube Kids; Creative Commons videos are still bound by YouTube's download terms.",
     sources: ['https://www.youtube.com/static?template=terms&hl=en&gl=US', 'https://developers.google.com/youtube/terms/developer-policies', 'https://completemusicupdate.com/stream-ripper-yout-circumvents-youtubes-technical-protection-measures-court-concludes/'],
@@ -324,13 +329,14 @@ export const CATALOG = Object.freeze([
     id: 'youtube-music', name: 'YouTube Music', kind: 'audio',
     hosts: ['music.youtube.com'],
     content: ['audio', 'video', 'playlist'],
-    engine: 'yt-dlp', category: 2, policy: 'export_only', auth: 'sometimes',
+    engine: 'yt-dlp', category: 4, policy: 'attestation', auth: 'sometimes',
     officialApi: 'YouTube Data API v3 (metadata only)',
     routes: [
       { label: 'Offline listening with YouTube Music Premium (inside the app)', url: 'https://support.google.com/youtube/answer/6308116?hl=en' },
       { label: 'Your own uploads and library: Google Takeout (YouTube and YouTube Music)', url: 'https://takeout.google.com/' },
     ],
     restrictions: "YouTube Music falls under YouTube's terms, which forbid downloading outside YouTube's own features, so only Premium offline listening and your own Takeout export are supported.",
+    attestation: "YouTube Music's terms allow offline listening only inside its own apps. Only download music you own or have the rights holder's permission to save.",
     reliability: 'experimental', lastChecked: '2026-11-24',
     notes: "yt-dlp's YouTube extractors handle these URLs, so they are listed (and excluded) under YouTube.",
     sources: ['https://support.google.com/youtube/answer/6308116?hl=en', 'https://developers.google.com/youtube/terms/developer-policies'],
@@ -789,10 +795,11 @@ export const CATALOG = Object.freeze([
     hosts: ['soundcloud.com', 'sndcdn.com'],
     extractors: ['soundcloud(:.*)?', 'SoundcloudEmbed'],
     content: ['audio', 'playlist'],
-    engine: 'yt-dlp', category: 1, policy: 'export_only', auth: 'none',
+    engine: 'yt-dlp', category: 4, policy: 'attestation', auth: 'none',
     officialApi: 'SoundCloud API (third-party apps may not save files or offer offline access)',
     routes: [{ label: 'Download button on the track page (signed in; only where the uploader enabled downloads)', url: 'https://help.soundcloud.com/hc/en-us/articles/115003448787' }],
     restrictions: "SoundCloud serves uploader-enabled downloads only through its own signed-in Download button, and its API terms forbid other apps from saving files, so Ferry hands you off to SoundCloud.",
+    attestation: "SoundCloud lets artists offer downloads with their own Download button. Only download tracks you own, that the artist offers for download, or that you have the artist's permission to save.",
     reliability: 'verified', lastChecked: '2026-11-24',
     sources: ['https://developers.soundcloud.com/docs/api/terms-of-use', 'https://help.soundcloud.com/hc/en-us/articles/115003448787'],
   },
@@ -801,10 +808,11 @@ export const CATALOG = Object.freeze([
     hosts: ['bandcamp.com', 'bcbits.com'],
     extractors: ['bandcamp(:.*)?'],
     content: ['audio', 'playlist'],
-    engine: 'yt-dlp', category: 1, policy: 'export_only', auth: 'none',
+    engine: 'yt-dlp', category: 4, policy: 'attestation', auth: 'none',
     officialApi: null,
     routes: [{ label: "Buy the release or use the artist's free download on bandcamp.com, then download it from your collection", url: 'https://bandcamp.com/' }],
     restrictions: "Bandcamp downloads come from a purchase or the artist's free-download option and are licensed for personal use only, so Ferry hands you off to Bandcamp.",
+    attestation: "Bandcamp sells and gives away music through its own pages. Only download music you bought, that the artist gives away, or that you have the artist's permission to save.",
     reliability: 'verified', lastChecked: '2026-11-24',
     notes: 'Artists on custom domains are detected as generic websites.',
     sources: ['https://bandcamp.com/terms_of_use', SRC.ytdlp],
@@ -2324,10 +2332,11 @@ export const CATALOG = Object.freeze([
     hosts: ['vk.com', 'vk.ru', 'vkvideo.ru', 'vkplay.live', 'vkplay.ru', 'daxab.com'],
     extractors: ['vk(:.*)?', 'vkplay(live)?'],
     content: ['video', 'live', 'image', 'playlist'],
-    engine: 'yt-dlp', category: 2, policy: 'export_only', auth: 'sometimes',
+    engine: 'yt-dlp', category: 4, policy: 'attestation', auth: 'sometimes',
     officialApi: 'VK API',
     routes: [{ label: 'Request a copy of your data (VK data protection page)', url: 'https://vk.ru/data_protection?section=rules' }],
     restrictions: "VK's developer rules ban bots and its main terms could not be verified, so only your own data archive is supported.",
+    attestation: "VK's terms bar downloading other people's content. Only download videos you posted or have the owner's permission to save.",
     reliability: 'experimental', lastChecked: '2026-11-24',
     notes: 'vk.cc short links wrap any URL, so they are resolved through the generic flow instead.',
     sources: ['https://dev.vk.ru/en/user-agreement', 'https://vk.ru/data_protection?section=rules', SRC.ytdlp],
