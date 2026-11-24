@@ -124,6 +124,17 @@ circumvention. YouTube then offers only the formats its JS-free clients return
 missing). The legal risks in §4 stay with the operator, who can change
 any policy at runtime.
 
+**What the app lists (owner's decision, 2026-11-24).** Home and Sites list only
+the sites Ferry can really download from: the policy allows it (category 1, 3
+or 4), this server has the engine, and the entry isn't marked *Often breaks* or
+*Not supported*. That is 155 of the 249 platforms. A re-check that day (yt-dlp
+2026.11.23, no logins, no impersonation) moved six popular sites to *Not
+supported*: Reddit and Vimeo now require signing in, Dailymotion only answers a
+client posing as a browser, and Tumblr, Rumble and 9GAG answered HTTP 403. The
+other platforms stay in the registry with their rules and official routes;
+pasting their links still explains what Ferry can do, and searching Sites says
+why they aren't listed.
+
 ## 4. Legal landscape (see `legal_landscape.md`)
 
 * **US:** *Yout v. RIAA* (D. Conn., 30 Sep 2022) — YouTube's measures are a
@@ -176,6 +187,7 @@ compliance-first scope.
 | Permission registry with five categories and runtime overrides | `packages/shared/src/platforms/*`, `apps/server/src/policy/policies.js` |
 | Policy checked before any fetch, re-checked against the extractor actually used and the final URL | `apps/server/src/media/probeService.js` |
 | YouTube downloads once the user confirms permission (owner's decision, 2026-11-24); still no JS runtime, cookies, impersonation or PO tokens | `packages/shared/src/platforms/catalog.js`, `apps/server/src/engines/ytdlp.js` |
+| Home and Sites list only sites Ferry can download from (policy allows, engine present, not *Often breaks* or *Not supported*) | `apps/web/src/lib/siteStatus.js` (`isDownloadable`), `apps/web/src/features/downloader/WherePanel.jsx`, `apps/web/src/pages/SitesPage.jsx` |
 | DRM as a hard stop (`has_drm` true or maybe) | `apps/server/src/media/normalize.js` |
 | Official APIs first (Internet Archive, PeerTube) | `apps/server/src/adapters/` |
 | Image galleries through gallery-dl (allowlisted entries only, images only, no cookies/logins/impersonation, every image re-encoded) | `apps/server/src/adapters/galleryDl.js`, `apps/server/src/engines/galleryDl.js`, `apps/server/src/media/gallery.js` |

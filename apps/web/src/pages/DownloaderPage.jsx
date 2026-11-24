@@ -1,11 +1,9 @@
-import { lazy, Suspense, useEffect, useMemo } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { AudioLines, Images } from 'lucide-react';
 import { useI18n } from '../lib/i18n/index.jsx';
-import { usePlatforms } from '../lib/registry.js';
-import { shelfOf, siteStatus } from '../lib/siteStatus.js';
 import { useAnalysis } from '../state/analysis.js';
 import { UrlGate, useDetection } from '../features/downloader/UrlGate.jsx';
-import { WherePanel } from '../features/downloader/WherePanel.jsx';
+import { WherePanel, useDownloadable } from '../features/downloader/WherePanel.jsx';
 import { ErrorPanel, HomeIntro, ProbeSkeleton } from '../features/downloader/Panels.jsx';
 import { VideoMuteIcon, VideoSoundIcon } from '../components/icons.jsx';
 import { cx } from '../components/ui.jsx';
@@ -49,8 +47,8 @@ export default function DownloaderPage() {
   const input = useAnalysis((s) => s.input);
   const analyze = useAnalysis((s) => s.analyze);
   const { detection } = useDetection();
-  const platforms = usePlatforms((s) => s.platforms);
-  const direct = useMemo(() => platforms.filter((p) => shelfOf(siteStatus(p)) === 'direct').length, [platforms]);
+  // Counts the same sites as the panel beside it: only ones Ferry can download from.
+  const { total: downloadable } = useDownloadable();
   const idle = status === 'idle';
 
   useEffect(() => {
@@ -73,7 +71,7 @@ export default function DownloaderPage() {
                   <span className="block">{t('gate.line1')}</span>
                   <span className="block">{t('gate.line2')}</span>
                 </h1>
-                <p className="mt-4 max-w-[36ch] text-[15.5px] leading-relaxed text-hero-ink-2 sm:text-lg">{direct ? t('gate.ledeCount', { count: direct }) : t('gate.lede')}</p>
+                <p className="mt-4 max-w-[36ch] text-[15.5px] leading-relaxed text-hero-ink-2 sm:text-lg">{downloadable ? t('gate.ledeCount', { count: downloadable }) : t('gate.lede')}</p>
               </>
             ) : (
               <h1 className="sr-only">{t('gate.title')}</h1>

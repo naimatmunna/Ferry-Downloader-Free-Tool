@@ -23,7 +23,32 @@ export function siteStatus(platform) {
   return status;
 }
 
-/** Home groups sites into three shelves; other statuses are listed only on Sites. */
+/** Reliability levels that mean downloads fail most of the time, or always. */
+const FAILS = new Set(['unstable', 'unsupported']);
+
+/**
+ * Whether Ferry can really download from a site: its policy allows it (free,
+ * or with permission), this server has the engine, and it isn't known to fail
+ * (a login wall, posing as a browser, or a broken extractor). Home and Sites
+ * list only these; pasting any other link still explains what Ferry can do.
+ */
+export function isDownloadable(platform) {
+  const status = siteStatus(platform);
+  return (status === 'free' || status === 'perm') && !FAILS.has(platform.reliability);
+}
+
+/** Why a site isn't listed on Home and Sites ('broken' when it is known to fail), or null when it is. */
+export function hiddenReason(platform) {
+  if (!platform || isDownloadable(platform)) return null;
+  const status = siteStatus(platform);
+  return status === 'free' || status === 'perm' ? 'broken' : status;
+}
+
+/**
+ * What Ferry does with a site by policy: downloads from it ('direct'), points
+ * to the site's own download ('official'), or can't save it ('protected').
+ * Other statuses (any site, turned off, not on this server) give null.
+ */
 export function shelfOf(status) {
   if (status === 'free' || status === 'perm') return 'direct';
   if (status === 'off') return 'official';

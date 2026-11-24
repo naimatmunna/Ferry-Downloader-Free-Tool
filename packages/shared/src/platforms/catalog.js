@@ -106,8 +106,8 @@ export const CATALOG = Object.freeze([
     officialApi: 'Reddit Data API (OAuth; new access needs approval since Nov 2025)',
     routes: [{ label: 'Request a copy of your Reddit data', url: 'https://www.reddit.com/settings/data-request' }],
     restrictions: "Reddit's user agreement prohibits scraping or collecting content without Reddit's written consent.",
-    reliability: 'experimental', lastChecked: '2026-11-24',
-    notes: 'Since late October 2026 Reddit answers yt-dlp with HTTP 403 blocks unless cookies and impersonation are used.',
+    reliability: 'unsupported', lastChecked: '2026-11-24',
+    notes: "Since late October 2026 Reddit blocks yt-dlp unless it signs in or poses as a browser (on 2026-11-24 it answered 'Account authentication is required'). Ferry does neither, so downloads fail.",
     sources: ['https://raw.githubusercontent.com/OpenTermsArchive/pga-versions/main/Reddit/Terms%20of%20Service.md', 'https://github.com/yt-dlp/yt-dlp/issues/17965'],
   },
   {
@@ -246,7 +246,8 @@ export const CATALOG = Object.freeze([
     officialApi: null,
     routes: [],
     restrictions: 'Posts are user uploads whose rights stay with their creators; download only with permission.',
-    reliability: 'verified', lastChecked: '2026-11-24',
+    reliability: 'unsupported', lastChecked: '2026-11-24',
+    notes: '9GAG answered yt-dlp with HTTP 403 Forbidden (checked 2026-11-24 from the development machine), so downloads fail. Another server may get through.',
     sources: [SRC.ytdlp],
   },
   {
@@ -351,8 +352,8 @@ export const CATALOG = Object.freeze([
     routes: [{ label: 'Download button below the player on vimeo.com (when the owner enabled downloads)', url: 'https://help.vimeo.com/hc/en-us/articles/12426502581265-How-to-download-a-video-on-Vimeo' }],
     restrictions: "Vimeo's terms forbid downloading unless the owner enabled downloads (original files only on owner-enabled paid plans); otherwise you need the owner's permission.",
     attestation: "Vimeo only allows downloads when the video's owner has turned them on. Only download videos you own, that the owner enabled for download, or that you have permission to save.",
-    reliability: 'verified', lastChecked: '2026-11-24',
-    notes: 'Vimeo On Demand purchases need a login, and Vimeo Livestream (livestream.com) has no yt-dlp extractor.',
+    reliability: 'unsupported', lastChecked: '2026-11-24',
+    notes: "yt-dlp 2026.11.23 reports that Vimeo's web client only works when logged in (checked 2026-11-24), and Ferry never signs in, so downloads fail. Vimeo On Demand purchases need a login, and Vimeo Livestream (livestream.com) has no yt-dlp extractor.",
     sources: ['https://vimeo.com/terms', 'https://help.vimeo.com/hc/en-us/articles/12426502581265-How-to-download-a-video-on-Vimeo', SRC.ytdlp],
   },
   {
@@ -364,8 +365,8 @@ export const CATALOG = Object.freeze([
     officialApi: 'Dailymotion Platform API',
     routes: [],
     restrictions: "Dailymotion licenses videos for streaming only and bans automated access, scraping and unauthorized downloading.",
-    reliability: 'verified', lastChecked: '2026-11-24',
-    notes: 'Some videos are geo-blocked.',
+    reliability: 'unsupported', lastChecked: '2026-11-24',
+    notes: "yt-dlp's Dailymotion extractor now only works while posing as a browser (impersonation), which Ferry never does, so downloads fail (checked 2026-11-24). Some videos are geo-blocked.",
     sources: ['https://legal.dailymotion.com/en/terms-of-use/', SRC.ytdlp],
   },
   {
@@ -377,7 +378,8 @@ export const CATALOG = Object.freeze([
     officialApi: null,
     routes: [],
     restrictions: "Rumble's terms prohibit copying content and systematic or automated retrieval without written permission.",
-    reliability: 'verified', lastChecked: '2026-11-24',
+    reliability: 'unsupported', lastChecked: '2026-11-24',
+    notes: 'Rumble answered yt-dlp with HTTP 403 Forbidden (checked 2026-11-24 from the development machine), so downloads fail. Another server may get through.',
     sources: ['https://rumble.com/s/terms', SRC.ytdlp],
   },
   {
@@ -2149,8 +2151,8 @@ export const CATALOG = Object.freeze([
     officialApi: 'Tumblr API v2',
     routes: [{ label: 'Export your blog (blog settings > Export)', url: null }],
     restrictions: "Tumblr's license to download covers use of Tumblr itself (such as reblogging), and its terms ban scraping.",
-    reliability: 'verified', lastChecked: '2026-11-24',
-    notes: "yt-dlp's Tumblr extractor covers video and audio posts; photo posts need gallery-dl.",
+    reliability: 'unsupported', lastChecked: '2026-11-24',
+    notes: "Tumblr answered yt-dlp with HTTP 403 Forbidden (checked 2026-11-24 from the development machine), so downloads fail; another server may get through. yt-dlp's Tumblr extractor covers video and audio posts; photo posts need gallery-dl.",
     sources: ['https://www.tumblr.com/policy/en/terms-of-service', 'https://www.tumblr.com/docs/en/api_agreement', SRC.galleryDl],
   },
   {

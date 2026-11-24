@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { liveDot, shelfOf, siteStatus } from '../src/lib/siteStatus.js';
+import { hiddenReason, isDownloadable, liveDot, shelfOf, siteStatus } from '../src/lib/siteStatus.js';
 
 const site = (policy, extra = {}) => ({ id: 'example', policy, available: true, ...extra });
 
@@ -31,12 +31,38 @@ test('any other website is its own status', () => {
   assert.equal(siteStatus({ id: 'direct', policy: 'attestation', available: true }), 'any');
 });
 
-test('statuses group into the three Home shelves', () => {
+test('statuses group by what Ferry does with the site', () => {
   assert.equal(shelfOf('free'), 'direct');
   assert.equal(shelfOf('perm'), 'direct');
   assert.equal(shelfOf('off'), 'official');
   assert.equal(shelfOf('lock'), 'protected');
   for (const s of ['any', 'off-server', 'unavailable', null]) assert.equal(shelfOf(s), null);
+});
+
+test('Home and Sites list a site only when Ferry can really download from it', () => {
+  assert.equal(isDownloadable(site('allowed', { reliability: 'verified' })), true);
+  // "Sometimes breaks" stays listed: TikTok, YouTube, Instagram, Facebook and X are in it.
+  assert.equal(isDownloadable(site('attestation', { reliability: 'experimental' })), true);
+  assert.equal(isDownloadable(site('allowed')), true, 'no reliability data is not a known failure');
+  // Known to fail: needs a login, needs to pose as a browser, or the tool is broken upstream.
+  assert.equal(isDownloadable(site('attestation', { reliability: 'unsupported' })), false);
+  assert.equal(isDownloadable(site('attestation', { reliability: 'unstable' })), false);
+  // Allowed, but this server lacks the engine.
+  assert.equal(isDownloadable(site('allowed', { available: false, reliability: 'verified' })), false);
+  for (const policy of ['export_only', 'blocked', 'disabled']) assert.equal(isDownloadable(site(policy, { reliability: 'verified' })), false, policy);
+  // "Any other website" is the fallback for unknown links, not a listed site.
+  assert.equal(isDownloadable({ id: 'generic', policy: 'attestation', available: true, reliability: 'verified' }), false);
+  assert.equal(isDownloadable(null), false);
+});
+
+test('a site that is not listed says why', () => {
+  assert.equal(hiddenReason(site('allowed', { reliability: 'verified' })), null);
+  assert.equal(hiddenReason(site('blocked', { reliability: 'unsupported' })), 'lock');
+  assert.equal(hiddenReason(site('export_only', { reliability: 'unsupported' })), 'off');
+  assert.equal(hiddenReason(site('attestation', { reliability: 'unsupported' })), 'broken');
+  assert.equal(hiddenReason(site('attestation', { reliability: 'unstable' })), 'broken');
+  assert.equal(hiddenReason(site('allowed', { available: false, reliability: 'verified' })), 'unavailable');
+  assert.equal(hiddenReason(site('disabled')), 'off-server');
 });
 
 test('live dots appear only when the server has data', () => {
