@@ -1,0 +1,30 @@
+{
+  "name": "ferry",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Ferry - a secure, compliance-first universal media downloader. Paste a link, keep the file.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:server": "npm run dev -w @ferry/server",
+    "dev:web": "npm run dev -w @ferry/web",
+    "build": "npm run build -w @ferry/web",
+    "start": "node apps/server/src/main.js",
+    "test": "node --test --test-concurrency=1 \"packages/shared/test/**/*.test.js\" \"apps/server/test/**/*.test.js\"",
+    "test:unit": "node --test \"packages/shared/test/**/*.test.js\" \"apps/server/test/unit/**/*.test.js\"",
+    "test:e2e": "playwright test",
+    "docs:platforms": "node scripts/generate-platform-docs.mjs",
+    "fixtures": "node scripts/make-fixtures.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0"
+  }
+}

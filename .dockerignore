@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+.venv
+.git
+.fixtures
+apps/web/dist
+apps/server/var
+var
+test-results
+playwright-report
+docs/research
+.env
+.env.*
+!.env.example
+*.log

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ferry-test-stack",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/e2e-server.mjs"],
+      "port": 8787
+    },
+    {
+      "name": "ferry",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["apps/server/src/main.js"],
+      "port": 8787
+    }
+  ]
+}

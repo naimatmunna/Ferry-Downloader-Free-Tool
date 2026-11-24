@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+.venv/
+
+# build output
+apps/web/dist/
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# runtime data (job files, overrides, caches)
+var/
+apps/server/var/
+.fixtures/
+
+# environment and secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/*
+!.vscode/extensions.json
+.idea/

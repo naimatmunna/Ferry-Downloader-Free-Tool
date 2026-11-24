@@ -1,0 +1,15 @@
+{
+  "name": "@ferry/shared",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Runtime-agnostic code shared by the Ferry server and web client: platform registry, URL detection, formats, errors, job states, filenames.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.js",
+    "./*": "./src/*.js"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
+  }
+}

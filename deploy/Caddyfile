@@ -1,0 +1,20 @@
+{$FERRY_DOMAIN} {
+	# Compress text responses only (Caddy skips already-compressed media types).
+	encode zstd gzip
+
+	reverse_proxy ferry:8787 {
+		# Stream large downloads immediately; never buffer media in the proxy.
+		flush_interval -1
+		header_up X-Forwarded-For {remote_host}
+	}
+
+	header -Server
+	log {
+		# Access logs without query strings (they carry download tokens).
+		format filter {
+			request>uri query {
+				delete token
+			}
+		}
+	}
+}
