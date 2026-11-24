@@ -28,7 +28,9 @@ const jobSchema = z
   .object({
     probeId: z.string().regex(/^p_[A-Za-z0-9_-]{16,40}$/),
     entryId: z.string().min(1).max(300).nullable().optional(),
-    mode: z.enum(['av', 'video', 'audio']),
+    mode: z.enum(['av', 'video', 'audio', 'gallery']),
+    // Image galleries: 1-based file indexes from the probe (validated against it in jobs/service.js).
+    gallery: z.object({ items: z.array(z.number().int().min(1).max(100_000)).min(1).max(500) }).strict().optional(),
     video: z.object({ container: z.enum(VIDEO_CONTAINER_IDS), quality: qualitySchema, compress: z.boolean().optional() }).strict().optional(),
     audio: z
       .object({
@@ -54,7 +56,9 @@ const jobSchema = z
   })
   .strict()
   .superRefine((b, ctx) => {
-    if (b.mode !== 'audio' && !b.video) ctx.addIssue({ code: 'custom', path: ['video'], message: 'video options are required' });
+    if (b.mode === 'gallery' && !b.gallery) ctx.addIssue({ code: 'custom', path: ['gallery'], message: 'choose the images to download' });
+    if (b.mode !== 'gallery' && b.gallery) ctx.addIssue({ code: 'custom', path: ['gallery'], message: 'only for gallery downloads' });
+    if (b.mode !== 'audio' && b.mode !== 'gallery' && !b.video) ctx.addIssue({ code: 'custom', path: ['video'], message: 'video options are required' });
     if (b.mode === 'audio' && !b.audio) ctx.addIssue({ code: 'custom', path: ['audio'], message: 'audio options are required' });
     if (b.filename && !validateTemplate(b.filename.template).ok) ctx.addIssue({ code: 'custom', path: ['filename', 'template'], message: 'invalid template' });
   });
@@ -63,6 +67,18 @@ const statusSchema = z.object({ jobs: z.array(z.object({ id: z.string().max(64),
 const policySchema = z.object({ policy: z.enum(['allowed', 'attestation', 'export_only', 'blocked', 'disabled']), reason: z.string().max(300).optional() }).strict();
 
 function normalizeRequest(b) {
+  if (b.mode === 'gallery') {
+    return {
+      mode: 'gallery',
+      video: null,
+      audio: null,
+      gallery: { items: [...new Set(b.gallery.items)].sort((x, y) => x - y) },
+      // Images are always re-encoded without metadata; video-only extras do not apply.
+      extras: { subtitles: [], embedSubtitles: false, thumbnail: false, metadata: false, trim: null },
+      filename: { template: b.filename?.template ?? '{title}' },
+      privacy: { deleteAfterDownload: Boolean(b.privacy?.deleteAfterDownload) },
+    };
+  }
   const trim = b.extras?.trim && (b.extras.trim.start || b.extras.trim.end) ? { start: b.extras.trim.start ?? 0, end: b.extras.trim.end ?? null } : null;
   return {
     mode: b.mode,
@@ -218,8 +234,9 @@ export function createApp({ config, logger, services }) {
         jobTtlMinutes: config.limits.jobTtlMinutes,
         jobMaxRetentionMinutes: config.limits.jobMaxRetentionMinutes,
         maxActiveJobsPerClient: config.limits.maxActiveJobsPerClient,
+        maxGalleryItems: config.limits.maxGalleryItems,
       },
-      features: { pauseResume: true, playlists: true, subtitles: true, trim: true, compress: true, thumbnails: true, extend: true },
+      features: { pauseResume: true, playlists: true, subtitles: true, trim: true, compress: true, thumbnails: true, extend: true, galleries: policies.engineReady('gallery-dl') },
       // Test fixtures only (refused in production): lets the client accept the allowlisted local hosts.
       ...(config.egress.allowHosts.length ? { testHosts: config.egress.allowHosts } : {}),
     });
@@ -236,7 +253,7 @@ export function createApp({ config, logger, services }) {
     res.setHeader('Cache-Control', 'public, max-age=30');
     res.json({
       updatedAt: new Date().toISOString(),
-      engines: { extraction: engineStatus.ytdlp.ok, conversion: engineStatus.ffmpeg.ok && engineStatus.ffprobe.ok },
+      engines: { extraction: engineStatus.ytdlp.ok, conversion: engineStatus.ffmpeg.ok && engineStatus.ffprobe.ok, galleries: policies.engineReady('gallery-dl') },
       queue: { active: jobs.queue.active, waiting: jobs.queue.waiting, concurrency: config.limits.maxConcurrentJobs },
       platforms: metrics.platformHealth(),
     });
@@ -321,8 +338,10 @@ export function createApp({ config, logger, services }) {
     res.on('finish', () => {
       metrics.inc('ferry_bytes_served_total', {}, Number(res.getHeader('content-length') ?? 0));
       // Privacy option: once the main file has been delivered in full, delete the job's files
-      // (after a grace period so an interrupted transfer can still resume).
-      if (res.statusCode === 200 && file.kind === 'media' && job.request.privacy?.deleteAfterDownload) jobs.scheduleRemoval(job.id, 2 * 60_000);
+      // (after a grace period so an interrupted transfer can still resume). A gallery's
+      // "main file" is its only image; larger galleries count as delivered with the ZIP.
+      const main = file.kind === 'media' || (file.kind === 'image' && job.output.files.length === 1);
+      if (res.statusCode === 200 && main && job.request.privacy?.deleteAfterDownload) jobs.scheduleRemoval(job.id, 2 * 60_000);
     });
     await new Promise((resolve, reject) => {
       res.sendFile(abs, { etag: false, lastModified: true, acceptRanges: true, cacheControl: false, dotfiles: 'deny' }, (err) => {
@@ -343,11 +362,15 @@ export function createApp({ config, logger, services }) {
     });
     const size = await zipSize(entries);
     if (size == null) throw new FerryError('FILE_TOO_LARGE', { params: { size: '4 GB' } });
-    const base = job.output.files[0].name.replace(/\.[^.]+$/, '');
-    fileHeaders(res, { name: `${base}.zip`, mime: 'application/zip', disposition: 'attachment' });
+    const name = job.output.archiveName ?? `${job.output.files[0].name.replace(/\.[^.]+$/, '')}.zip`;
+    fileHeaders(res, { name, mime: 'application/zip', disposition: 'attachment' });
     res.setHeader('Content-Length', String(size));
-    await writeZip(entries, res).catch((err) => logger.debug({ err }, 'archive stream aborted'));
+    let complete = false;
+    await writeZip(entries, res)
+      .then(() => (complete = true))
+      .catch((err) => logger.debug({ err }, 'archive stream aborted'));
     res.end();
+    if (complete && job.request.mode === 'gallery' && job.request.privacy?.deleteAfterDownload) jobs.scheduleRemoval(job.id, 2 * 60_000);
   }));
 
   // ---------------------------------------------------------- thumbnails

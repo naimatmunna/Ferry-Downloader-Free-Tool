@@ -126,11 +126,13 @@ Public client configuration.
   "limits": {
     "maxDurationSec": 10800, "maxFileSizeBytes": 2147483648,
     "maxBatchUrls": 20, "maxPlaylistItems": 50, "jobTtlMinutes": 60,
-    "maxActiveJobsPerClient": 4
+    "maxActiveJobsPerClient": 4, "maxGalleryItems": 100
   },
-  "features": { "pauseResume": true, "playlists": true, "subtitles": true, "trim": true, "compress": true, "thumbnails": true, "extend": true }
+  "features": { "pauseResume": true, "playlists": true, "subtitles": true, "trim": true, "compress": true, "thumbnails": true, "extend": true, "galleries": true }
 }
 ```
+
+`features.galleries` is `true` when gallery-dl, FFmpeg and ffprobe were found at startup.
 
 `testHosts` is added only when the test-only `SSRF_ALLOW_HOSTS` is set (refused in production).
 
@@ -141,7 +143,7 @@ and per-platform outcomes over the last 24 hours (aggregate counts only).
 ```json
 {
   "updatedAt": "2026-11-24T10:00:00.000Z",
-  "engines": { "extraction": true, "conversion": true },
+  "engines": { "extraction": true, "conversion": true, "galleries": true },
   "queue": { "active": 1, "waiting": 0, "concurrency": 2 },
   "platforms": {
     "internet-archive": { "attempts": 42, "successRate": 97.6, "status": "operational", "topErrors": [{ "code": "NETWORK_ERROR", "count": 1 }] }
@@ -248,6 +250,27 @@ Response `200`:
 }
 ```
 
+**Image galleries.** For platforms whose engine is gallery-dl (Imgur, Flickr,
+Mastodon, …) `media.kind` is `"gallery"`, `capabilities.modes` is
+`["gallery"]`, and the images are listed in `media.gallery` (source URLs never
+leave the server; previews go through the signed thumbnail proxy):
+
+```json
+"gallery": {
+  "items": [
+    { "index": 1, "ext": "jpg", "width": 800, "height": 400, "sizeBytes": null, "previewUrl": "/api/v1/thumb?u=…&e=…&s=…" },
+    { "index": 3, "ext": "gif", "width": 320, "height": 240, "sizeBytes": 35787, "previewUrl": "/api/v1/thumb?u=…&e=…&s=…" }
+  ],
+  "truncated": false,
+  "skipped": { "videos": 1, "other": 0, "links": 0 }
+}
+```
+
+`index` is the file's position in the post (gaps are videos or other files
+that are not offered). `truncated` means the post has more than
+`limits.maxGalleryItems` files. `skipped` counts videos, non-image files and
+links to other pages that are left out.
+
 Errors: `INVALID_URL`, `BLOCKED_DESTINATION`, `UNSUPPORTED_PLATFORM`,
 `PLATFORM_BLOCKED`, `EXPORT_ONLY`, `PLATFORM_DISABLED`, `PRIVATE_CONTENT`,
 `AUTH_REQUIRED`, `DRM_PROTECTED`, `GEO_RESTRICTED`, `LIVE_NOT_SUPPORTED`,
@@ -340,7 +363,8 @@ Request:
 
 | Field | Values | Rules |
 |---|---|---|
-| `mode` | `av` · `video` · `audio` | `av` = video with sound; `video` = video without sound; `audio` = audio only. |
+| `mode` | `av` · `video` · `audio` · `gallery` | `av` = video with sound; `video` = video without sound; `audio` = audio only; `gallery` = chosen images of a gallery probe. |
+| `gallery.items` | 1–500 indexes from `media.gallery.items[].index` | Required for (and only allowed with) `gallery`. Each image is re-encoded by FFmpeg without metadata (JPEG→JPEG, PNG→PNG, GIF→GIF, lossy WebP/AVIF→JPEG, alpha→PNG, other animations→GIF) and named `<template> - 01.jpg`…; `video`/`audio`/`extras` do not apply. |
 | `video.container` | `mp4` · `webm` · `mkv` · `mov` · `avi` | Required for `av`/`video`. |
 | `video.quality` | `"best"` or a resolution present in `media.video.qualities[].res` | Upscaling is rejected (`FORMAT_UNAVAILABLE`). |
 | `video.compress` | boolean | Re-encode for a smaller file (H.264 CRF 28 / VP9 CRF 36). |
@@ -351,7 +375,7 @@ Request:
 | `extras.metadata` | boolean | Writes title/artist/date tags. |
 | `extras.trim` | `{ start?, end? }` seconds | `0 ≤ start < end ≤ durationSec`. |
 | `filename.template` | ≤ 120 chars | Tokens: `{title}` `{uploader}` `{platform}` `{id}` `{quality}` `{date}`. Sanitized server-side. |
-| `privacy.deleteAfterDownload` | boolean | Delete the job's files two minutes after the main file has been delivered in full. |
+| `privacy.deleteAfterDownload` | boolean | Delete the job's files two minutes after the main file has been delivered in full (galleries: the ZIP, or the only image). |
 | `attest` | boolean | Required `true` when `policy.status = attestation`. |
 | `entryId` | string | Selects one entry of a playlist probe. |
 
@@ -408,7 +432,9 @@ Illegal transitions return `409 INVALID_STATE`.
 
 `GET /api/v1/jobs/:id/archive?token=…` — a streamed ZIP (stored, no
 recompression) of every file of the job; available when the job has more than
-one file.
+one file. A gallery's ZIP is named after the filename template (`<template>.zip`).
+Gallery jobs whose images were not all usable carry the note `gallery-partial`
+in `output.notes`.
 
 ### 5.6 Thumbnail proxy
 

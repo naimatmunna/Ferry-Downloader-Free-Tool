@@ -84,7 +84,7 @@ export function AttestBox({ source, checked, onChange }) {
 }
 
 /** Shows the route line of downloads started from this analysis. */
-function Following({ probeId }) {
+export function Following({ probeId }) {
   const { t } = useI18n();
   const navigate = useNavigate();
   // Select raw state and derive in render: a selector returning a new array re-renders forever.
@@ -92,6 +92,7 @@ function Following({ probeId }) {
   const jobs = useDownloads((s) => s.jobs);
   const items = useMemo(() => Object.values(tracked).filter((x) => x.meta?.probeId === probeId).sort((a, b) => b.addedAt - a.addedAt), [tracked, probeId]);
   const save = useDownloads((s) => s.save);
+  const saveArchive = useDownloads((s) => s.saveArchive);
   if (!items.length) return null;
   return (
     <ul className="flex flex-col gap-4 border-t border-line pt-5">
@@ -106,11 +107,16 @@ function Following({ probeId }) {
             </div>
             <RouteLine job={job} compact />
             <div className="flex gap-2">
-              {job.status === 'ready' && (
-                <Button size="sm" variant="primary" icon={Download} onClick={() => save(job.id, job.output.files[0].id)}>
-                  {t('downloads.save')}
-                </Button>
-              )}
+              {job.status === 'ready' &&
+                (job.request?.mode === 'gallery' && job.output.files.length > 1 ? (
+                  <Button size="sm" variant="primary" icon={Download} onClick={() => saveArchive(job.id)}>
+                    {t('downloads.saveAll')}
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="primary" icon={Download} onClick={() => save(job.id, job.output.files[0].id)}>
+                    {t('downloads.save')}
+                  </Button>
+                ))}
               <Button size="sm" variant="ghost" onClick={() => navigate('/downloads')}>
                 {t('picker.view')}
               </Button>

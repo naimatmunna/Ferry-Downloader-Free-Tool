@@ -77,6 +77,26 @@ export function jobBody({ probeId, entryId = null, selection, media, attest }) {
   return body;
 }
 
+/** POST /jobs body for an image gallery: the chosen image indexes, nothing else to pick. */
+export function galleryJobBody({ probeId, items, attest, filename }) {
+  return {
+    probeId,
+    mode: 'gallery',
+    gallery: { items: [...items].sort((a, b) => a - b) },
+    attest: Boolean(attest),
+    filename: { template: filename || '{title}' },
+    privacy: { deleteAfterDownload: useSettings.getState().privacy.deleteAfterSave },
+  };
+}
+
+/** Images to pre-select: all of them, or what a "Download again" request had chosen. */
+function initialGalleryPicks(media, pending) {
+  const all = media.gallery.items.map((i) => i.index);
+  if (pending?.mode !== 'gallery') return all;
+  const again = all.filter((i) => pending.gallery?.items?.includes(i));
+  return again.length ? again : all;
+}
+
 let controller = null;
 
 export const useAnalysis = create((set, get) => ({
@@ -88,13 +108,14 @@ export const useAnalysis = create((set, get) => ({
   attest: false,
   startedAt: null,
   playlistPicks: [],
+  galleryPicks: [],
   batch: null, // [{ url, status, result?, error? }]
 
   setInput: (input) => set({ input }),
 
   reset() {
     controller?.abort();
-    set({ status: 'idle', result: null, error: null, selection: null, attest: false, batch: null, playlistPicks: [], startedAt: null });
+    set({ status: 'idle', result: null, error: null, selection: null, attest: false, batch: null, playlistPicks: [], galleryPicks: [], startedAt: null });
   },
 
   async analyze(text, { playlist = false } = {}) {
@@ -103,7 +124,7 @@ export const useAnalysis = create((set, get) => ({
     if (links.length > 1) return get().analyzeBatch(links);
     controller?.abort();
     controller = new AbortController();
-    set({ status: 'probing', error: null, result: null, selection: null, batch: null, startedAt: Date.now(), attest: false, playlistPicks: [] });
+    set({ status: 'probing', error: null, result: null, selection: null, batch: null, startedAt: Date.now(), attest: false, playlistPicks: [], galleryPicks: [] });
     try {
       const result = await api.probe(single, { playlist, signal: controller.signal });
       const generic = ['generic', 'direct'].includes(result.source.platform.id);
@@ -115,6 +136,7 @@ export const useAnalysis = create((set, get) => ({
         selection: pending ? fromRequest(pending, result.media) : initialSelection(result.media),
         attest: generic && useSettings.getState().acknowledgedGenericTerms,
         playlistPicks: result.media.kind === 'playlist' ? result.media.entries.map((e) => e.id) : [],
+        galleryPicks: result.media.kind === 'gallery' ? initialGalleryPicks(result.media, pending) : [],
       });
     } catch (error) {
       if (error?.name === 'AbortError') return;
@@ -177,6 +199,7 @@ export const useAnalysis = create((set, get) => ({
 
   setAttest: (attest) => set({ attest }),
   setPlaylistPicks: (playlistPicks) => set({ playlistPicks }),
+  setGalleryPicks: (galleryPicks) => set({ galleryPicks }),
 
   /** "Download again" from history: analyse the source again and restore the previous choices. */
   again(url, request) {

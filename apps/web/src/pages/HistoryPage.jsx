@@ -111,7 +111,7 @@ export default function HistoryPage() {
                       <span className="block truncate font-semibold">{e.title}</span>
                       <span className="mt-0.5 flex flex-wrap gap-x-3 text-sm text-ink-2">
                         <span>{e.platformName}</span>
-                        <span>{requestLabel(e.request)}</span>
+                        <span>{requestLabel(e.request, t)}</span>
                         {e.output?.[0]?.sizeBytes ? <span className="tabular-nums">{bytes(e.output[0].sizeBytes, { locale })}</span> : null}
                         {!FINISHED.includes(e.status) && <span className="text-buoy">{t(`downloads.status.${e.status}`)}</span>}
                       </span>
@@ -141,7 +141,7 @@ export default function HistoryPage() {
             <dt className="text-ink-2">{t('history.fields.platform')}</dt>
             <dd>{details.platformName}</dd>
             <dt className="text-ink-2">{t('history.fields.format')}</dt>
-            <dd>{requestLabel(details.request)}</dd>
+            <dd>{requestLabel(details.request, t)}</dd>
             {details.durationSec != null && (
               <>
                 <dt className="text-ink-2">{t('picker.trim.end')}</dt>

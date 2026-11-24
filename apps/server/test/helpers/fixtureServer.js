@@ -8,6 +8,8 @@
  *   /redirect/<file>        302 → /<file>
  *   /redirect-to?url=…      302 → arbitrary URL (SSRF redirect tests)
  *   /gone                   404
+ *   /api/v1/statuses/<id>   Mastodon-style status JSON over the gallery fixtures
+ *                           (what gallery-dl's Mastodon extractor reads); see GALLERY_POSTS
  */
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import http from 'node:http';
@@ -18,11 +20,40 @@ export const FIXTURES_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.
 
 const TYPES = {
   '.mp4': 'video/mp4', '.webm': 'video/webm', '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.flac': 'audio/flac', '.ogg': 'audio/ogg',
-  '.jpg': 'image/jpeg', '.vtt': 'text/vtt', '.html': 'text/html; charset=utf-8', '.m3u8': 'application/vnd.apple.mpegurl', '.ts': 'video/mp2t',
+  '.jpg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp',
+  '.vtt': 'text/vtt', '.html': 'text/html; charset=utf-8', '.m3u8': 'application/vnd.apple.mpegurl', '.ts': 'video/mp2t',
 };
 
+/**
+ * Posts served as Mastodon statuses: [file, attachment type, width, height, host?].
+ * `host: 'localhost'` points an attachment at a name the SSRF guard must refuse.
+ */
+export const GALLERY_POSTS = Object.freeze({
+  111111111: {
+    text: '<p>Harbour pictures &amp; a clip</p>',
+    media: [['gallery/photo-1.jpg', 'image', 800, 400], ['gallery/photo-2.png', 'image', 640, 640], ['gallery/anim.gif', 'image', 320, 240], ['clip-h264-aac.mp4', 'video', 640, 360], ['gallery/photo-4.webp', 'image', 400, 300]],
+  },
+  222222222: { text: '<p>One picture and an impostor</p>', media: [['gallery/photo-2.png', 'image', 640, 640], ['gallery/not-an-image.jpg', 'image', 800, 600]] },
+  333333333: { text: '<p>Picture on a private address</p>', media: [['gallery/secret.png', 'image', 64, 64, 'localhost']] },
+});
+
+function mastodonStatus(id, origin, port) {
+  const post = GALLERY_POSTS[id];
+  const attachment = ([file, type, width, height, host], i) => {
+    const url = `${host ? `http://${host}:${port}` : origin}/${file}`;
+    return { id: `${id}${i}`, type, url, preview_url: url, remote_url: null, description: null, blurhash: null, meta: { original: { width, height, size: `${width}x${height}` } } };
+  };
+  return {
+    id: String(id), created_at: '2026-11-20T10:00:00.000Z', in_reply_to_id: null, in_reply_to_account_id: null, reblog: null,
+    sensitive: false, spoiler_text: '', visibility: 'public', language: 'en', uri: `${origin}/users/ferry/statuses/${id}`,
+    url: `${origin}/@ferry/${id}`, content: post.text, tags: [], emojis: [], mentions: [], card: null, poll: null,
+    account: { id: '1', username: 'ferry', acct: 'ferry', display_name: 'Ferry Fixtures', url: `${origin}/@ferry` },
+    media_attachments: post.media.map(attachment),
+  };
+}
+
 export async function startFixtureServer({ dir = FIXTURES_DIR, host = '127.0.0.1', port = 0 } = {}) {
-  if (!existsSync(path.join(dir, 'clip-h264-aac.mp4'))) {
+  if (!existsSync(path.join(dir, 'clip-h264-aac.mp4')) || !existsSync(path.join(dir, 'gallery', 'photo-1.jpg'))) {
     throw new Error(`Fixtures missing in ${dir}. Run: npm run fixtures`);
   }
   const flakySeen = new Set();
@@ -35,6 +66,12 @@ export async function startFixtureServer({ dir = FIXTURES_DIR, host = '127.0.0.1
     let bps = 0;
 
     if (pathname === '/gone') return void res.writeHead(404).end('gone');
+    const statusId = /^\/api\/v1\/statuses\/(\d+)$/.exec(pathname)?.[1];
+    if (statusId) {
+      const found = GALLERY_POSTS[statusId];
+      res.writeHead(found ? 200 : 404, { 'content-type': 'application/json; charset=utf-8' });
+      return void res.end(JSON.stringify(found ? mastodonStatus(statusId, `http://${req.headers.host}`, port) : { error: 'Record not found' }));
+    }
     if (pathname === '/redirect-to') return void res.writeHead(302, { location: url.searchParams.get('url') ?? '/' }).end();
     if (pathname.startsWith('/redirect/')) return void res.writeHead(302, { location: pathname.slice('/redirect'.length) }).end();
     if (pathname.startsWith('/flaky/')) {

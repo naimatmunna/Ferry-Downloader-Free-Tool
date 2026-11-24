@@ -39,13 +39,13 @@ function parseTrustProxy(value) {
   return list(value); // e.g. "loopback, 10.0.0.0/8"
 }
 
-/** Locate a project-local yt-dlp (virtualenv) before falling back to PATH. */
-function detectYtDlp() {
+/** Locate a project-local engine (virtualenv) before falling back to PATH. */
+function detectVenvTool(name) {
   const candidates = [
-    path.join(REPO_ROOT, '.venv', 'Scripts', 'yt-dlp.exe'),
-    path.join(REPO_ROOT, '.venv', 'bin', 'yt-dlp'),
+    path.join(REPO_ROOT, '.venv', 'Scripts', `${name}.exe`),
+    path.join(REPO_ROOT, '.venv', 'bin', name),
   ];
-  return candidates.find((p) => existsSync(p)) ?? 'yt-dlp';
+  return candidates.find((p) => existsSync(p)) ?? name;
 }
 
 /**
@@ -92,7 +92,9 @@ export function loadConfig(env = process.env) {
     policyFile: path.join(dataDir, 'policy-overrides.json'),
     webDist: env.WEB_DIST ? path.resolve(env.WEB_DIST) : path.join(REPO_ROOT, 'apps', 'web', 'dist'),
     engines: {
-      ytdlp: env.YTDLP_PATH || detectYtDlp(),
+      ytdlp: env.YTDLP_PATH || detectVenvTool('yt-dlp'),
+      // Image galleries (optional engine; GPL-2.0, run as a separate program only).
+      galleryDl: env.GALLERYDL_PATH || detectVenvTool('gallery-dl'),
       ffmpeg: env.FFMPEG_PATH || 'ffmpeg',
       ffprobe: env.FFPROBE_PATH || 'ffprobe',
       // No JavaScript runtime by default: yt-dlp only needs one to solve
@@ -117,6 +119,9 @@ export function loadConfig(env = process.env) {
       maxStorageMb: int(env.MAX_STORAGE_MB, 20 * 1024, { min: 1, name: 'MAX_STORAGE_MB' }),
       maxPlaylistItems: int(env.MAX_PLAYLIST_ITEMS, 50, { min: 1, max: 500, name: 'MAX_PLAYLIST_ITEMS' }),
       maxBatchUrls: int(env.MAX_BATCH_URLS, 20, { min: 1, max: 100, name: 'MAX_BATCH_URLS' }),
+      maxGalleryItems: int(env.MAX_GALLERY_ITEMS, 100, { min: 1, max: 500, name: 'MAX_GALLERY_ITEMS' }),
+      maxImageBytes: int(env.MAX_IMAGE_MB, 100, { min: 1, max: 4096, name: 'MAX_IMAGE_MB' }) * 1024 * 1024,
+      maxImagePixels: int(env.MAX_IMAGE_MEGAPIXELS, 100, { min: 1, max: 900, name: 'MAX_IMAGE_MEGAPIXELS' }) * 1_000_000,
       probeCacheSize: int(env.PROBE_CACHE_SIZE, 500, { min: 10, name: 'PROBE_CACHE_SIZE' }),
       probeTtlMs: int(env.PROBE_TTL_MINUTES, 15, { min: 1, name: 'PROBE_TTL_MINUTES' }) * 60 * 1000,
       maxProbeOutputBytes: 32 * 1024 * 1024,

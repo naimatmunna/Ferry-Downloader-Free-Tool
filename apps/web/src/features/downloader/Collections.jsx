@@ -96,7 +96,8 @@ export function BatchPanel() {
   const setAttest = useAnalysis((s) => s.setAttest);
   const enqueue = useDownloads((s) => s.enqueue);
 
-  const ready = useMemo(() => batch.filter((b) => b.status === 'ready' && b.result?.media?.kind !== 'playlist'), [batch]);
+  // Playlists and galleries need their own picker, so a batch skips them.
+  const ready = useMemo(() => batch.filter((b) => b.status === 'ready' && !['playlist', 'gallery'].includes(b.result?.media?.kind)), [batch]);
   const attestItem = ready.find((b) => b.result.source.policy.status === 'attestation');
 
   function start() {

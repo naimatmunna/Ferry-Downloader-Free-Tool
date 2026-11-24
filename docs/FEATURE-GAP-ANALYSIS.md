@@ -60,7 +60,7 @@ Legend: ✅ strong / complete · 🟡 partial, caveated or paywalled · ❌ miss
 | **Privacy** | ✅ NewPipe (on-device, no Google APIs); cobalt (zero-log, opt-out analytics) | ❌ push-ad networks, marketing cookies, undocumented telemetry | ✅ no accounts, analytics or third-party requests; history on device; no IP logging by default; URLs hashed in logs; files deleted at TTL or on request | Published data-flow diagram + independent audit (*rec.*) |
 | **Self-hosting** | 🟡 cobalt (Docker; but non-commercial web UI and a dormant repo) | ❌ closed desktop apps or SaaS | ✅ one container, no external services; non-root, read-only FS, resource limits | Redis/BullMQ + S3 + MongoDB drivers (PRD future) |
 | **Security posture** | 🟡 yt-dlp fixes advisories fast (6 in 2026, all fixed by 2026.07.04) | ❌ bundled installers, malicious extensions, compromised official downloads, clone domains | ✅ egress guard (SSRF, DNS rebinding), no shell, hardened yt-dlp (no cookies, impersonation, `--exec`), outputs written by FFmpeg and verified by ffprobe, sandbox CSP, per-job tokens; no installer or extension | Signed images + SBOM, `security.txt` (*rec.*) |
-| **Image galleries / carousels** | ✅ photo saves (ssstik); multi-item picker (cobalt) | 🟡 | ❌ | ✅ gallery-dl adapter (GPL-2.0, subprocess), allowlisted sites only |
+| **Image galleries / carousels** | ✅ photo saves (ssstik); multi-item picker (cobalt) | 🟡 | ✅ gallery-dl adapter (GPL-2.0, subprocess), allowlisted sites only; image picker, metadata-free re-encode, ZIP | — |
 | **Livestream recording** | Not documented (Streamlink is the engine reference) | ❌ | ❌ explicit "try after it ends" state | ✅ Streamlink adapter where authorized, with duration caps; no browser-challenge plugins (Twitch, Kick) |
 | **Aspect-ratio conversion** | Not documented | ❌ | ❌ | ✅ crop/pad to 9:16, 1:1, 16:9 |
 
@@ -130,7 +130,7 @@ regardless of score.
 | F6 | Audio-track picker with AI-dub labels | 10 | 1 | 70% | 1.5 | **4.7** |
 | F7 | Aspect-ratio conversion (9:16, 1:1, 16:9) | 10 | 1 | 70% | 1.5 | **4.7** |
 | F8 | Web Push "file ready" (Android, desktop) | 20 | 0.5 | 70% | 1.5 | **4.7** |
-| F9 | gallery-dl adapter for galleries and carousels (allowlisted) | 20 | 1 | 60% | 4 | **3.0** |
+| F9 | ~~gallery-dl adapter for galleries and carousels (allowlisted)~~ — shipped | 20 | 1 | 60% | 4 | **3.0** |
 | F10 | Import-your-export helper (Meta, X, Takeout archives) | 10 | 2 | 50% | 6 | **1.7** |
 | F11 | iOS native share extension | 15 | 2 | 40% | 8 | **1.5** |
 | F12 | Scale-out drivers (Redis/BullMQ, S3, MongoDB) — operator reach | 5 | 2 | 80% | 6 | **1.3** |

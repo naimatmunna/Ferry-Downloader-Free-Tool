@@ -46,6 +46,16 @@ export function createJobService({ config, store, probeCache, registry, policies
   function validateSelection(req, media) {
     if (!media) return;
     if (!media.capabilities.modes.includes(req.mode)) throw new FerryError('FORMAT_UNAVAILABLE', { message: 'That download mode is not available for this media.' });
+    if (req.mode === 'gallery') {
+      const items = new Map(media.gallery.items.map((i) => [i.index, i]));
+      if (req.gallery.items.some((n) => !items.has(n))) throw new FerryError('FORMAT_UNAVAILABLE', { message: 'That image is not part of this gallery.' });
+      const sizes = req.gallery.items.map((n) => items.get(n).sizeBytes);
+      const known = sizes.every((s) => s != null) ? sizes.reduce((a, b) => a + b, 0) : null;
+      if (known != null && known > config.limits.maxFileSizeBytes) {
+        throw new FerryError('FILE_TOO_LARGE', { params: { size: `${Math.round(config.limits.maxFileSizeBytes / 1024 / 1024)} MB` } });
+      }
+      return;
+    }
     if (req.mode !== 'audio') {
       const q = req.video.quality;
       if (q !== 'best' && !media.video.unknown && !media.video.qualities.some((x) => x.res === q)) {
@@ -188,14 +198,14 @@ export function createJobService({ config, store, probeCache, registry, policies
     };
 
     try {
-      const { files, notes } = await pipeline.run(store.get(id), { signal, onProgress, onPhase });
+      const { files, notes, archiveName = null } = await pipeline.run(store.get(id), { signal, onProgress, onPhase });
       if (timer) clearTimeout(timer);
       const now = Date.now();
       store.update(id, {
         status: 'ready',
         finishedAt: now,
         expiresAt: now + ttl,
-        output: { files, notes },
+        output: { files, notes, archiveName },
         progress: { phase: null, stage: null, percent: 100, speedBps: null, etaSec: null },
       });
       const bytes = files.reduce((n, f) => n + (f.sizeBytes ?? 0), 0);

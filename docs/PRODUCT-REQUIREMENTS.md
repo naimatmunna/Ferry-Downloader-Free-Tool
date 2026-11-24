@@ -97,7 +97,7 @@ pop-unders, bundled installers and misleading quality labels (see
 | FR-20 | Trim (start/end). Precise when re-encoding; otherwise starts at the nearest keyframe (stated in the UI). | ✅ |
 | FR-21 | Basic compression (smaller H.264/VP9 re-encode). | ✅ |
 | FR-22 | Playlist and batch downloads; ZIP bundle for multi-file jobs. | ✅ |
-| FR-23 | Image galleries/carousels (gallery-dl adapter). | Future |
+| FR-23 | Image galleries/carousels (gallery-dl adapter): preview grid, pick images, every image re-encoded without metadata, ZIP for several. | ✅ |
 | FR-24 | Livestream recording (Streamlink adapter, where authorized). | Future |
 | FR-25 | Aspect-ratio conversion (crop/pad to 9:16, 1:1, 16:9). | Future |
 | FR-26 | Channel/account exports via official APIs. | Future |
@@ -171,7 +171,7 @@ light/dark · PWA manifest + share target · security hardening · tests.
 
 ### Future
 
-gallery-dl image galleries/carousels · Streamlink livestream recording ·
+Streamlink livestream recording ·
 aspect-ratio conversion · BullMQ/Redis + S3 scale-out drivers · MongoDB audit
 & policy store · optional accounts with encrypted history sync · official API
 exports (e.g. a user's own YouTube channel via OAuth + YouTube's download

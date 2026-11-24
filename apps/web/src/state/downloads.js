@@ -129,7 +129,11 @@ export const useDownloads = create(
             output: job.output.files.map((f) => ({ name: f.name, sizeBytes: f.sizeBytes, mime: f.mime, kind: f.kind })),
           });
           downloadEvents.onReady?.(job);
-          if (useSettings.getState().autoSave) get().save(job.id, job.output.files[0]?.id, { auto: true });
+          if (useSettings.getState().autoSave) {
+            // A gallery with several images is handed over as one ZIP.
+            if (job.request?.mode === 'gallery' && job.output.files.length > 1) get().saveArchive(job.id);
+            else get().save(job.id, job.output.files[0]?.id, { auto: true });
+          }
         } else if (job.status === 'failed') {
           history.update(job.id, { status: 'failed', errorCode: job.error?.code ?? null });
           downloadEvents.onFailed?.(job);

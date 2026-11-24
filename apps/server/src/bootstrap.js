@@ -50,12 +50,13 @@ export async function createFerry(config, opts = {}) {
   await mkdir(config.dataDir, { recursive: true, mode: 0o700 });
   await mkdir(config.cacheDir, { recursive: true, mode: 0o700 });
 
-  const [ytdlp, ffmpeg, ffprobe] = await Promise.all([
+  const [ytdlp, ffmpeg, ffprobe, galleryDl] = await Promise.all([
     checkEngine(config.engines.ytdlp, ['--version']),
     checkEngine(config.engines.ffmpeg, ['-version']),
     checkEngine(config.engines.ffprobe, ['-version']),
+    checkEngine(config.engines.galleryDl, ['--version']),
   ]);
-  const engineStatus = { ytdlp, ffmpeg, ffprobe };
+  const engineStatus = { ytdlp, ffmpeg, ffprobe, galleryDl };
   for (const [name, s] of Object.entries(engineStatus)) {
     if (!s.ok) logger.warn({ engine: name, path: s.path }, 'engine unavailable — related features are disabled');
   }
@@ -76,16 +77,27 @@ export async function createFerry(config, opts = {}) {
     catalogVersion,
     logger,
     watch: !config.isTest,
-    engineAvailable: (engine) => (engine === 'yt-dlp' ? ytdlp.ok : nativeEngines.has(engine) && ffmpeg.ok),
+    engineAvailable: (engine) => {
+      if (engine === 'yt-dlp') return ytdlp.ok;
+      // Every gallery image is re-encoded, so galleries need FFmpeg and ffprobe as well.
+      if (engine === 'gallery-dl') return galleryDl.ok && ffmpeg.ok && ffprobe.ok;
+      return nativeEngines.has(engine) && ffmpeg.ok;
+    },
   });
 
+  // Same port rules as the probe service, so links found by engines are attributed identically.
+  const allowedPorts = [...config.egress.allowedPorts, ...config.egress.allowHosts.map((h) => Number(h.split(':').pop())).filter(Boolean)];
   const adapters = createAdapters({
     config,
     logger,
     egress,
     fetch,
-    engines: { ytdlp: ytdlp.path, ffmpeg: ffmpeg.path, ffprobe: ffprobe.path },
+    engines: { ytdlp: ytdlp.path, ffmpeg: ffmpeg.path, ffprobe: ffprobe.path, galleryDl: galleryDl.path },
     excludedExtractors: () => policies.excludedExtractors(),
+    platformOf: (url) => {
+      const d = registry.detect(url, { allowLocal: true, allowedPorts });
+      return d.ok ? d.platform.id : null;
+    },
   });
   const storage = createJobStorage({ jobsDir: config.jobsDir, limits: config.limits, logger });
   await storage.init();

@@ -13,6 +13,7 @@
     "node": ">=22.12"
   },
   "scripts": {
+    "setup": "node scripts/setup.mjs",
     "dev": "node scripts/dev.mjs",
     "dev:server": "npm run dev -w @ferry/server",
     "dev:web": "npm run dev -w @ferry/web",

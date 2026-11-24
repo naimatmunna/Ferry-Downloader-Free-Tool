@@ -24,10 +24,11 @@
  *                refusers (DRM, Piracy, Liability) are never listed: excluding them would let
  *                protected URLs fall through to `generic`.
  * - engine       Adapter for the platform's public URLs: yt-dlp | internet-archive-api |
- *                peertube-api | gallery-dl | streamlink | direct | none. gallery-dl and
- *                Streamlink are not installed yet, so those entries show as unavailable;
- *                'none' means DRM, dead, or no engine. No engine runs when the policy is
- *                export_only or blocked.
+ *                peertube-api | gallery-dl | streamlink | direct | none. gallery-dl
+ *                (image posts, albums and carousels) is available when its binary is found
+ *                at startup; Streamlink is not installed yet, so those entries show as
+ *                unavailable; 'none' means DRM, dead, or no engine. No engine runs when the
+ *                policy is export_only or blocked.
  * - reliability  verified (working extractor, no recurring breakage) | experimental (works,
  *                but login walls, rate limits or flaky sub-extractors) | unstable (extractor
  *                flagged broken or often broken) | unsupported (no working path: DRM, dead,

@@ -347,7 +347,7 @@ other than the stdout marker below.
 1. The JSON message list (`[2, post]`, `[3, url, file]`, `[6, url, child]`,
    `[-1, {error, message}]`) is parsed. A file becomes a gallery item only if
    its URL is `http(s)` **and** its extension is an image
-   (jpg/jpeg/png/gif/webp/avif/bmp). Videos, `ytdl:` embeds (e.g. a YouTube
+   (jpg/jpeg/png/gif/webp/avif). Videos, `ytdl:` embeds (e.g. a YouTube
    player inside a Behance project) and text blocks are counted and skipped —
    they never reach yt-dlp through gallery-dl.
 2. Child URLs (`[6, …]`) are followed **once**, by a second probe, only when
@@ -386,8 +386,8 @@ stream, at most `MAX_IMAGE_MEGAPIXELS`), then an FFmpeg re-encode with
 
 | Source | Output |
 |---|---|
-| JPEG | JPEG (`-q:v 2`) |
-| PNG, BMP, any image with alpha | PNG |
+| JPEG | JPEG (`-q:v 2`), turned upright from its EXIF orientation |
+| PNG, lossless WebP, any image with alpha | PNG |
 | GIF (still or animated) | GIF (palettegen/paletteuse) |
 | Lossy WebP, AVIF (no alpha) | JPEG |
 | Animated WebP / APNG | GIF |
@@ -587,3 +587,4 @@ Full threat model and test evidence: `SECURITY-AUDIT.md`.
 | ADR-6 | In-memory/file drivers by default; Redis/Mongo as drivers | Runs with zero infrastructure; scale-out does not change application code. |
 | ADR-7 | Policy registry with runtime overrides | Compliance changes ship without a deployment. |
 | ADR-8 | No cookies, logins, or impersonation | Never bypass access controls or anti-bot systems; never handle third-party passwords. |
+| ADR-9 | Image galleries through gallery-dl as a separate program, images only | GPL-2.0 engine kept at arm's length (mere aggregation); images are easy to prove and re-encode, while videos and embeds would bypass the yt-dlp policy path; FFmpeg built-in encoders only, so output never depends on optional libraries (§8.5). |

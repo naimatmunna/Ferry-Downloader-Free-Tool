@@ -32,6 +32,19 @@ export async function waitReady(page) {
   await expect(page.getByRole('main').getByRole('button', { name: /^Save/ }).first()).toBeVisible({ timeout: 90_000 });
 }
 
+/** Entry names of a ZIP file, read from its central directory. */
+export function zipEntryNames(buf) {
+  const eocd = buf.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+  const names = [];
+  let p = buf.readUInt32LE(eocd + 16);
+  for (let i = 0; i < buf.readUInt16LE(eocd + 10); i += 1) {
+    const nameLen = buf.readUInt16LE(p + 28);
+    names.push(buf.toString('utf8', p + 46, p + 46 + nameLen));
+    p += 46 + nameLen + buf.readUInt16LE(p + 30) + buf.readUInt16LE(p + 32);
+  }
+  return names;
+}
+
 /** Click Save, capture the browser download, and describe its streams with ffprobe. */
 export async function saveAndProbe(page) {
   const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('main').getByRole('button', { name: /^Save/ }).first().click()]);

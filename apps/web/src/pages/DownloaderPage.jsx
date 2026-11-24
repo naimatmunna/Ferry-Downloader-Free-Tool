@@ -8,9 +8,11 @@ import { ErrorPanel, HomeIntro, ProbeSkeleton } from '../features/downloader/Pan
 // as soon as the user types (see prefetch below), so it is ready in time.
 const loadWorkspace = () => import('../features/downloader/Workspace.jsx');
 const loadCollections = () => import('../features/downloader/Collections.jsx');
+const loadGallery = () => import('../features/downloader/Gallery.jsx');
 const Workspace = lazy(() => loadWorkspace().then((m) => ({ default: m.Workspace })));
 const PlaylistPanel = lazy(() => loadCollections().then((m) => ({ default: m.PlaylistPanel })));
 const BatchPanel = lazy(() => loadCollections().then((m) => ({ default: m.BatchPanel })));
+const GalleryPanel = lazy(() => loadGallery().then((m) => ({ default: m.GalleryPanel })));
 
 export default function DownloaderPage() {
   const { t } = useI18n();
@@ -25,6 +27,7 @@ export default function DownloaderPage() {
     if (input || status !== 'idle') {
       loadWorkspace();
       loadCollections();
+      loadGallery();
     }
   }, [input, status]);
 
@@ -51,7 +54,8 @@ export default function DownloaderPage() {
         <Suspense fallback={status === 'ready' ? <ProbeSkeleton /> : null}>
           {status === 'ready' && batch && <BatchPanel />}
           {status === 'ready' && !batch && result?.media?.kind === 'playlist' && <PlaylistPanel />}
-          {status === 'ready' && !batch && result && result.media.kind !== 'playlist' && <Workspace />}
+          {status === 'ready' && !batch && result?.media?.kind === 'gallery' && <GalleryPanel />}
+          {status === 'ready' && !batch && result && !['playlist', 'gallery'].includes(result.media.kind) && <Workspace />}
         </Suspense>
       </div>
     </>

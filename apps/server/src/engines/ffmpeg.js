@@ -12,7 +12,7 @@ const SAFE_INPUT = ['-protocol_whitelist', 'file,pipe'];
 /**
  * @typedef {{ index: number, kind: 'video'|'audio'|'subtitle'|'other', codec: string|null, rawCodec: string|null,
  *   width: number|null, height: number|null, fps: number|null, channels: number|null, sampleRate: number|null,
- *   bitrateKbps: number|null, language: string|null, attachedPic: boolean }} StreamInfo
+ *   bitrateKbps: number|null, language: string|null, attachedPic: boolean, pixFmt: string|null, frames: number|null }} StreamInfo
  * @typedef {{ format: string|null, durationSec: number|null, sizeBytes: number|null, bitrateKbps: number|null, streams: StreamInfo[] }} ProbeResult
  */
 
@@ -53,6 +53,8 @@ export async function ffprobe({ bin, file, cwd, timeoutMs = 30_000, signal }) {
       bitrateKbps: s.bit_rate ? Math.round(Number(s.bit_rate) / 1000) : null,
       language: s.tags?.language ?? null,
       attachedPic: Boolean(s.disposition?.attached_pic),
+      pixFmt: typeof s.pix_fmt === 'string' ? s.pix_fmt : null,
+      frames: s.nb_frames && /^\d+$/.test(String(s.nb_frames)) ? Number(s.nb_frames) : null,
     };
   });
   const f = json.format ?? {};
