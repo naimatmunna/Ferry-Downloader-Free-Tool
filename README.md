@@ -74,6 +74,39 @@ curl -X PUT https://ferry.example.com/api/v1/admin/policies/vimeo \
   -d '{"policy":"disabled","reason":"Temporarily unavailable."}'
 ```
 
+### Deploy on Vercel (trial)
+
+Vercel can run Ferry's container directly. Its container support is in beta. `Dockerfile.vercel` is an
+exact copy of `deploy/Dockerfile` (`apps/server/test/unit/vercel-deploy.test.js` keeps them
+identical), so Vercel builds the same image as Docker Compose.
+
+1. In Vercel, choose **Add New → Project** and import this repository. Vercel finds
+   `Dockerfile.vercel` and selects the **Container** preset. If it shows another framework, set
+   **Framework Preset** to Container.
+2. In **Settings → Environment Variables**, paste the contents of
+   [`deploy/vercel.env.example`](deploy/vercel.env.example). Then set `SIGNING_SECRET` to a long
+   random value (`openssl rand -base64 48`) and mark it **Sensitive**. Keep `PORT=8787`: without it
+   Vercel sends traffic to port 80, which Ferry's locked-down user cannot open.
+3. Deploy, then on the preview address (`….vercel.app`):
+   - open `/readyz`: it should say `"ready"`. If `disk` is `false`, lower `MIN_FREE_DISK_MB`;
+   - paste a link to your own or Creative Commons media, and download a short file.
+
+What to expect from the trial:
+
+- **One copy holds everything.** Jobs and finished files live in the one running copy of Ferry. If
+  Vercel starts a second copy, a download can show "not found". After 5 minutes without visitors,
+  Vercel stops the copy and its files are gone. Sites switched off through the admin API also
+  reset then, because those changes are saved on the copy's disk.
+- **Time limits.** Vercel ends every request after 5 minutes on the free plan (up to about 13 minutes
+  on Pro), file downloads included. That is why `deploy/vercel.env.example` lowers the size and
+  length limits.
+- **Free plan allowance:** 4 hours of CPU time a month, 2 GB of memory and 1 CPU.
+- **Account risk.** Vercel's fair-use guidelines list proxies and scrapers as never allowed, so the
+  account can be suspended. YouTube often blocks cloud servers.
+
+This setup has not been deployed to Vercel yet. For a dependable service, use the Docker Compose
+setup above on your own server.
+
 ## Repository
 
 ```
