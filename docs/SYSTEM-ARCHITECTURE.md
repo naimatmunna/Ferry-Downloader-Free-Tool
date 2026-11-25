@@ -233,7 +233,7 @@ Built-in adapters:
 
 | Adapter | Used for | Notes |
 |---|---|---|
-| `yt-dlp` | Every yt-dlp-supported site, including the generic extractor | Default. |
+| `yt-dlp` | Every yt-dlp-supported site, including the generic extractor | Default. Pictures in posts on entries with `ytdlpPictures: true` (Instagram) → `kind: 'gallery'` (§8.5). |
 | `direct` | `http(s)` links whose path/Content-Type is a media file | Streams through the guarded agent; size checked from `Content-Length` and while streaming; `ffprobe` runs on the local file. |
 | `internet-archive` | `archive.org/details/<id>` | Official metadata API; lists original + derivative files. |
 | `peertube` | PeerTube instances | Official REST API; honours `downloadEnabled`. |
@@ -326,7 +326,7 @@ All FFmpeg runs carry `-max_alloc 512M` and `-protocol_whitelist file,pipe`.
 Multi-stream downloads (video then audio) are weighted by their reported
 sizes. No synthetic progress is ever generated.
 
-### 8.5 Image galleries (gallery-dl)
+### 8.5 Image galleries (gallery-dl, and pictures yt-dlp lists)
 
 Platforms whose registry entry says `engine: 'gallery-dl'` are handled by
 `adapters/galleryDl.js` (argument building and output parsing live in
@@ -383,6 +383,28 @@ order and prints the marker before each file and the saved path after each
 success, so marker *k* belongs to the *k*-th selected index; a missing path
 line means that file failed. The egress proxy enforces the job's byte cap, and a file larger than
 `MAX_IMAGE_MB` is dropped even when the server sent no `Content-Length`.
+
+**Pictures that yt-dlp lists (Instagram)** — gallery-dl's Instagram extractor
+needs a signed-in session (HTTP 401 without one, checked 2026-11-25), so
+Instagram stays on yt-dlp. yt-dlp reads public posts without signing in and
+lists every item of a post, but it only downloads video: each picture came back
+as an item with no formats, and the whole probe failed ("No video formats
+found", shown as `NO_MEDIA_FOUND`). Entries with `ytdlpPictures: true`
+(Instagram only) are therefore probed with `--ignore-no-formats-error`, and
+`engines/ytdlp.js#pictureGallery` turns the items without formats into the same
+`kind: 'gallery'`: the picture is the image yt-dlp reports for the item (its
+own `thumbnail` pick, the full-size picture), `index` is the item's position in
+the post, and videos in a mixed post are counted as skipped. A post without
+pictures keeps the normal video or playlist path, and other sites never get
+the flag (there, an item without formats is not a picture). Policy is handled
+exactly as on the yt-dlp path (checked before yt-dlp runs, attestation when the
+job is created, re-applied when it starts), and pictures hosted on a platform
+that may not be downloaded from are not offered. Downloads do not run yt-dlp
+again: `adapters/pictures.js` fetches the chosen pictures with the guarded
+fetch (`MAX_IMAGE_MB` per picture, the job's byte cap overall), then the
+finalize step below runs unchanged. Instagram signs picture links and they
+expire after some days; a refused link (401/403) is reported as
+`PROBE_EXPIRED` ("paste the link again"), never as a sign-in requirement.
 
 **Finalize (per image)** — magic-byte sniff (`adapters/http.js#sniffImage`;
 anything that is not JPEG/PNG/GIF/WebP/AVIF is rejected), ffprobe (one image
@@ -624,3 +646,4 @@ Full threat model and test evidence: `SECURITY-AUDIT.md`.
 | ADR-7 | Policy registry with runtime overrides | Compliance changes ship without a deployment. |
 | ADR-8 | No cookies, logins, or impersonation | Never bypass access controls or anti-bot systems; never handle third-party passwords. |
 | ADR-9 | Image galleries through gallery-dl as a separate program, images only | GPL-2.0 engine kept at arm's length (mere aggregation); images are easy to prove and re-encode, while videos and embeds would bypass the yt-dlp policy path; FFmpeg built-in encoders only, so output never depends on optional libraries (§8.5). |
+| ADR-10 | Instagram pictures come from yt-dlp's reading of the post; Ferry fetches them itself (2026-11-25) | gallery-dl needs a signed-in Instagram session, which ADR-8 rules out; yt-dlp already reads public posts without one and lists each picture's full-size link. Only entries marked `ytdlpPictures` use it, and the gallery pipeline (proof, re-encode, ZIP) is shared (§8.5). |

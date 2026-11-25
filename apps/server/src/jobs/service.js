@@ -36,7 +36,9 @@ export function createJobService({ config, store, probeCache, registry, policies
         details: { platform: { id: platform.id, name: platform.name }, policy: policy.status, reason: policy.reason, routes: platform.routes ?? [] },
       });
     }
-    if (!canDownload(policy.status, attest === true)) {
+    // With ASK_PERMISSION off, "With permission" sites download without the tick;
+    // blocked, export-only and disabled sites were refused just above either way.
+    if (!canDownload(policy.status, attest === true || !config.askPermission)) {
       throw new FerryError('ATTESTATION_REQUIRED', { details: { platform: { id: platform.id, name: platform.name }, attestation: policy.attestation } });
     }
     return policy;

@@ -53,7 +53,7 @@ Every non-2xx JSON response:
 | `PLATFORM_BLOCKED` | 403 | no | Protected source (DRM, paywall, login). `details.routes` lists official options. |
 | `EXPORT_ONLY` | 403 | no | Only the platform's official export is supported. `details.routes`. |
 | `PLATFORM_DISABLED` | 403 | no | Disabled by the operator. `details.reason`. |
-| `ATTESTATION_REQUIRED` | 403 | no | Job needs `attest: true`. |
+| `ATTESTATION_REQUIRED` | 403 | no | Job needs `attest: true` (only when the server sets `ASK_PERMISSION=true`). |
 | `BLOCKED_DESTINATION` | 403 | no | URL resolves to a private/reserved network address. |
 | `PRIVATE_CONTENT` | 422 | no | The media is private. |
 | `AUTH_REQUIRED` | 422 | no | The source requires sign-in (Ferry never asks for third-party passwords). |
@@ -222,7 +222,7 @@ Response `200`:
   "source": {
     "url": "https://archive.org/details/night_of_the_living_dead",
     "platform": { "id": "internet-archive", "name": "Internet Archive", "kind": "open-library" },
-    "policy": { "status": "allowed", "category": 1, "attestation": null, "routes": [] }
+    "policy": { "status": "allowed", "category": 1, "attestation": null, "confirm": false, "routes": [] }
   },
   "media": {
     "kind": "video",
@@ -380,7 +380,7 @@ Request:
 | `extras.trim` | `{ start?, end? }` seconds | `0 ≤ start < end ≤ durationSec`. |
 | `filename.template` | ≤ 120 chars | Tokens: `{title}` `{uploader}` `{platform}` `{id}` `{quality}` `{date}`. Sanitized server-side. |
 | `privacy.deleteAfterDownload` | boolean | Delete the job's files two minutes after the main file has been delivered in full (galleries: the ZIP, or the only image). |
-| `attest` | boolean | Required `true` when `policy.status = attestation`. |
+| `attest` | boolean | Required `true` when the probe returned `policy.confirm: true`: the status is `attestation` and the server sets `ASK_PERMISSION=true`. Off by default, so the field is ignored. |
 | `entryId` | string | Selects one entry of a playlist probe. |
 
 Response `202`: `{ "job": Job, "token": "kX3…" }` — the token is returned

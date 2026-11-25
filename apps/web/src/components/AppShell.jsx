@@ -5,7 +5,10 @@ import { useI18n } from '../lib/i18n/index.jsx';
 import { useDownloads } from '../state/downloads.js';
 import { useSettings } from '../state/settings.js';
 import { useToasts } from '../state/toasts.js';
+import { REPO_URL } from '../lib/project.js';
+import { GitHubMark } from './icons.jsx';
 import { Wordmark } from './Logo.jsx';
+import { SiteFooter } from './SiteFooter.jsx';
 import { cx } from './ui.jsx';
 
 const NAV = [
@@ -100,9 +103,9 @@ export function AppShell() {
     document.title = active ? `(${active}) Ferry` : 'Ferry';
   }, [active]);
 
-  // Each screen starts at the top.
+  // Each screen starts at the top, unless the link points into it (/#faq scrolls itself).
   useEffect(() => {
-    window.scrollTo?.(0, 0);
+    if (!location.hash) window.scrollTo?.(0, 0);
   }, [location.pathname]);
 
   return (
@@ -138,6 +141,19 @@ export function AppShell() {
             </ul>
           </nav>
           <div className="ms-auto flex items-center gap-2">
+            {/* Phones show "Star"; screen readers always hear "Star on GitHub". */}
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-hero-pill ps-3 pe-3.5 text-[14.5px] font-semibold whitespace-nowrap text-hero-ink shadow-[0_1px_0_rgb(20_22_26/0.12)] transition-[filter] hover:brightness-95 dark:hover:brightness-125"
+            >
+              <GitHubMark className="size-[18px] shrink-0" />
+              <span aria-hidden="true" className="sm:hidden">
+                {t('github.starShort')}
+              </span>
+              <span className="sr-only sm:not-sr-only">{t('github.star')}</span>
+            </a>
             <ThemeButton />
             <NavLink
               to="/settings"
@@ -160,9 +176,10 @@ export function AppShell() {
         </div>
       )}
 
-      <main id="main" tabIndex={-1} className="flex-1 pb-28 outline-none md:pb-14">
+      <main id="main" tabIndex={-1} className="flex-1 pb-14 outline-none">
         <Outlet />
       </main>
+      <SiteFooter />
 
       {/* Phone navigation: thumb-reachable, four destinations. */}
       <nav aria-label={t('nav.main')} className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-paper/95 backdrop-blur md:hidden">

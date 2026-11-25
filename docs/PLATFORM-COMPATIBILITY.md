@@ -1,6 +1,6 @@
 # Platform Compatibility — Ferry
 
-> Generated from `packages/shared/src/platforms/catalog.js` (registry version **2026-11-24**) by
+> Generated from `packages/shared/src/platforms/catalog.js` (registry version **2026-11-25**) by
 > `npm run docs:platforms`. Do not edit by hand. Sources for every entry are in the catalog and in
 > `docs/research/research_notes/`. This is engineering documentation, not legal advice.
 
@@ -37,7 +37,7 @@ see `RESEARCH.md`.
 
 ## Reliability scale
 
-* **verified** — working extractor/API, no recurring breakage known on 2026-11-24
+* **verified** — working extractor/API, no recurring breakage known on 2026-11-25
 * **experimental** — works, but breaks periodically or often needs sign-in
 * **unstable** — frequently broken upstream
 * **unsupported** — no working engine path (DRM, defunct, no extractor, or engine not installed)
@@ -151,7 +151,7 @@ and shown on the in-app Sites page.
 | **iHeartRadio**<br><sub>iheart.com, iheartpodcastnetwork.com</sub> | audio, playlist | Yes | — | yt-dlp | none | Own/licensed content only (user confirms). | MP3, M4A, AAC, WAV, FLAC, Opus, OGG | Only podcast episodes are supported; live radio streams are licensed for listening only. | verified | 2026-11-24 |
 | **IMDb**<br><sub>imdb.com</sub> | video, playlist | Yes | IMDb data through AWS Data Exchange (paid) | yt-dlp | none | Own/licensed content only (user confirms). | MP4, WebM, MKV, MOV, AVI; audio: MP3, M4A, AAC, WAV, FLAC, Opus, OGG | Trailers and clips belong to the studios and IMDb; download only with their permission. | verified | 2026-11-24 |
 | **ImgBB**<br><sub>imgbb.com, ibb.co</sub> | image, playlist | Yes | ImgBB API (uploads) | gallery-dl | none | Own/licensed content only (user confirms). | Images: JPEG, PNG, GIF (re-encoded, metadata removed; several as one ZIP) | Images belong to whoever uploaded them; download only your own or with permission. | verified | 2026-11-24 |
-| **Instagram**<br><sub>instagram.com, instagr.am, cdninstagram.com</sub> | video, image, playlist | Yes, except sign-in-only items | Instagram API with Instagram Login (Business and Creator accounts, own media) | yt-dlp | sometimes | Own/licensed content only (user confirms). Official: [Download your information (Accounts Center)](https://help.instagram.com/ipad-app/181231772500920); [Download public reels in the app (only when the creator allows it)](https://help.instagram.com/iphone-app/520831036611383). | MP4, WebM, MKV, MOV, AVI; audio: MP3, M4A, AAC, WAV, FLAC, Opus, OGG | Instagram's terms ban automated collection, and only public reels whose creator allows it can be downloaded in the app. | experimental | 2026-11-24 |
+| **Instagram**<br><sub>instagram.com, instagr.am, cdninstagram.com</sub> | video, image, playlist | Yes, except sign-in-only items | Instagram API with Instagram Login (Business and Creator accounts, own media) | yt-dlp | sometimes | Own/licensed content only (user confirms). Official: [Download your information (Accounts Center)](https://help.instagram.com/ipad-app/181231772500920); [Download public reels in the app (only when the creator allows it)](https://help.instagram.com/iphone-app/520831036611383). | MP4, WebM, MKV, MOV, AVI; audio: MP3, M4A, AAC, WAV, FLAC, Opus, OGG; Images: JPEG, PNG, GIF (re-encoded, metadata removed; several as one ZIP) | Instagram's terms ban automated collection, and only public reels whose creator allows it can be downloaded in the app. | experimental | 2026-11-25 |
 | **iQIYI (iQ.com)**<br><sub>iqiyi.com, pps.tv, iq.com</sub> | video, playlist | Yes, except sign-in-only items | — | yt-dlp | sometimes | Own/licensed content only (user confirms). | MP4, WebM, MKV, MOV, AVI; audio: MP3, M4A, AAC, WAV, FLAC, Opus, OGG | VIP titles need a paid login and are often DRM-protected, and free titles still belong to iQIYI and its licensors. | verified | 2026-11-24 |
 | **JioHotstar**<br><sub>hotstar.com, jiohotstar.com</sub> | video, playlist | Yes, except sign-in-only items | — | yt-dlp | sometimes | Own/licensed content only (user confirms). | MP4, WebM, MKV, MOV, AVI; audio: MP3, M4A, AAC, WAV, FLAC, Opus, OGG | Most JioHotstar content needs a subscription and premium titles use DRM; free titles are limited to India. | verified | 2026-11-24 |
 | **JioSaavn**<br><sub>jiosaavn.com, saavn.com</sub> | audio, playlist | Yes | — | yt-dlp | none | Own/licensed content only (user confirms). | MP3, M4A, AAC, WAV, FLAC, Opus, OGG | JioSaavn's music is licensed for streaming in its apps; download only with the rights holder's permission. | verified | 2026-11-24 |

@@ -1,18 +1,21 @@
 /**
  * yt-dlp adapter — every yt-dlp-supported site plus the generic extractor
- * (embedded players, HLS/DASH manifests).
+ * (embedded players, HLS/DASH manifests), and the pictures yt-dlp lists for
+ * sites marked `ytdlpPictures` (Instagram posts), offered as a gallery.
  */
 import { mkdtemp, readdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { FerryError } from '@ferry/shared/errors';
 import { AUDIO_FORMATS } from '@ferry/shared/formats';
 import { engineEnv, runProcess } from '../engines/process.js';
-import { baseArgs, downloadArgs, formatSpec, parseProgressLine, probeArgs, runProbe } from '../engines/ytdlp.js';
+import { baseArgs, downloadArgs, formatSpec, parseProgressLine, pictureGallery, probeArgs, runProbe } from '../engines/ytdlp.js';
 import { classifyEngineError, summarizeStderr } from '../engines/classify.js';
+import { downloadPictures } from './pictures.js';
 
-/** @param {import('./index.js').AdapterDeps} deps */
+/** @param {import('./index.js').AdapterDeps & { runProcess?: typeof runProcess }} deps */
 export function createYtDlpAdapter(deps) {
   const { config } = deps;
+  const run = deps.runProcess ?? runProcess;
 
   function base(proxyUrl) {
     return baseArgs({
@@ -32,19 +35,23 @@ export function createYtDlpAdapter(deps) {
       return detection?.directExt === 'm3u8' || detection?.directExt === 'mpd';
     },
 
-    async probe({ url, playlist = false, signal, tag }) {
+    async probe({ url, playlist = false, signal, tag, platform }) {
+      // yt-dlp lists this site's pictures as items without video formats: keep them instead of failing.
+      const pictures = platform?.ytdlpPictures === true;
       const cred = deps.egress.issue({ tag: `probe:${tag}`, maxBytes: 128 * 1024 * 1024 });
       const home = await mkdtemp(path.join(config.cacheDir, 'probe-'));
+      let info;
       try {
-        return await runProbe({
+        info = await runProbe({
           bin: deps.engines.ytdlp,
-          args: probeArgs({ base: base(cred.url), url, playlist, maxPlaylistItems: config.limits.maxPlaylistItems }),
+          args: probeArgs({ base: base(cred.url), url, playlist, maxPlaylistItems: config.limits.maxPlaylistItems, pictures }),
           cwd: home,
           homeDir: home,
           proxyUrl: cred.url,
           timeoutMs: config.limits.probeTimeoutMs,
           signal,
           maxStdoutBytes: config.limits.maxProbeOutputBytes,
+          run,
         });
       } catch (err) {
         if (cred.session.blocked.length) throw new FerryError('BLOCKED_DESTINATION', { internal: cred.session.blocked[0].reason });
@@ -53,6 +60,23 @@ export function createYtDlpAdapter(deps) {
         cred.revoke();
         await rm(home, { recursive: true, force: true }).catch(() => {});
       }
+      if (!pictures) return info;
+      const gallery = pictureGallery(info, { maxItems: config.limits.maxGalleryItems, fallbackTitle: `${platform.name} post` });
+      if (!gallery) {
+        // Without the flag, items with no formats failed the probe: keep them out of video lists.
+        if (info?._has_drm) throw new FerryError('DRM_PROTECTED');
+        const formatless = (e) => e && !(Array.isArray(e.formats) && e.formats.length) && !/^https?:\/\//i.test(e.url ?? '');
+        if (Array.isArray(info?.entries)) return { ...info, entries: info.entries.filter((e) => !formatless(e)) };
+        return info;
+      }
+      // As for gallery-dl galleries: never offer files from a platform whose policy does not allow downloads.
+      if (deps.policyAllows) {
+        const allowed = gallery.gallery.items.filter((i) => deps.policyAllows(i.url));
+        gallery.gallery.skipped.other += gallery.gallery.items.length - allowed.length;
+        gallery.gallery.items = allowed;
+        gallery.thumbnail = allowed[0]?.preview ?? null;
+      }
+      return gallery;
     },
 
     /**
@@ -60,6 +84,20 @@ export function createYtDlpAdapter(deps) {
      */
     async download(ctx) {
       const { job, url, selection, media, jobDir, tmpDir, signal, onProgress, maxBytes } = ctx;
+      if (selection?.mode === 'gallery') {
+        // yt-dlp only downloads video and audio: Ferry fetches the pictures it listed.
+        return downloadPictures({
+          fetch: deps.fetch,
+          job,
+          media,
+          tmpDir,
+          signal,
+          onProgress,
+          maxBytes,
+          maxImageBytes: config.limits.maxImageBytes,
+          stallTimeoutMs: config.limits.stallTimeoutMs,
+        });
+      }
       let limitHit = false;
       const cred = deps.egress.issue({ tag: job.id, maxBytes: Math.round(maxBytes * 1.05) + 8 * 1024 * 1024, onLimit: () => (limitHit = true) });
 
@@ -92,7 +130,7 @@ export function createYtDlpAdapter(deps) {
         return f ? f.filesize ?? f.filesizeApprox ?? null : null;
       };
 
-      const proc = runProcess(deps.engines.ytdlp, args, {
+      const proc = run(deps.engines.ytdlp, args, {
         cwd: jobDir,
         env: engineEnv({ proxyUrl: cred.url, homeDir: tmpDir }),
         timeoutMs: config.limits.jobTimeoutMs,

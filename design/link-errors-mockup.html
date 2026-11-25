@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Link errors mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sun: #FFD43B; --sun-ink: #1B1600;
+  --ink: #14161A; --ink-2: #4D5360; --ink-3: #6A7180;
+  --paper: #FFFFFF; --canvas: #F3F4F6; --field: #ECEEF1; --line: #E1E4E8;
+  --primary: #14161A; --primary-ink: #FFFFFF;
+  --ok: #0E7536; --ok-soft: #E2F4E8;
+  --soon: #6B3FD1; --soon-soft: #EFE8FD;
+  --wait: #985700; --wait-soft: #FFF0D2;
+  --gone: #5D6470; --gone-soft: #ECEEF1;
+  --bad: #C4272D; --bad-soft: #FDE7E7;
+  --focus: #2356D8;
+  --shadow-1: 0 1px 2px rgb(20 22 26 / .06), 0 12px 32px -16px rgb(20 22 26 / .25);
+  --board: #E4E5E8; --board-2: #F5F5F7; --board-ink: #14161A; --board-ink-2: #555B66;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --ink: #F1F2F4; --ink-2: #B2B8C3; --ink-3: #878F9C;
+  --paper: #17191E; --canvas: #0E0F12; --field: #23262C; --line: #2B2F37;
+  --primary: #FFD43B; --primary-ink: #14161A;
+  --ok: #46D488; --ok-soft: #10301E;
+  --soon: #B79BFF; --soon-soft: #251C41;
+  --wait: #F2B550; --wait-soft: #35270B;
+  --gone: #A3AAB5; --gone-soft: #24272D;
+  --bad: #FF6B6B; --bad-soft: #3A1617;
+  --focus: #FFD43B;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .5), 0 14px 34px -16px rgb(0 0 0 / .8);
+  --board: #060708; --board-2: #121317; --board-ink: #F1F2F4; --board-ink-2: #A3A9B4;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; } }
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--board); color: var(--board-ink); font-family: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 1.45; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.head { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--board) 92%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid color-mix(in srgb, var(--board-ink) 10%, transparent); }
+.head-in { max-width: 1320px; margin: 0 auto; padding: 10px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.head h1 { margin: 0; font-size: 16px; font-weight: 800; font-stretch: 115%; }
+.tag { font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: color-mix(in srgb, var(--board-ink) 9%, transparent); color: var(--board-ink-2); }
+.seg { margin-left: auto; display: inline-flex; padding: 3px; border-radius: 10px; background: color-mix(in srgb, var(--board-ink) 8%, transparent); }
+.seg button { font: inherit; font-size: 13px; font-weight: 600; border: 0; background: none; padding: 6px 12px; border-radius: 8px; color: var(--board-ink-2); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--board-2); color: var(--board-ink); }
+
+.board { max-width: 1320px; margin: 0 auto; padding: 24px 24px 80px; }
+.intro { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+.note { background: var(--board-2); border-radius: 18px; padding: 18px 20px; }
+.note h2 { margin: 0 0 8px; font-size: 15px; }
+.note ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--board-ink-2); font-size: 14px; }
+.note b { color: var(--board-ink); }
+.note--lead { background: var(--sun); color: var(--sun-ink); }
+.note--lead h2 { font-size: 26px; font-weight: 820; font-stretch: 118%; line-height: 1.05; letter-spacing: -.02em; margin-bottom: 10px; }
+.note--lead p { margin: 0; font-size: 14px; }
+
+.row-title { margin: 30px 0 4px; font-size: 18px; font-weight: 760; font-stretch: 110%; }
+.row-sub { margin: 0 0 14px; color: var(--board-ink-2); font-size: 14px; max-width: 80ch; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 18px; align-items: start; }
+.frame { background: var(--canvas); border-radius: 20px; padding: 16px; }
+.frame-label { font-size: 12.5px; font-weight: 650; color: var(--ink-3); margin: 0 0 10px; }
+
+/* the pasted link, as it stays above the card */
+.paste { display: flex; align-items: center; gap: 10px; background: var(--paper); border: 2px solid var(--ink); border-radius: 16px; padding: 10px 12px; margin-bottom: 12px; color: var(--ink); }
+.paste span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.paste button { font: inherit; font-size: 13px; font-weight: 650; border: 0; background: var(--field); color: var(--ink); border-radius: 10px; padding: 6px 10px; }
+
+/* the card */
+.card { background: var(--paper); color: var(--ink); border-radius: 22px; padding: 22px; box-shadow: var(--shadow-1); }
+.who { display: flex; align-items: center; gap: 12px; }
+.logo { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-weight: 800; color: #fff; flex: none; font-size: 18px; }
+.logo--x { background: #000; } .logo--fb { background: #1877F2; } .logo--web { background: var(--field); color: var(--ink-2); }
+.who p { margin: 0; font-size: 13.5px; font-weight: 650; color: var(--ink-2); }
+.pill { display: inline-flex; align-items: center; gap: 6px; margin-top: 3px; font-size: 12.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.pill--soon { background: var(--soon-soft); color: var(--soon); }
+.pill--wait { background: var(--wait-soft); color: var(--wait); }
+.pill--gone { background: var(--gone-soft); color: var(--gone); }
+.pill--bad { background: var(--bad-soft); color: var(--bad); }
+.card h3 { margin: 16px 0 6px; font-size: 22px; line-height: 1.15; font-weight: 780; font-stretch: 108%; letter-spacing: -.01em; }
+.card .why { margin: 0; color: var(--ink-2); max-width: 56ch; }
+.works { margin: 16px 0 0; padding: 12px 14px; border-radius: 14px; background: var(--field); list-style: none; display: grid; gap: 6px; font-size: 14px; }
+.works-title { font-size: 12.5px; font-weight: 700; color: var(--ink-3); margin-bottom: 2px; }
+.works li { display: flex; align-items: center; gap: 8px; }
+.yes { color: var(--ok); } .later { color: var(--soon); }
+.actions { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.btn { font: inherit; font-weight: 700; font-size: 15px; border-radius: 14px; padding: 12px 16px; border: 0; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.btn--primary { background: var(--primary); color: var(--primary-ink); }
+.btn--line { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2px var(--line); }
+.btn[disabled] { opacity: .55; cursor: default; }
+.link { font-weight: 650; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; padding: 0 6px; color: var(--ink); }
+
+/* the old card, for comparison */
+.old .icon { width: 44px; height: 44px; border-radius: 16px; background: var(--bad-soft); color: var(--bad); display: grid; place-items: center; }
+.old p { margin: 0; font-weight: 700; font-size: 17px; }
+
+.phone { width: 375px; max-width: 100%; border-radius: 34px; border: 10px solid #14161A; overflow: hidden; background: var(--canvas); }
+.phone .frame { border-radius: 0; padding: 14px; }
+.phone .card { padding: 18px; }
+.phone .card h3 { font-size: 20px; }
+.phone .btn { width: 100%; justify-content: center; }
+
+@media (max-width: 860px) { .intro { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } .board { padding: 16px; } }
+</style>
+</head>
+<body>
+<header class="head"><div class="head-in">
+  <h1>Ferry · when a link doesn’t work</h1><span class="tag">Mockup for approval</span>
+  <div class="seg" role="group" aria-label="Theme">
+    <button type="button" aria-pressed="true" data-theme-set="light">Light</button>
+    <button type="button" aria-pressed="false" data-theme-set="dark">Dark</button>
+  </div>
+</div></header>
+
+<main class="board">
+  <section class="intro">
+    <div class="note note--lead">
+      <h2>Say what happened, what works, and what to do next.</h2>
+      <p>Today a failed link shows one red sentence, and for X and Facebook picture posts it wrongly says “the site may have changed”.</p>
+    </div>
+    <div class="note">
+      <h2>What changes</h2>
+      <ul>
+        <li>The card names the <b>site</b> and gives a <b>plain title</b> instead of a red warning.</li>
+        <li>For a post type Ferry can’t save yet, it says <b>Coming soon</b> and lists what <b>does</b> work on that site.</li>
+        <li>One main button: <b>Paste another link</b>, or <b>Try again</b> when waiting helps.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h2>Kept honest</h2>
+      <ul>
+        <li><b>Coming soon</b> only where Ferry could add it without signing in: pictures on X, Facebook, TikTok, and websites it can’t read yet.</li>
+        <li>Sites that need a sign-in (Reddit, Vimeo) or use DRM (Netflix) say so. Ferry never signs in, so “coming soon” would be a false promise.</li>
+      </ul>
+    </div>
+  </section>
+
+  <h2 class="row-title">Coming soon: a post type Ferry can’t save yet</h2>
+  <p class="row-sub">The site works for videos, but this post only has pictures. Ferry knows what each site supports, so it can say exactly which part is coming.</p>
+  <div class="grid">
+    <div class="frame">
+      <p class="frame-label">Now: an X post with only pictures</p>
+      <div class="paste"><span>https://x.com/NASA/status/1846252497658093940</span><button type="button">Edit</button></div>
+      <div class="card old"><div class="who" style="align-items:flex-start"><span class="icon"><svg class="i" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/></svg></span>
+        <div><p style="font-size:13.5px;font-weight:650;color:var(--ink-2);margin-bottom:4px">X (Twitter)</p><p>Ferry couldn’t read this page. The site may have changed.</p>
+        <div class="actions"><button class="btn btn--line" type="button">Edit link</button></div></div></div></div>
+    </div>
+
+    <div class="frame">
+      <p class="frame-label">New: the same link</p>
+      <div class="paste"><span>https://x.com/NASA/status/1846252497658093940</span><button type="button">Edit</button></div>
+      <article class="card" aria-labelledby="t1">
+        <div class="who"><span class="logo logo--x">X</span><div><p>X (Twitter)</p><span class="pill pill--soon"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Coming soon</span></div></div>
+        <h3 id="t1">Pictures from X are coming soon</h3>
+        <p class="why">This post has pictures but no video. Ferry can save videos and GIFs from X today.</p>
+        <ul class="works"><li class="works-title">What Ferry saves from X</li>
+          <li><svg class="i yes" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Videos and GIFs</li>
+          <li><svg class="i later" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Pictures (coming soon)</li></ul>
+        <div class="actions"><button class="btn btn--primary" type="button">Paste another link</button><a class="link" href="#">What works on X</a></div>
+      </article>
+    </div>
+
+    <div class="frame">
+      <p class="frame-label">New: a Facebook photo</p>
+      <div class="paste"><span>https://www.facebook.com/facebook/photos/a.376995711728/1016…</span><button type="button">Edit</button></div>
+      <article class="card" aria-labelledby="t2">
+        <div class="who"><span class="logo logo--fb">f</span><div><p>Facebook</p><span class="pill pill--soon"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Coming soon</span></div></div>
+        <h3 id="t2">Facebook photos are coming soon</h3>
+        <p class="why">This link is a photo. Ferry can save videos and reels from Facebook today.</p>
+        <ul class="works"><li class="works-title">What Ferry saves from Facebook</li>
+          <li><svg class="i yes" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Videos and reels</li>
+          <li><svg class="i later" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Photos (coming soon)</li></ul>
+        <div class="actions"><button class="btn btn--primary" type="button">Paste another link</button><a class="link" href="#">What works on Facebook</a></div>
+      </article>
+    </div>
+
+    <div class="frame">
+      <p class="frame-label">New: a website Ferry can’t read yet</p>
+      <div class="paste"><span>https://www.example-news.com/story/1234</span><button type="button">Edit</button></div>
+      <article class="card" aria-labelledby="t3">
+        <div class="who"><span class="logo logo--web"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span><div><p>example-news.com</p><span class="pill pill--soon"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Coming soon</span></div></div>
+        <h3 id="t3">Ferry can’t read this website yet</h3>
+        <p class="why">It found no video, sound or pictures here. A link that ends in a file, like .mp4 or .mp3, works from any site.</p>
+        <div class="actions"><button class="btn btn--primary" type="button">Paste another link</button><a class="link" href="#">Sites that work</a></div>
+      </article>
+    </div>
+  </div>
+
+  <h2 class="row-title">Other reasons, same layout</h2>
+  <p class="row-sub">Each problem gets its own title and the one action that helps. Wording comes from what Ferry actually learned about the link.</p>
+  <div class="grid">
+    <div class="frame">
+      <p class="frame-label">Needs a sign-in (never “coming soon”)</p>
+      <article class="card">
+        <div class="who"><span class="logo" style="background:#FF4500">r</span><div><p>Reddit</p><span class="pill pill--gone">Needs a sign-in</span></div></div>
+        <h3>Reddit only shares this with signed-in people</h3>
+        <p class="why">Ferry never signs in or asks for your password, so it can’t open this post.</p>
+        <div class="actions"><button class="btn btn--primary" type="button">Paste another link</button><a class="link" href="#">Why Ferry doesn’t sign in</a></div>
+      </article>
+    </div>
+    <div class="frame">
+      <p class="frame-label">Removed or private</p>
+      <article class="card">
+        <div class="who"><span class="logo logo--x">X</span><div><p>X (Twitter)</p><span class="pill pill--gone">Not available</span></div></div>
+        <h3>This post is gone or private</h3>
+        <p class="why">It may have been deleted, or only the account’s followers can see it.</p>
+        <div class="actions"><button class="btn btn--primary" type="button">Paste another link</button></div>
+      </article>
+    </div>
+    <div class="frame">
+      <p class="frame-label">Worth trying again</p>
+      <article class="card">
+        <div class="who"><span class="logo logo--fb">f</span><div><p>Facebook</p><span class="pill pill--wait">Busy right now</span></div></div>
+        <h3>Facebook is slow to answer</h3>
+        <p class="why">Too many requests, or the connection dropped. Nothing is wrong with your link.</p>
+        <div class="actions"><button class="btn btn--primary" type="button" disabled>Try again in 12 s</button><button class="btn btn--line" type="button">Paste another link</button></div>
+      </article>
+    </div>
+  </div>
+
+  <h2 class="row-title">On a phone</h2>
+  <p class="row-sub">Buttons go full width; the list of what works stays.</p>
+  <div class="phone"><div class="frame">
+    <div class="paste"><span>https://x.com/NASA/status/1846252497658093940</span><button type="button">Edit</button></div>
+    <article class="card">
+      <div class="who"><span class="logo logo--x">X</span><div><p>X (Twitter)</p><span class="pill pill--soon">Coming soon</span></div></div>
+      <h3>Pictures from X are coming soon</h3>
+      <p class="why">This post has pictures but no video. Ferry can save videos and GIFs from X today.</p>
+      <ul class="works"><li class="works-title">What Ferry saves from X</li>
+        <li><svg class="i yes" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Videos and GIFs</li>
+        <li><svg class="i later" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Pictures (coming soon)</li></ul>
+      <div class="actions"><button class="btn btn--primary" type="button">Paste another link</button><a class="link" href="#">What works on X</a></div>
+    </article>
+  </div></div>
+</main>
+<script>
+document.querySelectorAll('[data-theme-set]').forEach((b) => b.addEventListener('click', () => {
+  document.documentElement.dataset.theme = b.dataset.themeSet;
+  document.querySelectorAll('[data-theme-set]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+}));
+</script>
+</body>
+</html>

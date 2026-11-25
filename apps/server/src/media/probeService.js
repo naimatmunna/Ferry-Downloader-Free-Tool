@@ -201,7 +201,8 @@ export function createProbeService({ config, registry, policies, adapters, signe
       source: {
         url: detection.href,
         platform: { id: platform.id, name: platform.name, kind: platform.kind },
-        policy: { status: policy.status, category: policy.category, attestation: policy.attestation, reason: policy.reason, routes: platform.routes ?? [] },
+        // confirm: the client must show the "It's my content" tick box before downloading.
+        policy: { status: policy.status, category: policy.category, attestation: policy.attestation, confirm: config.askPermission === true && policy.status === 'attestation', reason: policy.reason, routes: platform.routes ?? [] },
       },
       media: publicMedia(media, { thumbnailUrl, previewUrl: (remote) => signer.thumbnailUrl(remote) }),
       limits: { maxFileSizeBytes: config.limits.maxFileSizeBytes, maxDurationSec: config.limits.maxDurationSec },

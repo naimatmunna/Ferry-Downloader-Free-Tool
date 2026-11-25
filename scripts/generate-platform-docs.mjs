@@ -41,7 +41,9 @@ function outputs(p) {
   const parts = [];
   if (p.content.includes('video')) parts.push(`${VIDEO_OUT}; audio: ${AUDIO_OUT}`);
   else if (p.content.includes('audio')) parts.push(AUDIO_OUT);
-  return parts.join(' ') || '—';
+  // Pictures that yt-dlp lists in a post (Instagram), downloaded as a gallery.
+  if (p.ytdlpPictures) parts.push(IMAGE_OUT);
+  return parts.join('; ') || '—';
 }
 
 function publicUrls(p) {

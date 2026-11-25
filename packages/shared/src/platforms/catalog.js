@@ -132,7 +132,7 @@ export const CATALOG = Object.freeze([
     hosts: ['instagram.com', 'instagr.am', 'cdninstagram.com'],
     extractors: ['instagram(:.*)?', 'InstagramIOS'],
     content: ['video', 'image', 'playlist'],
-    engine: 'yt-dlp', category: 4, policy: 'attestation', auth: 'sometimes',
+    engine: 'yt-dlp', ytdlpPictures: true, category: 4, policy: 'attestation', auth: 'sometimes',
     officialApi: 'Instagram API with Instagram Login (Business and Creator accounts, own media)',
     routes: [
       { label: 'Download your information (Accounts Center)', url: 'https://help.instagram.com/ipad-app/181231772500920' },
@@ -140,8 +140,8 @@ export const CATALOG = Object.freeze([
     ],
     restrictions: "Instagram's terms ban automated collection, and only public reels whose creator allows it can be downloaded in the app.",
     attestation: "Instagram creators can turn reel downloads off, and Instagram's terms ban automated collection. Only download posts you published or have the creator's permission to save.",
-    reliability: 'experimental', lastChecked: '2026-11-24',
-    notes: "Stories and many reels sit behind a login wall, and yt-dlp's profile extractor is flagged broken.",
+    reliability: 'experimental', lastChecked: '2026-11-25',
+    notes: "Pictures in posts and carousels come from yt-dlp's reading of the post, without signing in, and Ferry downloads them as a picture gallery (yt-dlp itself only downloads video). gallery-dl can't help here: its Instagram extractor needs a signed-in session and gets HTTP 401 without one (checked 2026-11-25). Stories and many reels sit behind a login wall, and yt-dlp's profile extractor is flagged broken.",
     sources: ['https://raw.githubusercontent.com/OpenTermsArchive/pga-versions/main/Instagram/Terms%20of%20Service.md', 'https://github.com/yt-dlp/yt-dlp/issues/17755', 'https://github.com/yt-dlp/yt-dlp/issues/11166'],
   },
   {
@@ -3160,4 +3160,4 @@ export const CATALOG = Object.freeze([
   },
 ]);
 
-export const CATALOG_VERSION = '2026-11-24';
+export const CATALOG_VERSION = '2026-11-25';

@@ -37,6 +37,7 @@ before(async () => {
   FFPROBE = await which('ffprobe');
   const config = loadConfig({
     NODE_ENV: 'test',
+    ASK_PERMISSION: 'true', // these tests cover the tick box; with it off, see job-service.test.js and e2e
     DATA_DIR: dataDir,
     PORT: '0',
     SSRF_ALLOW_HOSTS: fx.authority,
@@ -320,6 +321,7 @@ test('runtime policy overrides via the admin API (no redeploy)', async () => {
   const p = await probe(fx.url('/tone.m4a'));
   assert.equal(p.body.source.policy.status, 'attestation');
   assert.ok(p.body.source.policy.attestation);
+  assert.equal(p.body.source.policy.confirm, true, 'the client is told to show the tick box');
   const without = await post('/api/v1/jobs', { probeId: p.body.probe.id, mode: 'audio', audio: { format: 'flac', bitrate: 'source' } });
   assert.equal(without.body.error.code, 'ATTESTATION_REQUIRED');
   const withAttest = await post('/api/v1/jobs', { probeId: p.body.probe.id, mode: 'audio', audio: { format: 'flac', bitrate: 'source' }, attest: true });

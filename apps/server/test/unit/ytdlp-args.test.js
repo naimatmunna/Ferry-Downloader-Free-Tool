@@ -83,6 +83,9 @@ test('engine errors map to specific, user-meaningful codes', () => {
     ['ERROR: [vimeo] 33951933: The web client only works when logged-in. Use --cookies, --cookies-from-browser, --username and --password', 'AUTH_REQUIRED'],
     // Extractors that only work while posing as a browser: Ferry never impersonates, so retrying can't help.
     ['ERROR: [Bandcamp] youtube-dl-test-song: The extractor is attempting impersonation, but no impersonate target is available. See  https://github.com/yt-dlp/yt-dlp#impersonation  for information on installing the required dependencies', 'UNSUPPORTED_PLATFORM'],
+    // Live wording (2026-11-25): picture or text posts on X and Facebook have no video; the site did not change.
+    ['ERROR: [twitter] 1846252497658093940: No video could be found in this tweet', 'NO_MEDIA_FOUND'],
+    ['ERROR: [facebook] 10153664894881749: No video found. Check if this post is accessible in your browser without being logged-in. If it is not, then use --cookies-from-browser or --cookies for the authentication.', 'NO_MEDIA_FOUND'],
   ];
   for (const [stderr, code] of cases) assert.equal(classifyEngineError(stderr), code, stderr);
   assert.equal(classifyEngineError('weird'), 'EXTRACTION_FAILED');

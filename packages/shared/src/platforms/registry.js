@@ -16,6 +16,8 @@ import { directMediaExtension, hostCandidates, parseMediaUrl } from '../url.js';
  * @property {string[]} [extractors]    yt-dlp extractor-name regexes (full match, case-insensitive)
  * @property {string[]} content
  * @property {string} engine
+ * @property {true} [ytdlpPictures]    yt-dlp lists this site's pictures as items without video formats
+ *                                     (Instagram posts): Ferry offers them as a picture gallery
  * @property {1|2|3|4|5} category
  * @property {string} policy
  * @property {'none'|'sometimes'|'always'} auth

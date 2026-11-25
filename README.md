@@ -9,9 +9,11 @@ and one ZIP.
 * **Honest:** only qualities the source really has; sizes only when known; no upscaling; bitrate
   warnings when a conversion can't add quality; "copied" vs "converted" stated on every file.
 * **Rules built in:** a registry of 249 platforms in five permission categories, enforced before
-  anything is fetched and changeable at runtime. Protected and paid content stays protected;
-  YouTube, Facebook, SoundCloud and other sites whose terms restrict downloading ask the user to
-  confirm they own the media or have permission (see [docs/RESEARCH.md](docs/RESEARCH.md)).
+  anything is fetched and changeable at runtime. Protected and paid content stays protected.
+  YouTube, Facebook, SoundCloud and other sites whose terms restrict downloading are marked
+  “With permission”. Ferry can also make users tick “It’s my content, or I have permission” before
+  downloading from them; that tick box is off by default and  turns it on
+  (see [docs/RESEARCH.md](docs/RESEARCH.md)).
 * **Private:** no accounts, ads or trackers; history stays on the device; files leave the server
   within the hour (or right after saving).
 * **Secure:** every engine connection goes through an egress guard (no SSRF, no DNS rebinding,
@@ -138,8 +140,9 @@ deploy            Dockerfile, Compose, Caddy          docs      research, archit
 
 Ferry does not remove DRM, bypass paywalls, sign-ins, CAPTCHAs or anti-bot systems, and never asks
 for third-party passwords or cookies. Many platforms restrict downloading in their terms; Ferry
-shows each platform's rules and official routes, and asks users to confirm they own or are
-licensed to save restricted content. This is not legal advice: operators should publish terms of
+shows each platform's rules and official routes, and tells users to save only what they own or
+are licensed to save. It can also make them confirm this with a tick box (,
+off by default). This is not legal advice: operators should publish terms of
 use, a rights-holder contact and takedown process, and take their own counsel.
 
 Third-party software: yt-dlp (Unlicense), gallery-dl (GPL-2.0-only; run as a separate program, never

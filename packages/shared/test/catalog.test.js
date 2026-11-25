@@ -109,6 +109,17 @@ test('no platform with a working engine is held back as export-only', () => {
   assert.deepEqual(held, []);
 });
 
+test('only yt-dlp sites with pictures say yt-dlp lists their pictures; Instagram does', () => {
+  for (const p of CATALOG) {
+    if (p.ytdlpPictures === undefined) continue;
+    assert.equal(p.ytdlpPictures, true, `${p.id}: ytdlpPictures is true or absent`);
+    assert.equal(p.engine, 'yt-dlp', `${p.id}: ytdlpPictures needs the yt-dlp engine`);
+    assert.ok(p.content.includes('image'), `${p.id}: ytdlpPictures needs image content`);
+  }
+  // Checked 2026-11-25: yt-dlp reads public Instagram posts without signing in; gallery-dl needs a session.
+  assert.equal(registry.get('instagram').ytdlpPictures, true);
+});
+
 test('detection is fast enough to run on every keystroke', () => {
   const t0 = performance.now();
   for (let i = 0; i < 2000; i += 1) registry.detect(`https://www.example${i % 50}.com/watch?v=${i}`);

@@ -1,9 +1,11 @@
 /** Light states of the Download screen (loaded eagerly): loading, refusals and errors, home intro. */
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { AlertTriangle, ArrowUpRight, Ban, Loader2, Lock, RotateCcw } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight, Ban, Check, Clock, Globe, Loader2, Lock, RotateCcw } from 'lucide-react';
 import { useI18n, errorText } from '../../lib/i18n/index.jsx';
 import { relativeTime } from '../../lib/format.js';
+import { describeLinkError } from '../../lib/linkError.js';
+import { detect, usePlatforms } from '../../lib/registry.js';
 import { useAnalysis } from '../../state/analysis.js';
 import { useHistory } from '../../state/history.js';
 import { SiteIcon } from '../../components/SiteIcon.jsx';
@@ -129,37 +131,125 @@ export function ErrorPanel({ error, onRetry, onEdit }) {
     );
   }
 
+  return <LinkErrorCard error={error} routes={routes} wait={wait} onRetry={onRetry} onEdit={onEdit} />;
+}
+
+const PILL = {
+  soon: { icon: Clock, tone: 'bg-soon-soft text-soon' },
+  signin: { icon: Lock, tone: 'bg-lock-soft text-lock' },
+  gone: { icon: Ban, tone: 'bg-lock-soft text-lock' },
+  wait: { icon: RotateCcw, tone: 'bg-off-soft text-off' },
+  bad: { icon: AlertTriangle, tone: 'bg-bad-soft text-bad' },
+};
+const linkCls = 'inline-flex h-12 items-center px-2 font-semibold text-ink underline decoration-[1.5px] underline-offset-[3px]';
+
+/** The site of the pasted link, as the client registry sees it (no extra request). */
+function pastedSite(input) {
+  const d = detect(input);
+  if (d?.ok) return { platform: d.platform, host: d.url.hostname };
+  try {
+    return { platform: null, host: new URL(input).hostname };
+  } catch {
+    return { platform: null, host: null };
+  }
+}
+
+/** A link that didn't work: what happened, what works on that site, and what to do (design/link-errors-mockup.html). */
+function LinkErrorCard({ error, routes, wait, onRetry, onEdit }) {
+  const { t } = useI18n();
+  const input = useAnalysis((s) => s.input);
+  const platforms = usePlatforms((s) => s.platforms);
+  const { platform, host } = useMemo(() => pastedSite(input), [input]);
+  // The server may name another site than the link showed (a short link, an embed): use that site's entry.
+  const named = error.details?.platform?.id;
+  const site = named ? (platforms.find((p) => p.id === named) ?? error.details.platform) : platform;
+  const d = describeLinkError(error, { platform: site, host });
+  const pill = PILL[d.pill];
+  const byName = (key) => (d.name ? t(`${key}.title`, { name: d.name }) : t(`${key}.titleGeneric`));
+  const title =
+    d.kind === 'pictures-soon' ? t('linkError.picturesSoon.title', { name: d.name })
+    : d.kind === 'website-soon' ? t('linkError.websiteSoon.title')
+    : d.kind === 'signin' ? byName('linkError.signin')
+    : d.kind === 'gone' ? t('linkError.gone.title')
+    : d.kind === 'wait' ? byName('linkError.wait')
+    : errorText(t, error);
+  const body =
+    d.kind === 'pictures-soon' ? t(`linkError.picturesSoon.body.${d.works[0]?.what === 'audio' ? 'audio' : 'video'}`, { name: d.name })
+    : d.kind === 'website-soon' ? t('linkError.websiteSoon.body')
+    : d.kind === 'signin' ? t('linkError.signin.body')
+    : d.kind === 'gone' ? t('linkError.gone.body')
+    : d.kind === 'wait' ? t('linkError.wait.body')
+    : null;
+  const retry = (
+    <Button variant={d.primary === 'retry' ? 'primary' : 'line'} icon={RotateCcw} onClick={onRetry} disabled={wait > 0}>
+      {wait > 0 ? t('errors.RATE_LIMITED', { seconds: wait }) : t('actions.retry')}
+    </Button>
+  );
+  const paste = (
+    <Button variant={d.primary === 'paste' ? 'primary' : 'line'} onClick={onEdit}>
+      {t('linkError.paste')}
+    </Button>
+  );
+
   return (
-    <section role="alert" className="max-w-2xl rounded-[var(--radius-card)] bg-paper p-5 shadow-card sm:p-7">
-      <div className="flex items-start gap-4">
-        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-bad-soft text-bad">
-          <AlertTriangle aria-hidden="true" className="size-6" />
-        </span>
+    <section role="alert" aria-labelledby="link-error-title" className="max-w-2xl rounded-[var(--radius-card)] bg-paper p-5 shadow-card sm:p-7">
+      <div className="flex items-center gap-3.5">
+        {d.siteLink ? (
+          <SiteIcon id={d.siteLink} name={d.name} size={48} />
+        ) : (
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-field text-ink-2">
+            <Globe aria-hidden="true" className="size-6" />
+          </span>
+        )}
         <div className="min-w-0">
-          {name && <p className="mb-1 text-sm font-semibold text-ink-2">{name}</p>}
-          <p className="text-lg font-bold text-ink">{errorText(t, error)}</p>
-          {routes.length > 0 && (
-            <div className="mt-4">
-              <p className="mb-2 text-sm font-bold">{t('attest.routes')}</p>
-              <RouteList routes={routes} />
-            </div>
-          )}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {error.retryable && (
-              <Button variant="primary" icon={RotateCcw} onClick={onRetry} disabled={wait > 0}>
-                {wait > 0 ? t('errors.RATE_LIMITED', { seconds: wait }) : t('actions.retry')}
-              </Button>
-            )}
-            <Button variant="line" onClick={onEdit}>
-              {t('actions.edit')}
-            </Button>
-            {error.code === 'UNSUPPORTED_PLATFORM' && (
-              <Link to="/sites" className="inline-flex h-12 items-center px-2 font-semibold text-ink underline decoration-[1.5px] underline-offset-[3px]">
-                {t('actions.platforms')}
-              </Link>
-            )}
-          </div>
+          {d.name && <p className="truncate text-sm font-semibold text-ink-2">{d.name}</p>}
+          <span className={cx('mt-0.5 inline-flex h-7 items-center gap-1.5 rounded-full ps-2 pe-2.5 text-[13px] font-[650]', pill.tone)}>
+            <pill.icon aria-hidden="true" className="size-[15px]" strokeWidth={2.6} />
+            {t(`linkError.pill.${d.pill}`)}
+          </span>
         </div>
+      </div>
+      <h2 id="link-error-title" className="heading mt-4 text-[22px] leading-tight sm:text-2xl">
+        {title}
+      </h2>
+      {body && <p className="mt-2 max-w-[60ch] text-ink-2">{body}</p>}
+      {d.works.length > 0 && (
+        <ul className="mt-4 grid gap-1.5 rounded-[14px] bg-field px-4 py-3 text-[14.5px]">
+          <li className="text-[13px] font-bold text-ink-3">{t('linkError.works.title', { name: d.name })}</li>
+          {d.works.map((w) => (
+            <li key={w.what} className="flex items-center gap-2">
+              {w.ok ? <Check aria-hidden="true" className="size-[18px] text-ok" strokeWidth={2.6} /> : <Clock aria-hidden="true" className="size-[18px] text-soon" strokeWidth={2.4} />}
+              {t(`linkError.works.${w.what}`)}
+            </li>
+          ))}
+        </ul>
+      )}
+      {routes.length > 0 && (
+        <div className="mt-4">
+          <p className="mb-2 text-sm font-bold">{t('attest.routes')}</p>
+          <RouteList routes={routes} />
+        </div>
+      )}
+      <div className="mt-5 flex flex-wrap items-center gap-2 max-sm:[&>button]:w-full">
+        {d.primary === 'retry' ? (
+          <>
+            {retry}
+            {paste}
+          </>
+        ) : (
+          paste
+        )}
+        {d.siteLink ? (
+          <Link to={`/sites?site=${d.siteLink}`} className={linkCls}>
+            {t('linkError.siteLink', { name: d.name })}
+          </Link>
+        ) : (
+          d.kind === 'website-soon' && (
+            <Link to="/sites" className={linkCls}>
+              {t('linkError.sites')}
+            </Link>
+          )
+        )}
       </div>
     </section>
   );

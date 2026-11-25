@@ -46,7 +46,7 @@ const galleryRequest = (items) => ({
   filename: { template: '{title}' }, privacy: { deleteAfterDownload: false },
 });
 
-function setup() {
+function setup({ askPermission = false } = {}) {
   const dir = mkdtempSync(path.join(os.tmpdir(), 'ferry-jobs-'));
   const registry = createRegistry(CATALOG);
   const policies = createPolicyService({ file: path.join(dir, 'overrides.json'), registry, catalogVersion: 't', watch: false });
@@ -64,7 +64,7 @@ function setup() {
       return { files: [{ id: 'f0', kind: 'image', diskName: 'img-0001.jpg', name: 'Album - 01.jpg', sizeBytes: 1, mime: 'image/jpeg' }], notes: [], archiveName: 'Album.zip' };
     },
   };
-  const config = { limits: { jobTtlMinutes: 60, jobMaxRetentionMinutes: 1440, maxConcurrentJobs: 1, maxQueueLength: 10, maxActiveJobsPerClient: 5, maxFileSizeBytes: 1e9, maxDurationSec: 3600 } };
+  const config = { askPermission, limits: { jobTtlMinutes: 60, jobMaxRetentionMinutes: 1440, maxConcurrentJobs: 1, maxQueueLength: 10, maxActiveJobsPerClient: 5, maxFileSizeBytes: 1e9, maxDurationSec: 3600 } };
   const service = createJobService({
     config, store, probeCache, registry, policies, pipeline,
     probeService: { detect: (u) => registry.detect(u), gate: () => {} },
@@ -102,5 +102,33 @@ test('a policy change reaches gallery jobs that are already waiting in the queue
   assert.equal(store.get(waiting.job.id).error.code, 'PLATFORM_BLOCKED');
   assert.equal(store.get(waiting.job.id).error.retryable, false);
   assert.deepEqual(ran, [running.job.id], 'the blocked job never reached the engine');
+  await cleanup();
+});
+
+test('with ASK_PERMISSION off, a permission-restricted site downloads without the tick', async () => {
+  const { service, policies, probeCache, store, cleanup } = setup({ askPermission: false });
+  await policies.setOverride('pics', { policy: 'attestation', reason: 'test' });
+  probeCache.set('p_g', { id: 'p_g', clientKey: 'c', href: 'https://pics.example/a/1', platformId: 'pics', adapterId: 'gallery-dl', media: GALLERY, thumbnailUrl: null });
+  const created = await service.create({ probeId: 'p_g', request: galleryRequest([1]), clientKey: 'c' });
+  assert.equal(store.get(created.job.id).source.attested, false, 'no confirmation is recorded when none was asked for');
+  await cleanup();
+});
+
+test('with ASK_PERMISSION on, the tick is still required', async () => {
+  const { service, policies, probeCache, cleanup } = setup({ askPermission: true });
+  await policies.setOverride('pics', { policy: 'attestation', reason: 'test' });
+  probeCache.set('p_g', { id: 'p_g', clientKey: 'c', href: 'https://pics.example/a/1', platformId: 'pics', adapterId: 'gallery-dl', media: GALLERY, thumbnailUrl: null });
+  await assert.rejects(service.create({ probeId: 'p_g', request: galleryRequest([1]), clientKey: 'c' }), { code: 'ATTESTATION_REQUIRED' });
+  await service.create({ probeId: 'p_g', request: galleryRequest([1]), attest: true, clientKey: 'c' });
+  await cleanup();
+});
+
+test('blocked and export-only sites stay closed whatever ASK_PERMISSION says', async () => {
+  const { service, policies, probeCache, cleanup } = setup({ askPermission: false });
+  probeCache.set('p_g', { id: 'p_g', clientKey: 'c', href: 'https://pics.example/a/1', platformId: 'pics', adapterId: 'gallery-dl', media: GALLERY, thumbnailUrl: null });
+  for (const [policy, code] of [['blocked', 'PLATFORM_BLOCKED'], ['export_only', 'EXPORT_ONLY'], ['disabled', 'PLATFORM_DISABLED']]) {
+    await policies.setOverride('pics', { policy, reason: 'test' });
+    await assert.rejects(service.create({ probeId: 'p_g', request: galleryRequest([1]), attest: true, clientKey: 'c' }), { code });
+  }
   await cleanup();
 });

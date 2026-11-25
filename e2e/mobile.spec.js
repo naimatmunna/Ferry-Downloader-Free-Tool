@@ -27,3 +27,25 @@ test('mobile: bottom navigation, sticky download bar, one-handed flow', async ({
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test('mobile: GitHub button fits, and the footer is never hidden behind the bars', async ({ page }) => {
+  await freshApp(page);
+  await expect(page.getByRole('banner').getByRole('link', { name: 'Star on GitHub' })).toBeVisible();
+  const tabBar = page.getByRole('navigation', { name: 'Main' }).last();
+  const lastLine = page.getByRole('contentinfo').getByText(/^© \d{4} Ferry$/);
+  const bottomOf = (box) => box.y + box.height;
+  const scrollToEnd = () => page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+
+  await scrollToEnd();
+  await expect(lastLine).toBeInViewport();
+  expect(bottomOf(await lastLine.boundingBox())).toBeLessThanOrEqual((await tabBar.boundingBox()).y);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+
+  // With a result open, the Download bar sits above the tab bar; the footer still clears it.
+  await analyze(page, `${FIXTURES}/portrait.mp4`);
+  await expect(page.getByRole('radio', { name: /^720p HD/ })).toBeVisible();
+  const downloadBar = page.getByRole('button', { name: 'Download 720p MP4' }).last().locator('..');
+  await scrollToEnd();
+  await expect(lastLine).toBeInViewport();
+  expect(bottomOf(await lastLine.boundingBox())).toBeLessThanOrEqual((await downloadBar.boundingBox()).y);
+});

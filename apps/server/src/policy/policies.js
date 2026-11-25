@@ -36,6 +36,9 @@ function parseOverrides(text) {
  * @param {{ file: string, registry: ReturnType<import('@ferry/shared/platforms/registry').createRegistry>,
  *   catalogVersion: string, logger?: import('pino').Logger, watch?: boolean, engineAvailable?: (engine: string) => boolean }} opts
  */
+/** Fields of `list()`. Change it whenever a field is added or removed (2: `pictures`). */
+const LIST_SHAPE = 'list-2';
+
 export function createPolicyService({ file, registry, catalogVersion, logger, watch = true, engineAvailable = (e) => AVAILABLE_ENGINES.has(e) }) {
   const events = new EventEmitter();
   /** @type {Record<string, any>} */
@@ -43,7 +46,8 @@ export function createPolicyService({ file, registry, catalogVersion, logger, wa
   let version = '';
 
   function recompute() {
-    const h = createHash('sha256').update(catalogVersion).update(JSON.stringify(overrides)).digest('base64url').slice(0, 12);
+    // LIST_SHAPE: browsers cache the list by this tag, so a new field must change it too.
+    const h = createHash('sha256').update(LIST_SHAPE).update(catalogVersion).update(JSON.stringify(overrides)).digest('base64url').slice(0, 12);
     version = `W/"p-${h}"`;
   }
 
@@ -120,6 +124,8 @@ export function createPolicyService({ file, registry, catalogVersion, logger, wa
           paths: p.paths?.map((r) => r.source) ?? [],
           patterns: p.patterns?.map((r) => r.source) ?? [],
           content: p.content,
+          // Ferry can save this site's pictures (gallery-dl sites, and the pictures yt-dlp lists).
+          pictures: p.engine === 'gallery-dl' || p.ytdlpPictures === true,
           category: p.category,
           policy: e.status,
           reason: e.reason,

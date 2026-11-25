@@ -36,6 +36,7 @@ let FFPROBE;
 function configFor(dir, extra = {}) {
   return loadConfig({
     NODE_ENV: 'test',
+    ASK_PERMISSION: 'true', // these tests cover the tick box; with it off, see job-service.test.js and e2e
     DATA_DIR: dir,
     PORT: '0',
     SSRF_ALLOW_HOSTS: fx.authority,

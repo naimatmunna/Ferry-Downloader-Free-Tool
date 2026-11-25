@@ -51,12 +51,15 @@ function assertSafeUrl(url) {
 }
 
 /**
- * @param {{ base: string[], url: string, playlist?: boolean, maxPlaylistItems?: number }} p
+ * @param {{ base: string[], url: string, playlist?: boolean, maxPlaylistItems?: number, pictures?: boolean }} p
+ *   pictures: the site's pictures come back as items without video formats (see pictureGallery):
+ *   keep them instead of failing the whole probe.
  */
-export function probeArgs({ base, url, playlist = false, maxPlaylistItems = 50 }) {
+export function probeArgs({ base, url, playlist = false, maxPlaylistItems = 50, pictures = false }) {
   const args = [...base, '--dump-single-json', '--skip-download', '--no-write-comments'];
   if (playlist) args.push('--yes-playlist', '--flat-playlist', '--playlist-items', `1:${maxPlaylistItems}`);
   else args.push('--no-playlist');
+  if (pictures) args.push('--ignore-no-formats-error');
   return [...args, '--', assertSafeUrl(url)];
 }
 
@@ -167,11 +170,120 @@ function num(v) {
   return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 
+// ---------------------------------------------------------------- pictures
+
+const isHttp = (v) => typeof v === 'string' && /^https?:\/\//i.test(v);
+const positive = (v) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? Math.round(v) : null);
+
+/** The first line of a caption as plain text, at most `max` characters. */
+function firstLine(value, max = 120) {
+  if (typeof value !== 'string') return null;
+  // eslint-disable-next-line no-control-regex
+  const clean = (l) => l.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
+  const line = value.split(/\r?\n/).map(clean).find(Boolean);
+  if (!line) return null;
+  return line.length > max ? `${line.slice(0, max - 1).trimEnd()}…` : line;
+}
+
+/** The image yt-dlp lists for an item: its own pick (`thumbnail`), else the last (best) of `thumbnails`. */
+function imageOf(entry) {
+  const list = Array.isArray(entry.thumbnails) ? entry.thumbnails.filter((t) => t && isHttp(t.url)) : [];
+  const url = isHttp(entry.thumbnail) ? entry.thumbnail : list.at(-1)?.url;
+  if (!url) return null;
+  const sized = list.find((t) => t.url === url);
+  return { url, width: positive(sized?.width), height: positive(sized?.height), preview: previewOf(list, url) };
+}
+
+/** Width of a listed size: its own field, else a size in the address (Instagram's `s640x640`, `p1080x1080`). */
+function widthOf(t) {
+  if (positive(t.width)) return positive(t.width);
+  const m = /(?:^|[_=/-])[sp](\d{2,4})x(\d{2,4})(?=[_&./]|$)/.exec(t.url);
+  return m ? Number(m[1]) : null;
+}
+
+/** A smaller size for the picker's tile (the smallest at least 320 px wide), else the picture itself. */
+function previewOf(list, full) {
+  const fits = list.filter((t) => t.url !== full && (widthOf(t) ?? 0) >= 320);
+  if (!fits.length) return full;
+  return fits.reduce((a, b) => (widthOf(b) < widthOf(a) ? b : a)).url;
+}
+
+/** An item that is a picture: no formats, no media address, no running time, nothing behind DRM. */
+function isPicture(entry) {
+  if (entry._type !== undefined && entry._type !== 'video') return false;
+  if ((Array.isArray(entry.formats) && entry.formats.length) || isHttp(entry.url)) return false;
+  // yt-dlp fills duration from the video's length; a formatless video is a broken video, not its cover.
+  return !(positive(entry.duration) || entry._has_drm);
+}
+
+function extensionOf(url) {
+  try {
+    const ext = /\.([a-z0-9]{1,5})$/i.exec(new URL(url).pathname)?.[1].toLowerCase() ?? null;
+    return ext === 'jpeg' || ext === 'jpe' ? 'jpg' : ext;
+  } catch {
+    return null;
+  }
+}
+
 /**
- * @param {{ bin: string, args: string[], cwd: string, homeDir: string, proxyUrl: string, timeoutMs: number, signal?: AbortSignal, maxStdoutBytes: number }} p
+ * Pictures in a post that yt-dlp lists but cannot download: items without
+ * video or audio formats whose image it reports (Instagram carousels and photo
+ * posts, probed with `pictures: true`). Returns an info object that
+ * normalizeInfo() turns into a picture gallery, numbered by position in the
+ * post, or null when the post has no pictures (videos keep the usual path).
+ * Videos in a mixed post are counted and left out, as in gallery-dl galleries.
+ * Only for registry entries with `ytdlpPictures: true`: on other sites an item
+ * without formats is not a picture.
+ * @param {any} info yt-dlp info dict
+ * @param {{ maxItems: number, fallbackTitle: string }} p
  */
-export async function runProbe({ bin, args, cwd, homeDir, proxyUrl, timeoutMs, signal, maxStdoutBytes }) {
-  const r = await runProcess(bin, args, {
+export function pictureGallery(info, { maxItems, fallbackTitle }) {
+  if (!info || typeof info !== 'object') return null;
+  const isList = info._type === 'playlist' || info._type === 'multi_video';
+  const entries = isList ? (Array.isArray(info.entries) ? info.entries : []) : [info];
+  const items = [];
+  const skipped = { videos: 0, other: 0, links: 0 };
+  let truncated = false;
+  for (const [i, entry] of entries.entries()) {
+    const index = i + 1;
+    if (index > maxItems) {
+      truncated = true;
+      break;
+    }
+    if (!entry || typeof entry !== 'object') skipped.other += 1;
+    else if (entry._type === 'url' || entry._type === 'url_transparent') skipped.links += 1;
+    else if (entry._type !== undefined && entry._type !== 'video') skipped.other += 1;
+    else if (!isPicture(entry)) skipped.videos += 1;
+    else {
+      const image = imageOf(entry);
+      if (!image) skipped.other += 1;
+      else items.push({ index, url: image.url, ext: extensionOf(image.url), width: image.width, height: image.height, filesize: null, preview: image.preview });
+    }
+  }
+  if (!items.length) return null;
+  const caption = firstLine(info.description) ?? firstLine(entries.find((e) => e && typeof e === 'object')?.description);
+  return {
+    _type: 'gallery',
+    id: info.id == null ? null : String(info.id),
+    // A single picture's own title is "Video by …": never use it.
+    title: caption ?? (isList ? firstLine(info.title) : null) ?? fallbackTitle,
+    uploader: info.uploader ?? null,
+    channel: info.channel ?? null,
+    upload_date: info.upload_date ?? null,
+    timestamp: info.timestamp ?? null,
+    webpage_url: isHttp(info.webpage_url) ? info.webpage_url : null,
+    extractor: info.extractor ?? null,
+    thumbnail: items[0].preview,
+    gallery: { items, truncated, skipped },
+  };
+}
+
+/**
+ * @param {{ bin: string, args: string[], cwd: string, homeDir: string, proxyUrl: string, timeoutMs: number, signal?: AbortSignal,
+ *   maxStdoutBytes: number, run?: typeof runProcess }} p
+ */
+export async function runProbe({ bin, args, cwd, homeDir, proxyUrl, timeoutMs, signal, maxStdoutBytes, run = runProcess }) {
+  const r = await run(bin, args, {
     cwd,
     env: engineEnv({ proxyUrl, homeDir }),
     timeoutMs,

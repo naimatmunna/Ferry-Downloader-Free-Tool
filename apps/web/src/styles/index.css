@@ -31,6 +31,8 @@
   --perm-soft: #e7eefd;
   --off: #985700;
   --off-soft: #fff0d2;
+  --soon: #6b3fd1;
+  --soon-soft: #efe8fd;
   --lock: #5d6470;
   --lock-soft: #eceef1;
   --warn: #b03e06;
@@ -80,6 +82,8 @@
   --perm-soft: #172241;
   --off: #f2b550;
   --off-soft: #35270b;
+  --soon: #b79bff;
+  --soon-soft: #251c41;
   --lock: #a3aab5;
   --lock-soft: #24272d;
   --warn: #ff925c;
@@ -133,6 +137,8 @@
   --color-perm-soft: var(--perm-soft);
   --color-off: var(--off);
   --color-off-soft: var(--off-soft);
+  --color-soon: var(--soon);
+  --color-soon-soft: var(--soon-soft);
   --color-lock: var(--lock);
   --color-lock-soft: var(--lock-soft);
   --color-warn: var(--warn);
@@ -259,6 +265,20 @@
   }
   .safe-bottom {
     padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+  /* Phones: the footer's last lines clear the fixed tab bar (4.2rem), and the
+     Download bar above it (5.5rem) while a page shows one [data-mobile-bar]. */
+  .site-foot {
+    padding-bottom: calc(4.2rem + env(safe-area-inset-bottom));
+  }
+  body:has([data-mobile-bar]) .site-foot {
+    padding-bottom: calc(9.7rem + env(safe-area-inset-bottom));
+  }
+  @media (width >= 48rem) {
+    .site-foot,
+    body:has([data-mobile-bar]) .site-foot {
+      padding-bottom: 0;
+    }
   }
   .no-scrollbar {
     scrollbar-width: none;

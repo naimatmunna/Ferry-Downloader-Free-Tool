@@ -83,6 +83,18 @@ Key engineering facts that shaped the code:
   * No extractor sets an `X-Forwarded-For` geo-bypass by default, and Ferry
     passes no `--xff`.
   * Federated Mastodon posts need gallery-dl's `mastodon:<url>` instance prefix.
+* **Instagram pictures (checked 2026-11-25, yt-dlp 2026.11.23, gallery-dl 1.32.21).**
+  Pasting a post of several pictures failed with "We couldn't find any
+  downloadable media on this page." yt-dlp reads public posts without signing
+  in and lists one item per picture, with the full-size image link (1080 px),
+  but it only downloads video, so every picture failed with "No video formats
+  found". gallery-dl can't take over: its Instagram post extractor only uses
+  Instagram's private API, which answers HTTP 401 without a signed-in session
+  (`-o api=graphql` makes no difference). Ferry now probes Instagram with
+  `--ignore-no-formats-error`, offers the pictures as a gallery and fetches
+  them itself (`ytdlpPictures` in the registry; SYSTEM-ARCHITECTURE.md §8.5).
+  Live result: a 5-picture post gave five 1080 × 1080 JPEGs and a ZIP; a
+  single-picture post works too; reels and multi-video posts are unchanged.
 
 ## 3. Platforms and permission (see `PLATFORM-COMPATIBILITY.md`)
 
@@ -191,6 +203,7 @@ compliance-first scope.
 | DRM as a hard stop (`has_drm` true or maybe) | `apps/server/src/media/normalize.js` |
 | Official APIs first (Internet Archive, PeerTube) | `apps/server/src/adapters/` |
 | Image galleries through gallery-dl (allowlisted entries only, images only, no cookies/logins/impersonation, every image re-encoded) | `apps/server/src/adapters/galleryDl.js`, `apps/server/src/engines/galleryDl.js`, `apps/server/src/media/gallery.js` |
+| Instagram pictures from yt-dlp's reading of the post (no sign-in), fetched by Ferry and re-encoded like gallery images (2026-11-25) | `apps/server/src/engines/ytdlp.js` (`pictureGallery`), `apps/server/src/adapters/pictures.js`, `ytdlpPictures` in `packages/shared/src/platforms/catalog.js` |
 | Egress guard proxy (SSRF, DNS rebinding, byte caps) | `apps/server/src/security/egressProxy.js` |
 | Remux first, transcode only incompatible streams, honest labels | `apps/server/src/media/finalize.js`, `packages/shared/src/formats.js` |
 | No IPs in logs, on-device history, no trackers | `apps/server/src/logger.js`, `apps/web/src/state/history.js` |

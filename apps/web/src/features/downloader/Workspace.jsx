@@ -201,7 +201,7 @@ export function Workspace() {
   if (!result || !selection) return null;
 
   const { media, source, probe, limits } = result;
-  const needsAttest = source.policy.status === 'attestation';
+  const needsAttest = source.policy.confirm === true; // the server says whether to ask (ASK_PERMISSION)
   const trimOk = parseTrim(selection.extras.trim, media.durationSec).ok;
   const size = estimateSize(media, selection);
   const tooLarge = size.bytes != null && size.bytes > limits.maxFileSizeBytes;
@@ -250,7 +250,7 @@ export function Workspace() {
       </section>
       {/* Phone: the primary action stays under the thumb, above the tab bar. */}
       <div className="h-20 md:hidden" aria-hidden="true" />
-      <div className="fixed inset-x-0 bottom-[calc(4.2rem+env(safe-area-inset-bottom))] z-30 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur md:hidden">{action}</div>
+      <div data-mobile-bar className="fixed inset-x-0 bottom-[calc(4.2rem+env(safe-area-inset-bottom))] z-30 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur md:hidden">{action}</div>
     </div>
   );
 }

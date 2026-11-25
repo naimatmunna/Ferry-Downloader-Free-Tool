@@ -37,7 +37,7 @@ export function PlaylistPanel() {
   const setAttest = useAnalysis((s) => s.setAttest);
   const enqueue = useDownloads((s) => s.enqueue);
   const { media, source, probe, limits } = result;
-  const needsAttest = source.policy.status === 'attestation';
+  const needsAttest = source.policy.confirm === true; // the server says whether to ask (ASK_PERMISSION)
 
   function start() {
     const label = outputLabel(null, selection);
@@ -115,7 +115,7 @@ export function BatchPanel() {
 
   // Playlists and galleries need their own picker, so a batch skips them.
   const ready = useMemo(() => batch.filter((b) => b.status === 'ready' && !['playlist', 'gallery'].includes(b.result?.media?.kind)), [batch]);
-  const attestItem = ready.find((b) => b.result.source.policy.status === 'attestation');
+  const attestItem = ready.find((b) => b.result.source.policy.confirm === true);
 
   function start() {
     enqueue(

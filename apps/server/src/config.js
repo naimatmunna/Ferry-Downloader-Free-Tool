@@ -140,6 +140,10 @@ export function loadConfig(env = process.env) {
       maxConnections: int(env.EGRESS_MAX_CONNECTIONS, 256, { min: 1, name: 'EGRESS_MAX_CONNECTIONS' }),
     },
     security: { signingSecret, adminToken },
+    // Whether sites whose terms restrict downloading ("With permission") make the
+    // user tick "It's my content, or I have permission" first. Off by default
+    // (owner's decision, 2026-11-25); ASK_PERMISSION=true brings the tick box back.
+    askPermission: bool(env.ASK_PERMISSION, false),
     userAgent: env.USER_AGENT || 'Ferry/1.0 (self-hosted media downloader)',
     log: {
       level: env.LOG_LEVEL || (isTest ? 'silent' : 'info'),

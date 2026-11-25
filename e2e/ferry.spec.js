@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
+import { formatBytes } from '@ferry/shared/formats';
 import { FIXTURES, analyze, confirmRights, freshApp, saveAndProbe, waitReady, zipEntryNames } from './helpers.js';
 
 test.beforeEach(async ({ page }) => {
@@ -131,7 +132,7 @@ test('video with sound: preview, real qualities, MP4 delivered intact', async ({
   await expect(page.getByRole('radio', { name: /^MP4 Copied, no quality loss/ })).toBeChecked();
   await expect(page.getByRole('radio', { name: /^WebM Converted/ })).toBeVisible();
   const download = page.getByRole('button', { name: 'Download 360p MP4' }).first();
-  await expect(download).toBeDisabled(); // rights not yet confirmed
+  await expect(download).toBeEnabled(); // no tick box: ASK_PERMISSION is off by default
   await confirmRights(page);
   await download.click();
   await expect(page.getByText('Added to Downloads')).toBeVisible();
@@ -183,7 +184,7 @@ test('image gallery: preview grid, pick images, one ZIP of re-encoded files', as
   await page.getByRole('button', { name: 'Select all' }).click();
   await page.getByRole('checkbox', { name: /^Image 2,/ }).uncheck();
   const download = page.getByRole('button', { name: 'Download 3 images' }).first();
-  await expect(download).toBeDisabled(); // rights not yet confirmed
+  await expect(download).toBeEnabled(); // no tick box: ASK_PERMISSION is off by default
   await confirmRights(page);
   await download.click();
   await expect(page.getByText('Added to Downloads')).toBeVisible();
@@ -352,4 +353,65 @@ test('keyboard only: reach the field, analyze with Enter', async ({ page }) => {
   await page.keyboard.type(`${FIXTURES}/tone.mp3`);
   await page.keyboard.press('Enter');
   await expect(page.getByText('Audio only', { exact: true })).toBeVisible();
+});
+
+const REPO = 'https://github.com/naimatmunna/download-link';
+
+test('top bar: Star on GitHub opens the project in a new tab', async ({ page }) => {
+  const star = page.getByRole('banner').getByRole('link', { name: 'Star on GitHub' });
+  await expect(star).toBeVisible();
+  await expect(star).toHaveAttribute('href', REPO);
+  await expect(star).toHaveAttribute('target', '_blank');
+  await expect(star).toHaveAttribute('rel', /noopener/);
+});
+
+test('FAQ: ten questions, answered with this server’s own numbers', async ({ page, request }) => {
+  const { limits } = await (await request.get('/api/v1/config')).json();
+  const { platforms } = await (await request.get('/api/v1/platforms')).json();
+  const faq = page.getByRole('region', { name: 'Frequently asked questions' });
+  await expect(faq.getByRole('heading', { name: 'Frequently asked questions', level: 2 })).toBeVisible();
+  await expect(faq.locator('summary')).toHaveCount(10);
+
+  // Answers stay closed until the question is opened.
+  const limitAnswer = faq.getByText(/^Yes\. This server takes files up to/);
+  await expect(limitAnswer).toBeHidden();
+  await faq.getByText('Is there a size or length limit?').click();
+  expect(limits.maxDurationSec % 3600).toBe(0); // the test server's default: whole hours
+  await expect(limitAnswer).toHaveText(`Yes. This server takes files up to ${formatBytes(limits.maxFileSizeBytes, { locale: 'en' })} and media up to ${limits.maxDurationSec / 3600} hours long.`);
+
+  await faq.getByText('Do you keep my files?').click();
+  expect(limits.jobTtlMinutes).toBe(60);
+  await expect(faq.getByText(/^Only for a short time\./)).toContainText('Each file leaves the server 1 hour after it’s ready');
+
+  await faq.getByText('Which sites can I download from?').click();
+  await expect(faq.getByText(new RegExp(`^${platforms.filter(downloadable).length} sites, including TikTok`))).toBeVisible();
+
+  await faq.getByText('How can I support Ferry?').click();
+  await expect(faq.getByRole('link', { name: 'Star on GitHub' })).toHaveAttribute('href', REPO);
+});
+
+test('footer: credit, GitHub links, and FAQ from any page', async ({ page }) => {
+  const footer = page.getByRole('contentinfo');
+  await expect(footer.getByText('Developed by Naimat Ullah')).toBeVisible();
+  await expect(footer.getByRole('link', { name: 'Naimat Ullah' })).toHaveAttribute('href', 'https://github.com/naimatmunna');
+  await expect(footer.getByRole('link', { name: 'Star on GitHub' })).toHaveAttribute('href', REPO);
+  await expect(footer).toContainText(`© ${new Date().getFullYear()} Ferry`);
+
+  await footer.getByRole('link', { name: 'Sites' }).click();
+  await expect(page.getByRole('heading', { name: 'Sites', level: 1 })).toBeVisible();
+  await footer.getByRole('link', { name: 'FAQ' }).click();
+  await expect(page).toHaveURL(/\/#faq$/);
+  await expect(page.getByRole('heading', { name: 'Frequently asked questions' })).toBeInViewport();
+});
+
+test('“With permission” sites download straight away: no tick box, Download ready', async ({ page }) => {
+  // The test server keeps the default, ASK_PERMISSION off. Fixture links count as "Other website",
+  // a permission-restricted site, so this is where the tick box used to appear.
+  await analyze(page, `${FIXTURES}/tone.mp3`);
+  await expect(page.getByText('Audio only', { exact: true })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: /I have the right to download|my content, or I have permission/ })).toHaveCount(0);
+  const download = page.getByRole('button', { name: /^Download / }).first();
+  await expect(download).toBeEnabled();
+  await download.click();
+  await expect(page.getByText('Added to Downloads')).toBeVisible();
 });

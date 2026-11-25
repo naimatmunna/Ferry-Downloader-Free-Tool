@@ -11,7 +11,7 @@ export default {
     short: { free: 'Free to save', perm: 'With permission', off: 'Official only', lock: 'Protected', any: 'Any site', 'off-server': 'Turned off', unavailable: 'Not here yet' },
     say: {
       free: 'Open-licensed media. Pick a format and save.',
-      perm: 'You’ll confirm it’s yours or that you have permission.',
+      perm: 'Its terms limit downloading. Save only what’s yours or what you’re allowed to save.',
       off: 'Ferry shows you {name}’s own download instead.',
       lock: 'DRM or paid content. Ferry never removes protection.',
       any: 'Ferry will try. It works when the page has a plain video or audio file.',
@@ -256,7 +256,7 @@ export default {
     count: { one: '{count} site', other: '{count} sites' },
     more: { one: '{count} more site', other: '{count} more sites' },
     moreShort: 'more',
-    permNote: 'On most of these, you confirm the video is yours or that you have permission.',
+    permNote: 'Most of these limit downloading in their terms. Save only what’s yours or what you’re allowed to save.',
     seeAll: 'See all {count} sites',
   },
   home: {
@@ -273,6 +273,78 @@ export default {
       files: 'Files leave the server after you save them or when their time runs out.',
       logos: 'Logos only identify sites. Ferry isn’t affiliated with them.',
     },
+  },
+  github: { star: 'Star on GitHub', starShort: 'Star' },
+  faq: {
+    title: 'Frequently asked questions',
+    sub: 'Short answers about saving, quality and privacy.',
+    soon: 'soon',
+    units: { hours: { one: '{count} hour', other: '{count} hours' }, minutes: { one: '{count} minute', other: '{count} minutes' } },
+    free: { q: 'Is Ferry free?', a: 'Yes. There’s no account and nothing to install. Paste a link, pick a format and save.' },
+    sites: {
+      q: 'Which sites can I download from?',
+      a: {
+        one: '{count} site, including {names}. Ferry also tries any other page with a plain video or audio file.',
+        other: '{count} sites, including {names}. Ferry also tries any other page with a plain video or audio file.',
+      },
+      unknown: 'Most popular video, music and picture sites. Ferry also tries any other page with a plain video or audio file.',
+      link: 'See them all, with live status',
+    },
+    audio: { q: 'Can I save just the audio, like an MP3?', a: 'Yes. Choose Audio only, then MP3, M4A, FLAC or another format.' },
+    quality: { q: 'What quality will I get?', a: 'Up to the best the source has, such as 1080p or 4K. Ferry only offers qualities that really exist and never upscales.' },
+    phone: {
+      q: 'Does it work on my phone?',
+      a: 'Yes. Files save like any other download: to the Files app on iPhone and iPad, or the Downloads folder on Android. On Android, add Ferry to your home screen and it also shows up when you tap Share in other apps.',
+    },
+    limits: {
+      q: 'Is there a size or length limit?',
+      a: 'Yes. This server takes files up to {size} and media up to {length} long.',
+      unknown: 'Yes. Ferry tells you when a file is over this server’s size or length limit.',
+    },
+    files: {
+      q: 'Do you keep my files?',
+      a: 'Only for a short time. Each file leaves the server {time} after it’s ready, unless you choose “Keep longer”. Your download history stays on your device. No account, no ads, no tracking.',
+    },
+    protected: {
+      q: 'Why can’t I download from Netflix or Spotify?',
+      a: 'They protect their media with DRM or paywalls, and Ferry never breaks that protection. Paste a link anyway: Ferry tells you if the site has its own download option.',
+    },
+    legal: {
+      q: 'Is it legal to download videos?',
+      a: 'It depends on the video. Saving your own videos, openly licensed media or anything the owner allows is generally fine. Many sites’ terms forbid saving other people’s videos, and Ferry marks those sites “With permission”. Only save what you’re allowed to.',
+    },
+    support: { q: 'How can I support Ferry?', a: 'Give it a star on GitHub. It’s free and helps more people find Ferry.' },
+  },
+  footer: {
+    label: 'Footer',
+    tagline: 'Paste a link. Keep the file.',
+    faq: 'FAQ',
+    likeIt: 'Like Ferry?',
+    starHelps: 'A star on GitHub helps more people find it.',
+    by: 'Developed by',
+  },
+  // When a pasted link doesn't work (lib/linkError.js, design/link-errors-mockup.html).
+  linkError: {
+    pill: { soon: 'Coming soon', signin: 'Needs a sign-in', gone: 'Not available', wait: 'Busy right now', bad: 'Didn’t work' },
+    picturesSoon: {
+      title: 'Pictures from {name} are coming soon',
+      body: { video: 'This link has no video. Ferry can save videos from {name} today.', audio: 'This link has no audio. Ferry can save audio from {name} today.' },
+    },
+    websiteSoon: {
+      title: 'Ferry can’t read this website yet',
+      body: 'It found no video, sound or pictures here. A link that ends in a file, like .mp4 or .mp3, works from any site.',
+    },
+    signin: {
+      title: '{name} only shares this with signed-in people',
+      titleGeneric: 'This needs a sign-in',
+      body: 'Ferry never signs in or asks for your password, so it can’t open this.',
+    },
+    gone: { title: 'This post is gone or private', body: 'It may have been deleted, or only some people can see it.' },
+    wait: { title: '{name} is slow to answer', titleGeneric: 'The site is slow to answer', body: 'Too many requests, or the connection dropped. Nothing is wrong with your link.' },
+    works: { title: 'What Ferry saves from {name}', video: 'Videos', audio: 'Audio', pictures: 'Pictures (coming soon)' },
+    siteLink: 'What works on {name}',
+    sites: 'Sites that work',
+    paste: 'Paste another link',
   },
   route: {
     title: 'Use {name}’s own download',
@@ -420,7 +492,7 @@ export default {
     decides: 'How Ferry decides',
     explain: {
       free: 'Public-domain and openly licensed media, or files the site offers for download. Pick a format and save.',
-      perm: 'The site limits downloading in its terms. Save only what you made or have permission to save; you confirm this each time.',
+      perm: 'The site limits downloading in its terms. Save only what you made or have permission to save.',
       off: 'The site only allows downloads through its own tools, so Ferry points you to them instead of downloading.',
       lock: 'DRM, paywalls or sign-in walls. Ferry never bypasses protection.',
       'off-server': 'The operator of this server turned this site off.',

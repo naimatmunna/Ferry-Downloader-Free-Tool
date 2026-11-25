@@ -16,6 +16,17 @@ export function eta(sec, t) {
   return t('time.hours', { n: Math.round((sec / 3600) * 10) / 10 });
 }
 
+/**
+ * A server limit as words to count in: whole hours when it divides evenly,
+ * otherwise minutes (10800 → 3 hours, 5400 → 90 minutes). Null when unknown.
+ */
+export function timeSpan(seconds) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return null;
+  const minutes = Math.max(1, Math.round(seconds / 60));
+  if (minutes >= 60 && minutes % 60 === 0) return { unit: 'hours', count: minutes / 60 };
+  return { unit: 'minutes', count: minutes };
+}
+
 export function relativeTime(date, locale) {
   const ms = new Date(date).getTime() - Date.now();
   const abs = Math.abs(ms);

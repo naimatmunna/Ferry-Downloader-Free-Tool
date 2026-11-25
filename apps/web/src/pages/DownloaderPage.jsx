@@ -5,6 +5,7 @@ import { useAnalysis } from '../state/analysis.js';
 import { UrlGate, useDetection } from '../features/downloader/UrlGate.jsx';
 import { WherePanel, useDownloadable } from '../features/downloader/WherePanel.jsx';
 import { ErrorPanel, HomeIntro, ProbeSkeleton } from '../features/downloader/Panels.jsx';
+import { Faq } from '../features/downloader/Faq.jsx';
 import { VideoMuteIcon, VideoSoundIcon } from '../components/icons.jsx';
 import { cx } from '../components/ui.jsx';
 
@@ -95,6 +96,8 @@ export default function DownloaderPage() {
           {status === 'ready' && !batch && result?.media?.kind === 'gallery' && <GalleryPanel />}
           {status === 'ready' && !batch && result && !['playlist', 'gallery'].includes(result.media.kind) && <Workspace />}
         </Suspense>
+        {/* Always here, so the footer's FAQ link works whatever this page shows. */}
+        <Faq className="mt-14 sm:mt-16" />
       </div>
     </>
   );
