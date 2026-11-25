@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Missing file mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sun: #FFD43B; --sun-ink: #1B1600;
+  --ink: #14161A; --ink-2: #4D5360; --ink-3: #6A7180;
+  --paper: #FFFFFF; --canvas: #F3F4F6; --field: #ECEEF1; --line: #E1E4E8;
+  --primary: #14161A; --primary-ink: #FFFFFF;
+  --bad: #C9302C; --bad-soft: #FDE8E7; --lock: #5D6470; --lock-soft: #ECEEF1;
+  --mark-bg: #14161A; --mark-arrow: #FFD43B; --mark-wave: #FFFFFF;
+  --shadow-1: 0 1px 2px rgb(20 22 26 / .06), 0 12px 32px -16px rgb(20 22 26 / .25);
+  --board: #E4E5E8; --board-2: #F5F5F7; --board-ink: #14161A; --board-ink-2: #555B66;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --ink: #F1F2F4; --ink-2: #B2B8C3; --ink-3: #878F9C;
+  --paper: #17191E; --canvas: #0E0F12; --field: #23262C; --line: #2B2F37;
+  --primary: #FFD43B; --primary-ink: #14161A;
+  --bad: #FF7B76; --bad-soft: #3C1817; --lock: #A3AAB5; --lock-soft: #24272D;
+  --mark-bg: #FFD43B; --mark-arrow: #14161A; --mark-wave: #14161A;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .5), 0 14px 34px -16px rgb(0 0 0 / .8);
+  --board: #060708; --board-2: #121317; --board-ink: #F1F2F4; --board-ink-2: #A3A9B4;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--board); color: var(--board-ink); font-family: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+.i { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mark { width: 32px; height: 32px; flex: none; }
+.board-head { border-bottom: 1px solid color-mix(in srgb, var(--board-ink) 10%, transparent); }
+.board-head-in { max-width: 1200px; margin: 0 auto; padding: 10px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.board-title { margin: 0; display: flex; align-items: center; gap: 10px; font-weight: 800; font-stretch: 115%; font-size: 16px; }
+.tag { font-weight: 600; font-stretch: 100%; font-size: 12px; padding: 3px 8px; border-radius: 999px; background: color-mix(in srgb, var(--board-ink) 9%, transparent); color: var(--board-ink-2); }
+.seg { display: inline-flex; padding: 3px; border-radius: 10px; background: color-mix(in srgb, var(--board-ink) 8%, transparent); margin-left: auto; }
+.seg button { font: inherit; border: 0; background: none; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--board-ink-2); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--board-2); color: var(--board-ink); box-shadow: 0 1px 2px rgb(0 0 0 / .14); }
+.board { max-width: 1200px; margin: 0 auto; padding: 28px 24px 80px; }
+.intro { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; }
+.note { background: var(--board-2); border-radius: 18px; padding: 20px 22px; }
+.note h2 { margin: 0 0 10px; font-size: 15px; font-weight: 700; }
+.note ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; color: var(--board-ink-2); font-size: 14px; }
+.note li b { color: var(--board-ink); font-weight: 650; }
+.note--lead { background: var(--sun); color: var(--sun-ink); }
+.note--lead h1 { margin: 0 0 10px; font-size: 28px; font-weight: 820; font-stretch: 118%; letter-spacing: -.02em; line-height: 1.04; }
+.note--lead p { margin: 0; font-size: 14.5px; font-weight: 550; }
+.sec { margin-top: 56px; }
+.sec h2 { margin: 0 0 6px; font-size: 30px; font-weight: 820; font-stretch: 118%; letter-spacing: -.02em; }
+.sec > p { margin: 0 0 20px; max-width: 70ch; color: var(--board-ink-2); font-size: 14.5px; }
+.phones { display: flex; gap: 36px; flex-wrap: wrap; align-items: flex-start; }
+.cap { margin: 0 0 10px; font-weight: 700; font-size: 14px; }
+.cap span { font-weight: 500; color: var(--board-ink-2); }
+.phone { width: 390px; border-radius: 46px; padding: 12px; background: #14161A; box-shadow: 0 40px 80px -40px rgb(0 0 0 / .5); }
+.screen { position: relative; height: 760px; border-radius: 36px; overflow: hidden; background: var(--canvas); color: var(--ink); display: flex; flex-direction: column; }
+/* app: Downloads page bits */
+.p-top { display: flex; align-items: center; gap: 10px; padding: 18px 16px 12px; background: var(--sun); color: #14161A; font-weight: 820; font-stretch: 125%; font-size: 19px; }
+:root[data-theme="dark"] .p-top { background: #16171B; color: #FFD43B; }
+.page { padding: 18px 16px; flex: 1; }
+.page h1 { margin: 0 0 14px; font-size: 30px; font-weight: 820; font-stretch: 118%; letter-spacing: -.02em; }
+.card { background: var(--paper); border-radius: 22px; padding: 16px; box-shadow: var(--shadow-1); }
+.card-head { display: flex; gap: 12px; align-items: center; }
+.thumb { width: 64px; height: 44px; border-radius: 10px; flex: none; background: linear-gradient(140deg, #F59E0B 0%, #DB2777 55%, #4C1D95 100%); }
+.card-title { margin: 0; font-weight: 700; font-size: 15px; line-height: 1.25; }
+.card-sub { margin: 3px 0 0; font-size: 13px; color: var(--ink-2); }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12.5px; font-weight: 650; background: var(--lock-soft); color: var(--lock); margin-top: 12px; }
+.card-text { margin: 10px 0 0; font-size: 14px; color: var(--ink-2); }
+.btns { display: flex; gap: 8px; margin-top: 14px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 16px; border-radius: 13px; font-weight: 700; font-size: 15px; background: var(--primary); color: var(--primary-ink); }
+.btn--line { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+.is-new { position: relative; outline: 2px dashed #2356D8; outline-offset: 5px; border-radius: 22px; }
+.card .is-new { margin-top: 6px; padding: 2px 6px 6px; }
+.flag { position: absolute; top: -14px; right: -6px; z-index: 3; padding: 2px 8px; border-radius: 999px; background: #2356D8; color: #fff; font-size: 11.5px; font-weight: 700; }
+.toast { position: absolute; left: 14px; right: 14px; bottom: 84px; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; background: var(--bad); color: #fff; box-shadow: var(--shadow-1); }
+:root[data-theme="dark"] .toast { color: #1B0B0B; }
+.toast b { display: block; font-size: 15px; }
+.toast small { display: block; font-size: 13px; opacity: .88; }
+.toast .act { margin-left: auto; flex: none; padding: 7px 12px; border-radius: 11px; background: var(--sun); color: var(--sun-ink); font-weight: 700; font-size: 14px; }
+.tabbar { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); background: var(--paper); }
+.tab { height: 66px; display: grid; place-items: center; font-size: 11.5px; font-weight: 650; color: var(--ink-3); }
+.tab[aria-current="page"] { color: var(--ink); }
+/* the server page in Safari */
+.safari { height: 48px; display: grid; place-items: center; background: var(--field); color: var(--ink-2); font-size: 13px; }
+.safari span { padding: 6px 14px; border-radius: 10px; background: var(--paper); }
+.err { flex: 1; padding: 44px 26px; display: flex; flex-direction: column; gap: 16px; background: var(--canvas); }
+.err .logo { display: flex; align-items: center; gap: 10px; font-weight: 820; font-stretch: 125%; font-size: 21px; }
+.err h1 { margin: 22px 0 0; font-size: 31px; font-weight: 820; font-stretch: 118%; letter-spacing: -.02em; line-height: 1.04; }
+.err p { margin: 0; font-size: 16px; color: var(--ink-2); }
+.err .btn { height: 54px; font-size: 16.5px; border-radius: 16px; align-self: stretch; margin-top: 8px; }
+.err small { margin-top: auto; font-size: 12.5px; color: var(--ink-3); }
+.table { margin-top: 28px; width: 100%; border-collapse: collapse; background: var(--board-2); border-radius: 18px; overflow: hidden; font-size: 14px; }
+.table th, .table td { text-align: left; vertical-align: top; padding: 12px 16px; border-bottom: 1px solid color-mix(in srgb, var(--board-ink) 10%, transparent); }
+.table thead th { font-size: 12.5px; color: var(--board-ink-2); }
+.table td { color: var(--board-ink-2); }
+.table td:first-child { color: var(--board-ink); font-weight: 650; white-space: nowrap; }
+@media (max-width: 860px) { .intro { grid-template-columns: 1fr; } .seg { margin-left: 0; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ferry-mark" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" style="fill:var(--mark-bg)"/><path d="M16 6.5V19M10.5 13.5 16 19l5.5-5.5" style="stroke:var(--mark-arrow)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 25q2.25-2.6 4.5 0t4.5 0 4.5 0 4.5 0" style="stroke:var(--mark-wave)" stroke-width="2.4" fill="none" stroke-linecap="round"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></symbol>
+  <symbol id="i-off" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></symbol>
+</svg>
+
+<header class="board-head"><div class="board-head-in">
+  <p class="board-title"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry: when a file is gone <span class="tag">Mockup</span></p>
+  <div class="seg" role="group" aria-label="Theme"><button type="button" data-theme-set="light" aria-pressed="true">Light</button><button type="button" data-theme-set="dark" aria-pressed="false">Dark</button></div>
+</div></header>
+
+<main class="board">
+  <div class="intro">
+    <div class="note note--lead">
+      <h1>No more .json files on iPhone</h1>
+      <p>A mockup for your OK. Nothing in the app has changed yet. Dashed outlines show what’s new.</p>
+    </div>
+    <div class="note">
+      <h2>What changes</h2>
+      <ul>
+        <li><b>Tap Save:</b> Ferry first checks the file is still on the server.</li>
+        <li><b>If it’s gone:</b> a message in Ferry with “Download again”, which gets the same file with the same choices. The card says “Deleted from server”.</li>
+        <li><b>If something still slips through:</b> the phone shows a short page with “Back to Ferry”, never a .json file.</li>
+      </ul>
+    </div>
+  </div>
+
+  <section class="sec">
+    <h2>1. Tapping Save when the file is gone</h2>
+    <p>Ferry stays open. The red message is the same kind Ferry already shows when a download fails.</p>
+    <div class="phones">
+      <div>
+        <p class="cap">Downloads page <span>(after tapping Save)</span></p>
+        <div class="phone"><div class="screen">
+          <div class="p-top"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry</div>
+          <div class="page">
+            <h1>Downloads</h1>
+            <div class="card">
+              <div class="card-head"><span class="thumb" aria-hidden="true"></span><div><p class="card-title">Sunset over the harbour, timelapse</p><p class="card-sub">MP4 1080p · Facebook</p></div></div>
+              <span class="pill"><svg class="i" style="width:15px;height:15px" aria-hidden="true"><use href="#i-off"/></svg>Deleted from server</span>
+              <div class="is-new"><span class="flag">New</span>
+                <p class="card-text">This file is no longer on the server. Ferry can get it again with the same choices.</p>
+                <div class="btns"><span class="btn"><svg class="i" aria-hidden="true"><use href="#i-redo"/></svg>Download again</span><span class="btn btn--line">Remove</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="toast is-new" style="border-radius:18px"><span class="flag">New</span><div><b>This file is no longer on the server</b><small>Ferry can get it again.</small></div><span class="act">Download again</span></div>
+          <nav class="tabbar" aria-label="Main"><span class="tab">Download</span><span class="tab" aria-current="page">Downloads</span><span class="tab">History</span><span class="tab">Sites</span></nav>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>2. If an error still reaches the phone</h2>
+    <p>For example when the check can’t run, or someone opens an old Save link. Instead of a .json file in Files, Safari shows this page.</p>
+    <div class="phones">
+      <div>
+        <p class="cap">File gone <span>(deleted, or the server restarted)</span></p>
+        <div class="phone"><div class="screen">
+          <div class="safari"><span>ferry.example.com</span></div>
+          <div class="err is-new" style="border-radius:0"><span class="flag" style="top:8px;right:8px">New</span>
+            <span class="logo"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry</span>
+            <h1>This file isn’t on the server anymore</h1>
+            <p>Files leave the server after a while, or when the server restarts. Go back to Ferry and tap Download again.</p>
+            <span class="btn">Back to Ferry</span>
+            <small>Code: JOB_EXPIRED</small>
+          </div>
+        </div></div>
+      </div>
+      <div>
+        <p class="cap">Wrong device <span>(the link was opened elsewhere)</span></p>
+        <div class="phone"><div class="screen">
+          <div class="safari"><span>ferry.example.com</span></div>
+          <div class="err is-new" style="border-radius:0"><span class="flag" style="top:8px;right:8px">New</span>
+            <span class="logo"><svg class="mark" aria-hidden="true"><use href="#ferry-mark"/></svg>Ferry</span>
+            <h1>This download belongs to another browser</h1>
+            <p>Open Ferry in the browser where you started the download, or paste the link again here.</p>
+            <span class="btn">Back to Ferry</span>
+            <small>Code: FORBIDDEN</small>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <table class="table">
+      <thead><tr><th>Server answer</th><th>Page title</th><th>Why it happens</th></tr></thead>
+      <tbody>
+        <tr><td>JOB_EXPIRED</td><td>This file isn’t on the server anymore</td><td>Saved after its time ran out (15 minutes on Vercel)</td></tr>
+        <tr><td>JOB_NOT_FOUND</td><td>This file isn’t on the server anymore</td><td>The server restarted, or Vercel sent the tap to another copy</td></tr>
+        <tr><td>FORBIDDEN</td><td>This download belongs to another browser</td><td>The Save link was opened in a different browser or app</td></tr>
+        <tr><td>Anything else</td><td>This file can’t be saved right now</td><td>Server busy or another problem: “Back to Ferry” and try again</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const buttons = document.querySelectorAll('[data-theme-set]');
+  const set = (theme) => { root.dataset.theme = theme; buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.themeSet === theme))); };
+  buttons.forEach((b) => b.addEventListener('click', () => set(b.dataset.themeSet)));
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) set('dark');
+})();
+</script>
+</body>
+</html>

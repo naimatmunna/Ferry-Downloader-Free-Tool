@@ -149,6 +149,9 @@ function Ticket({ job, token }) {
   const remove = useDownloads((s) => s.remove);
   const save = useDownloads((s) => s.save);
   const saveArchive = useDownloads((s) => s.saveArchive);
+  const again = useDownloads((s) => s.again);
+  // Downloads started before Ferry remembered choices can't be redone from here.
+  const canRedo = useDownloads((s) => Boolean(s.tracked[job.id]?.body));
   const [playing, setPlaying] = useState(null);
   const run = (action) => act(job.id, action).catch((err) => toast({ title: errorText(t, err), tone: 'error' }));
   const files = job.output?.files ?? [];
@@ -178,7 +181,7 @@ function Ticket({ job, token }) {
           {active && <StatusLine job={job} />}
           {job.status === 'ready' && <ReadyNotes job={job} />}
           {job.status === 'failed' && job.error && <p className="mt-2 max-w-[62ch] text-[13.5px] text-ink">{errorText(t, job.error)}</p>}
-          {job.status === 'expired' && <p className="mt-2 text-[13.5px] text-ink-2">{t('errors.JOB_EXPIRED')}</p>}
+          {job.status === 'expired' && <p className="mt-2 max-w-[62ch] text-[13.5px] text-ink-2">{canRedo ? t('downloads.gone') : t('errors.JOB_EXPIRED')}</p>}
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {job.status === 'ready' &&
@@ -200,6 +203,11 @@ function Ticket({ job, token }) {
             </Button>
           )}
           {job.status === 'ready' && main && /^(video|audio)\//.test(main.mime) && <IconButton label={t('downloads.play')} icon={Play} variant="soft" size="sm" onClick={() => setPlaying(main)} />}
+          {job.status === 'expired' && canRedo && (
+            <Button variant="primary" size="sm" icon={RotateCcw} onClick={() => again(job.id)}>
+              {t('downloads.again')}
+            </Button>
+          )}
           {job.actions?.pause && (
             <Button size="sm" icon={Pause} onClick={() => run('pause')}>
               {t('downloads.pause')}

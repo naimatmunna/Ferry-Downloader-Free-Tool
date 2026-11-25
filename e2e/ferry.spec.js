@@ -415,3 +415,55 @@ test('“With permission” sites download straight away: no tick box, Download 
   await download.click();
   await expect(page.getByText('Added to Downloads')).toBeVisible();
 });
+
+test('Save on a file the server no longer has: a message and Download again, never a .json file', async ({ page, request }) => {
+  await analyze(page, `${FIXTURES}/tone.mp3`);
+  await page.getByRole('button', { name: /^Download / }).first().click();
+  await waitReady(page);
+
+  // The server loses the file (deleted, timed out, or restarted).
+  const { tracked } = await page.evaluate(() => JSON.parse(localStorage.getItem('ferry:downloads:v1')).state);
+  const [{ id, token }] = Object.values(tracked);
+  expect((await request.delete(`/api/v1/jobs/${id}`, { headers: { authorization: `Bearer ${token}` } })).status()).toBe(204);
+
+  let downloads = 0;
+  page.on('download', () => (downloads += 1));
+  const main = page.getByRole('main');
+  await main.getByRole('button', { name: /^Save/ }).first().click();
+  await expect(page.getByText('This file is no longer on the server', { exact: true })).toBeVisible();
+  await expect(main.getByText('This file is no longer on the server. Ferry can get it again with the same choices.')).toBeVisible();
+  expect(downloads).toBe(0);
+
+  await main.getByRole('button', { name: 'Download again' }).click();
+  await expect(main.getByRole('button', { name: /^Save/ }).first()).toBeVisible({ timeout: 90_000 });
+  const [download] = await Promise.all([page.waitForEvent('download'), main.getByRole('button', { name: /^Save/ }).first().click()]);
+  expect(download.suggestedFilename()).toMatch(/\.mp3$/);
+});
+
+test('an old Save link opened later shows a page with Back to Ferry', async ({ page }) => {
+  await page.goto('/api/v1/jobs/00000000-0000-4000-8000-000000000000/files/f0?token=x');
+  await expect(page.getByRole('heading', { name: 'This file isn’t on the server anymore' })).toBeVisible();
+  await page.getByRole('link', { name: 'Back to Ferry' }).click();
+  await expect(page).toHaveURL(/\/downloads$/);
+  await expect(page.getByRole('heading', { name: 'Downloads', level: 1 })).toBeVisible();
+});
+
+test('Save when another server copy answers (JOB_NOT_FOUND, as on Vercel): the message, no .json file', async ({ page }) => {
+  await analyze(page, `${FIXTURES}/tone.mp3`);
+  await page.getByRole('button', { name: /^Download / }).first().click();
+  await waitReady(page);
+
+  // From now on the "server" has never heard of this download.
+  await page.route('**/api/v1/jobs/status', async (route) => {
+    const { jobs } = route.request().postDataJSON();
+    await route.fulfill({ json: { jobs: jobs.map(({ id }) => ({ id, error: { code: 'JOB_NOT_FOUND', message: "We couldn't find that download.", retryable: false } })) } });
+  });
+  let downloads = 0;
+  page.on('download', () => (downloads += 1));
+  const main = page.getByRole('main');
+  await main.getByRole('button', { name: /^Save/ }).first().click();
+  await expect(page.getByText('This file is no longer on the server', { exact: true })).toBeVisible();
+  await expect(main.getByRole('button', { name: 'Download again' })).toBeVisible();
+  await expect(page).toHaveURL(/\/downloads$/); // Ferry stays open
+  expect(downloads).toBe(0);
+});

@@ -86,6 +86,14 @@ function Effects() {
       });
     };
     downloadEvents.onError = (err) => toast({ tone: 'error', title: errorText(t, err), timeout: 9000 });
+    downloadEvents.onGone = (job, { canRedo }) => {
+      toast({
+        tone: 'error',
+        title: t('downloads.toast.gone'),
+        ...(canRedo ? { body: t('downloads.toast.goneBody'), action: { label: t('downloads.again'), onClick: () => useDownloads.getState().again(job.id) } } : {}),
+        timeout: 9000,
+      });
+    };
   }, [t]);
 
   return null;

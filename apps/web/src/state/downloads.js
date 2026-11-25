@@ -18,7 +18,10 @@ const ACTIVE = (job) => job && isActive(job.status);
 let timer = null;
 let polling = false;
 /** Hooks the UI registers for announcements (kept out of the store to avoid cycles). */
-export const downloadEvents = { onReady: null, onFailed: null, onSaved: null, onError: null };
+export const downloadEvents = { onReady: null, onFailed: null, onSaved: null, onError: null, onGone: null };
+
+/** Answers that mean the server no longer has a download (deleted, timed out, restarted, or another browser's). */
+const GONE = ['JOB_NOT_FOUND', 'JOB_EXPIRED', 'FORBIDDEN'];
 
 function historyEntry(job, meta) {
   const { privacy } = useSettings.getState();
@@ -42,7 +45,7 @@ function historyEntry(job, meta) {
 export const useDownloads = create(
   persist(
     (set, get) => ({
-      /** @type {Record<string, { id: string, token: string, addedAt: number, meta: any, saved: boolean }>} */
+      /** @type {Record<string, { id: string, token: string, addedAt: number, meta: any, body?: any, saved: boolean }>} */
       tracked: {},
       /** @type {Record<string, any>} */
       jobs: {},
@@ -73,7 +76,8 @@ export const useDownloads = create(
           // If the server forgot the analysis (restart, 15-minute limit), the link is analyzed again once.
           const { job, token } = await createJobFresh(item, api);
           set((s) => ({
-            tracked: { ...s.tracked, [job.id]: { id: job.id, token, addedAt: Date.now(), meta: item.meta ?? {}, saved: false } },
+            // body: the same choices, for "Download again" if the server loses the file.
+            tracked: { ...s.tracked, [job.id]: { id: job.id, token, addedAt: Date.now(), meta: item.meta ?? {}, body: item.body, saved: false } },
             jobs: { ...s.jobs, [job.id]: job },
           }));
           const entry = historyEntry(job, item.meta);
@@ -112,14 +116,59 @@ export const useDownloads = create(
             if (r.job) {
               set((s) => ({ jobs: { ...s.jobs, [r.id]: r.job } }));
               get().onTransition(prev, r.job);
-            } else if (r.error && ['JOB_NOT_FOUND', 'JOB_EXPIRED', 'FORBIDDEN'].includes(r.error.code)) {
-              const gone = { ...(prev ?? { id: r.id, source: {}, request: {} }), status: 'expired', output: null, progress: {} };
-              set((s) => ({ jobs: { ...s.jobs, [r.id]: gone } }));
-              if (prev && prev.status !== 'expired') useHistory.getState().update(r.id, { status: prev.status === 'ready' ? (get().tracked[r.id]?.saved ? 'saved' : 'expired') : prev.status });
+            } else if (r.error && GONE.includes(r.error.code)) {
+              get().markGone(r.id);
             }
           }
         }
         get().pump();
+      },
+
+      /** The server no longer has this download: show it as deleted from the server. */
+      markGone(id) {
+        const prev = get().jobs[id];
+        const gone = { ...(prev ?? { id, source: {}, request: {} }), status: 'expired', output: null, progress: {} };
+        set((s) => ({ jobs: { ...s.jobs, [id]: gone } }));
+        if (prev && prev.status !== 'expired') useHistory.getState().update(id, { status: prev.status === 'ready' ? (get().tracked[id]?.saved ? 'saved' : 'expired') : prev.status });
+      },
+
+      /**
+       * Ask the server whether it still has the download before handing its link to the
+       * browser. False (and the download marked deleted) when it's gone; true otherwise,
+       * also when the check itself can't run (the server's error page covers that case).
+       */
+      async stillThere(id) {
+        const t = get().tracked[id];
+        if (!t) return false;
+        try {
+          const res = await api.jobStatus([{ id, token: t.token }]);
+          const r = res.jobs.find((x) => x.id === id);
+          // Unknown to this server (restart, another copy), or kept only as a record once its files were deleted.
+          if ((r?.error && GONE.includes(r.error.code)) || r?.job?.status === 'expired') {
+            get().markGone(id);
+            downloadEvents.onGone?.(get().jobs[id], { canRedo: Boolean(t.body) });
+            return false;
+          }
+          if (r?.job) set((s) => ({ jobs: { ...s.jobs, [id]: r.job } }));
+        } catch {
+          /* offline or a hiccup: try the link anyway */
+        }
+        return true;
+      },
+
+      /** Get a lost download again with the same choices (the link is read again if needed). */
+      again(id) {
+        const t = get().tracked[id];
+        if (!t?.body) return false;
+        set((s) => {
+          const tracked = { ...s.tracked };
+          const jobs = { ...s.jobs };
+          delete tracked[id];
+          delete jobs[id];
+          return { tracked, jobs };
+        });
+        get().enqueue([{ body: t.body, meta: t.meta }]);
+        return true;
       },
 
       onTransition(prev, job) {
@@ -142,22 +191,24 @@ export const useDownloads = create(
       },
 
       /** Hand a file to the browser's download manager. */
-      save(id, fileId, { auto = false } = {}) {
+      async save(id, fileId, { auto = false } = {}) {
         const t = get().tracked[id];
         const job = get().jobs[id];
         const file = job?.output?.files.find((f) => f.id === fileId) ?? job?.output?.files[0];
         if (!t || !file) return;
+        if (!(await get().stillThere(id))) return;
         saveFile(fileHref(file, t.token));
         set((s) => ({ tracked: { ...s.tracked, [id]: { ...s.tracked[id], saved: true } } }));
         useHistory.getState().update(id, { status: 'saved' });
         downloadEvents.onSaved?.(job, file, auto);
       },
 
-      saveArchive(id, { auto = false } = {}) {
+      async saveArchive(id, { auto = false } = {}) {
         const t = get().tracked[id];
         const job = get().jobs[id];
         const href = job && t ? archiveHref(job, t.token) : null;
         if (!href) return;
+        if (!(await get().stillThere(id))) return;
         saveFile(href);
         set((s) => ({ tracked: { ...s.tracked, [id]: { ...s.tracked[id], saved: true } } }));
         useHistory.getState().update(id, { status: 'saved' });

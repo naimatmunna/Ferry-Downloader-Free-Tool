@@ -13,6 +13,7 @@ import { BRAND } from '@ferry/shared/brand';
 import { FerryError, isFerryError } from '@ferry/shared/errors';
 import { contentDisposition, validateTemplate } from '@ferry/shared/filename';
 import { AUDIO_BITRATES, AUDIO_FORMAT_IDS, QUALITY_LADDER, VIDEO_CONTAINER_IDS } from '@ferry/shared/formats';
+import { downloadErrorPage, wantsDownloadErrorPage } from './downloadErrorPage.js';
 import { safePath } from './logger.js';
 import { createRateLimiter } from './security/rateLimit.js';
 import { safeEqual, UUID_RE } from './security/tokens.js';
@@ -466,6 +467,13 @@ export function createApp({ config, logger, services }) {
     }
     if (e.retryAfter) res.setHeader('Retry-After', String(e.retryAfter));
     if (res.headersSent) return void res.destroy();
+    if (wantsDownloadErrorPage(req)) {
+      // A browser following a Save link: a page it shows, not a .json file it saves.
+      res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+      res.setHeader('Cache-Control', 'no-store');
+      res.removeHeader('Content-Disposition');
+      return void res.status(e.status).type('html').send(downloadErrorPage(e.code));
+    }
     res.status(e.status).json({ error: { ...e.toJSON(), requestId: req.id } });
   });
 

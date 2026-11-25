@@ -10,10 +10,11 @@ export function saveFile(href) {
     window.open(href, '_blank', 'noopener');
     return 'external';
   }
+  // No download attribute: the server's "attachment" header makes real files download, and a
+  // failed link shows the server's error page instead of being saved (iPhone saved it as .json).
   const a = document.createElement('a');
   a.href = href;
   a.rel = 'noopener';
-  a.setAttribute('download', '');
   document.body.appendChild(a);
   a.click();
   a.remove();

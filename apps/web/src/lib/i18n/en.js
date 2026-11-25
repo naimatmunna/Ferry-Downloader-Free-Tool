@@ -404,6 +404,8 @@ export default {
     retry: 'Try again',
     remove: 'Remove',
     keepLonger: 'Keep longer',
+    again: 'Download again',
+    gone: 'This file is no longer on the server. Ferry can get it again with the same choices.',
     expires: 'Leaves the server {when}',
     files: { subtitle: 'Subtitles ({lang})', thumbnail: 'Thumbnail', image: 'Image {n}' },
     notes: {
@@ -419,6 +421,8 @@ export default {
       ready: '{title} is ready',
       saving: 'Saving {name}',
       failed: '{title} didn’t finish',
+      gone: 'This file is no longer on the server',
+      goneBody: 'Ferry can get it again.',
     },
     attempt: 'Attempt {n} of {max}',
   },

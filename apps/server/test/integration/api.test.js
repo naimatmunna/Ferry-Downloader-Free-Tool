@@ -377,3 +377,33 @@ test('rate limiting returns 429 with Retry-After', async () => {
   assert.ok(Number(last.headers.get('retry-after')) >= 1);
   assert.equal((await last.json()).error.code, 'RATE_LIMITED');
 });
+
+test('a broken Save link shows browsers a readable page, never a JSON file to save', async () => {
+  const BROWSER = { accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' };
+  const missing = '00000000-0000-4000-8000-000000000000';
+  for (const link of [`/api/v1/jobs/${missing}/files/f0?token=x`, `/api/v1/jobs/${missing}/archive?token=x`]) {
+    const res = await api(link, { headers: BROWSER });
+    assert.equal(res.status, 404, link);
+    assert.match(res.headers.get('content-type'), /^text\/html/, link);
+    assert.doesNotMatch(res.headers.get('content-disposition') ?? '', /attachment/, link);
+    const html = await res.text();
+    assert.match(html, /<h1>This file isn’t on the server anymore<\/h1>/, link);
+    assert.match(html, /<a [^>]*href="\/downloads"[^>]*>Back to Ferry<\/a>/, link);
+    assert.match(html, /JOB_NOT_FOUND/, link);
+  }
+
+  // A real download opened with someone else's link.
+  const p = await probe(fx.url('/tone.m4a'));
+  const c = await post('/api/v1/jobs', { probeId: p.body.probe.id, mode: 'audio', audio: { format: 'm4a', bitrate: 'source' }, attest: true });
+  assert.equal(c.status, 202, JSON.stringify(c.body));
+  const wrong = await api(`/api/v1/jobs/${c.body.job.id}/files/f0?token=not-the-token`, { headers: BROWSER });
+  assert.equal(wrong.status, 403);
+  assert.match(await wrong.text(), /<h1>This download belongs to another browser<\/h1>/);
+
+  // Apps and Ferry's own requests still get JSON, and other routes are unchanged.
+  const forApps = await json(await api(`/api/v1/jobs/${missing}/files/f0?token=x`, { headers: { accept: 'application/json' } }));
+  assert.equal(forApps.body.error.code, 'JOB_NOT_FOUND');
+  const noAccept = await json(await api(`/api/v1/jobs/${missing}/files/f0?token=x`));
+  assert.equal(noAccept.body.error.code, 'JOB_NOT_FOUND');
+  assert.match((await api(`/api/v1/jobs/${missing}?token=x`, { headers: BROWSER })).headers.get('content-type'), /json/);
+});
