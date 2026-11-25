@@ -9,6 +9,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { isActive } from '@ferry/shared/jobs';
 import { ApiError, api, archiveHref, fileHref } from '../lib/api.js';
 import { saveFile } from '../lib/download.js';
+import { createJobFresh } from '../lib/retryExpired.js';
 import { storage } from '../lib/storage.js';
 import { useHistory } from './history.js';
 import { useSettings } from './settings.js';
@@ -69,7 +70,8 @@ export const useDownloads = create(
 
       async submit(item) {
         try {
-          const { job, token } = await api.createJob(item.body);
+          // If the server forgot the analysis (restart, 15-minute limit), the link is analyzed again once.
+          const { job, token } = await createJobFresh(item, api);
           set((s) => ({
             tracked: { ...s.tracked, [job.id]: { id: job.id, token, addedAt: Date.now(), meta: item.meta ?? {}, saved: false } },
             jobs: { ...s.jobs, [job.id]: job },
