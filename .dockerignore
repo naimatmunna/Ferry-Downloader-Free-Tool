@@ -11,5 +11,6 @@ playwright-report
 docs/research
 .env
 .env.*
+*.env
 !.env.example
 *.log
