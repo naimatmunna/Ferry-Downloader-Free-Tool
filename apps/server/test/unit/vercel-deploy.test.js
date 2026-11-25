@@ -51,6 +51,20 @@ test('the server listens on a port its unprivileged user may open', () => {
   assert.match(read('deploy/Dockerfile'), new RegExp(`EXPOSE ${port}\\b`), 'PORT should match the port the image exposes');
 });
 
+test('Vercel runs Ferry as one container that receives every request', () => {
+  // Vercel suggests separate "server" (Express) and "web" (Vite) services for this monorepo.
+  // Built that way, the server would run without yt-dlp and FFmpeg, which only the image
+  // installs, and the screens would have no server behind them. Ferry stays one container.
+  const config = JSON.parse(read('vercel.json'));
+  const names = Object.keys(config.services ?? {});
+  assert.deepEqual(names, ['ferry'], `expected only the "ferry" service, got: ${names.join(', ') || 'none'}`);
+  assert.deepEqual(config.services.ferry, { root: '.', runtime: 'container', entrypoint: 'Dockerfile.vercel' });
+  assert.deepEqual(config.rewrites, [{ source: '/(.*)', destination: { service: 'ferry' } }], 'every path, screens and /api alike, must reach the container');
+  for (const key of ['functions', 'installCommand', 'buildCommand', 'devCommand', 'ignoreCommand', 'outputDirectory', 'framework']) {
+    assert.ok(!(key in config), `${key} is not allowed at the top level when vercel.json defines services`);
+  }
+});
+
 test('files go to the temporary folder, and no secret is committed', () => {
   const env = vercelEnv();
   assert.match(env.DATA_DIR ?? '', /^\/tmp\//, 'DATA_DIR must be under /tmp, the folder a Vercel container can write to');

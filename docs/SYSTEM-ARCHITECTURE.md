@@ -581,8 +581,13 @@ Full threat model and test evidence: `SECURITY-AUDIT.md`.
   host firewall (`DOCKER-USER` chain), in addition to the in-app egress guard.
 * **Upgrades:** yt-dlp is pinned in the image and bumped by rebuilding; the
   admin `readyz` endpoint reports engine versions.
-* **Vercel (trial):** `Dockerfile.vercel`, kept identical to `deploy/Dockerfile`
-  by `apps/server/test/unit/vercel-deploy.test.js`, runs the same image on
+* **Vercel (trial):** `vercel.json` declares one container service, `ferry`,
+  built from `Dockerfile.vercel` and sent every request. Vercel's suggested
+  split into `server` (Express) and `web` (Vite) services would run the server
+  without yt-dlp and FFmpeg, which only the image installs.
+  `Dockerfile.vercel`, kept identical to `deploy/Dockerfile` by
+  `apps/server/test/unit/vercel-deploy.test.js` (which also checks
+  `vercel.json`), runs the same image on
   Vercel's container runtime (beta) with the settings in
   `deploy/vercel.env.example`: `PORT=8787`, `DATA_DIR` under `/tmp`, one
   trusted proxy hop and lower limits. Jobs and files live in one running copy

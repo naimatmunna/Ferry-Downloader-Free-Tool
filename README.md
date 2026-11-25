@@ -76,13 +76,15 @@ curl -X PUT https://ferry.example.com/api/v1/admin/policies/vimeo \
 
 ### Deploy on Vercel (trial)
 
-Vercel can run Ferry's container directly. Its container support is in beta. `Dockerfile.vercel` is an
-exact copy of `deploy/Dockerfile` (`apps/server/test/unit/vercel-deploy.test.js` keeps them
-identical), so Vercel builds the same image as Docker Compose.
+Vercel can run Ferry's container directly. Its container support is in beta. `vercel.json` tells
+Vercel to build one container, the `ferry` service, from `Dockerfile.vercel` and to send it every
+request. `Dockerfile.vercel` is an exact copy of `deploy/Dockerfile`, so Vercel builds the same
+image as Docker Compose. `apps/server/test/unit/vercel-deploy.test.js` checks both files.
 
-1. In Vercel, choose **Add New → Project** and import this repository. Vercel finds
-   `Dockerfile.vercel` and selects the **Container** preset. If it shows another framework, set
-   **Framework Preset** to Container.
+1. In Vercel, choose **Add New → Project** and import this repository. Vercel reads `vercel.json`
+   and imports Ferry as one project with one service. Don't replace it with the separate `server`
+   and `web` services Vercel may suggest for `apps/server` and `apps/web`: on its own, the server
+   runs without yt-dlp and FFmpeg, which only the container installs.
 2. In **Settings → Environment Variables**, paste the contents of
    [`deploy/vercel.env.example`](deploy/vercel.env.example). Then set `SIGNING_SECRET` to a long
    random value (`openssl rand -base64 48`) and mark it **Sensitive**. Keep `PORT=8787`: without it
